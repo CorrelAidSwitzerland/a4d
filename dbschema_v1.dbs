@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="a4d_v1" id="Project_1766" database="Sqlite" >
+	<schema name="Default" >
+		<table name="clinics" prior="Tbl" >
+			<comment><![CDATA[metadata about the clinics]]></comment>
+			<column name="cid" prior="_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[internal clinic id]]></comment>
+			</column>
+			<column name="cname" type="varchar" length="100" jt="12" >
+				<comment><![CDATA[clinic name]]></comment>
+			</column>
+			<column name="ccountry" type="char" length="2" jt="1" />
+			<column name="caddress" type="varchar" length="100" jt="12" />
+			<column name="ccoords" type="varchar" length="100" jt="12" />
+			<index name="Pk_clinics__id" unique="PRIMARY_KEY" >
+				<column name="cid" />
+			</index>
+			<fk name="Fk_clinics" virtual="y" to_schema="Default" to_table="released_products" >
+				<fk_column name="cid" pk="cid" />
+			</fk>
+		</table>
+		<table name="current_product_status" prior="current_numbers" >
+			<comment><![CDATA[product status per patient]]></comment>
+			<column name="pid" type="integer" jt="4" />
+			<column name="rid" type="integer" jt="4" />
+			<column name="curr_rquantity" type="integer" jt="4" >
+				<comment><![CDATA[how many units should a patient currently have 
+???]]></comment>
+			</column>
+		</table>
+		<table name="measurements" prior="Tbl" >
+			<comment><![CDATA[types of measurements]]></comment>
+			<column name="mid" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[id]]></comment>
+			</column>
+			<column name="mdesc" type="integer" jt="4" >
+				<comment><![CDATA[measurement description]]></comment>
+			</column>
+			<column name="munit" type="varchar" length="100" jt="12" >
+				<comment><![CDATA[unit]]></comment>
+			</column>
+			<index name="Pk_measurements_mid" unique="PRIMARY_KEY" >
+				<column name="mid" />
+			</index>
+		</table>
+		<table name="patients" prior="Tbl" >
+			<column name="pid" prior="_id" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[patient id]]></comment>
+			</column>
+			<column name="pid_a4d" prior="a4d_id" type="varchar" length="100" jt="12" />
+			<column name="pname" prior="name" type="longtext" length="100" jt="-1" />
+			<column name="pdob" prior="dob" type="date" jt="91" >
+				<comment><![CDATA[are there patients with unknown dob?]]></comment>
+			</column>
+			<index name="Pk_patients__id" unique="PRIMARY_KEY" >
+				<column name="pid" />
+			</index>
+			<fk name="Fk_patients" virtual="y" to_schema="Default" to_table="released_products" >
+				<fk_column name="pid" pk="pid" />
+			</fk>
+		</table>
+		<table name="products" prior="Tbl" >
+			<comment><![CDATA[info about the products]]></comment>
+			<column name="rid" type="integer" jt="4" mandatory="y" />
+			<column name="rname" type="varchar" length="100" jt="12" >
+				<comment><![CDATA[product name]]></comment>
+			</column>
+			<column name="rquantity" type="integer" jt="4" >
+				<comment><![CDATA[how many units of sth there is in a product]]></comment>
+			</column>
+			<index name="Pk_products_rid" unique="PRIMARY_KEY" >
+				<column name="rid" />
+			</index>
+			<fk name="Fk_products" virtual="y" to_schema="Default" to_table="released_products" >
+				<fk_column name="rid" pk="rid" />
+			</fk>
+		</table>
+		<table name="released_products" prior="Tbl" >
+			<comment><![CDATA[products released]]></comment>
+			<column name="rid" type="integer" jt="4" />
+			<column name="imported_from" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[excel tracker]]></comment>
+			</column>
+			<column name="pid" type="integer" jt="4" >
+				<comment><![CDATA[patient to whom the products were released]]></comment>
+			</column>
+			<column name="runits" type="integer" jt="4" >
+				<comment><![CDATA[how many units were released; each unit may have multiple instances of the product (rquantity)]]></comment>
+			</column>
+			<column name="rdate" type="date" jt="91" >
+				<comment><![CDATA[date of product release]]></comment>
+			</column>
+			<column name="cid" type="integer" jt="4" >
+				<comment><![CDATA[clinic id]]></comment>
+			</column>
+		</table>
+		<table name="visits" prior="results" >
+			<comment><![CDATA[measured data
+
+distinguish between measurements and visits?]]></comment>
+			<column name="pid" type="integer" jt="4" >
+				<comment><![CDATA[patient id]]></comment>
+			</column>
+			<column name="cid" type="integer" jt="4" >
+				<comment><![CDATA[clinic id]]></comment>
+			</column>
+			<column name="mid" type="integer" jt="4" >
+				<comment><![CDATA[measurement type id]]></comment>
+			</column>
+			<column name="mvalue" type="float" jt="7" >
+				<comment><![CDATA[measured value]]></comment>
+			</column>
+			<column name="mdate" type="date" jt="91" >
+				<comment><![CDATA[date of the measurement / visit]]></comment>
+			</column>
+			<column name="imported_from" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[excel tracker identifier]]></comment>
+			</column>
+			<fk name="Fk_visits" virtual="y" to_schema="Default" to_table="patients" >
+				<fk_column name="pid" pk="pid" />
+			</fk>
+			<fk name="Fk_visits_0" virtual="y" to_schema="Default" to_table="clinics" >
+				<fk_column name="cid" pk="cid" />
+			</fk>
+			<fk name="Fk_visits_1" virtual="y" to_schema="Default" to_table="measurements" >
+				<fk_column name="mid" pk="mid" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout_4ef" show_relation="columns" >
+		<entity schema="Default" name="clinics" color="C1D8EE" x="432" y="336" />
+		<entity schema="Default" name="current_product_status" color="C1D8EE" x="880" y="448" />
+		<entity schema="Default" name="measurements" color="C1D8EE" x="96" y="192" />
+		<entity schema="Default" name="patients" color="C1D8EE" x="448" y="176" />
+		<entity schema="Default" name="products" color="C1D8EE" x="816" y="160" />
+		<entity schema="Default" name="released_products" color="C1D8EE" x="624" y="320" />
+		<entity schema="Default" name="visits" color="C1D8EE" x="256" y="320" />
+		<callout x="48" y="48" pointer="Round" >
+			<comment><![CDATA[DbSchema is disconnected from the database.
+New designed tables will be saved to project file and later can be create in any database.
+Right-click the layout to create new tables. Drop this callout from its context menu.]]></comment>
+		</callout>
+	</layout>
+</project>
