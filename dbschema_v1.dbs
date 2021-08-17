@@ -28,13 +28,28 @@
 ???]]></comment>
 			</column>
 		</table>
+		<table name="extra_visits" prior="screenings" >
+			<comment><![CDATA[complication screenings, hospitalizations]]></comment>
+			<column name="pid" type="integer" jt="4" />
+			<column name="edate" type="date" jt="91" />
+			<column name="ecomment" type="text" jt="-1" >
+				<comment><![CDATA[free text]]></comment>
+			</column>
+		</table>
 		<table name="measurements" prior="Tbl" >
-			<comment><![CDATA[types of measurements]]></comment>
+			<comment><![CDATA[types of measurements 
+just the numeric ones]]></comment>
 			<column name="mid" type="integer" jt="4" mandatory="y" >
 				<comment><![CDATA[id]]></comment>
 			</column>
 			<column name="mdesc" type="integer" jt="4" >
-				<comment><![CDATA[measurement description]]></comment>
+				<comment><![CDATA[measurement description
+- hba1c
+- fbg 
+- blood pressure (systolic - top)
+- blood pressure (diastolic - bottom)
+- body weight
+- height]]></comment>
 			</column>
 			<column name="munit" type="varchar" length="100" jt="12" >
 				<comment><![CDATA[unit]]></comment>
@@ -52,12 +67,92 @@
 			<column name="pdob" prior="dob" type="date" jt="91" >
 				<comment><![CDATA[are there patients with unknown dob?]]></comment>
 			</column>
+			<column name="pprovince" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[province]]></comment>
+			</column>
+			<column name="pgender" type="varchar" length="1" jt="12" >
+				<comment><![CDATA[binary?]]></comment>
+			</column>
+			<column name="page_diagnosis" prior="p_age_diagnosis" type="integer" jt="4" >
+				<comment><![CDATA[age when diagnosed with diabetes]]></comment>
+			</column>
+			<column name="precruitment_date" type="date" jt="91" >
+				<comment><![CDATA[date of recruitment to the program]]></comment>
+			</column>
+			<column name="pbaseline_hba1c" type="float" jt="7" >
+				<comment><![CDATA[baseline for hba1c]]></comment>
+			</column>
+			<column name="pbaseline_fbg" type="float" jt="7" />
+			<column name="peducation" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[current education 
+(should this be here???)]]></comment>
+			</column>
+			<column name="pstatus" type="char" length="1" jt="1" >
+				<comment><![CDATA[do we also need a history of statuses?]]></comment>
+			</column>
 			<index name="Pk_patients__id" unique="PRIMARY_KEY" >
 				<column name="pid" />
 			</index>
 			<fk name="Fk_patients" virtual="y" to_schema="Default" to_table="released_products" >
 				<fk_column name="pid" pk="pid" />
 			</fk>
+		</table>
+		<table name="patients_calculated" prior="Tbl" >
+			<comment><![CDATA[data that are calculated]]></comment>
+			<column name="pid" type="integer" jt="4" mandatory="y" >
+				<comment><![CDATA[patient id]]></comment>
+			</column>
+			<column name="page" type="integer" jt="4" >
+				<comment><![CDATA[patient age]]></comment>
+			</column>
+			<column name="plast_clinic_visit" type="date" jt="91" >
+				<comment><![CDATA[last clinic visit]]></comment>
+			</column>
+			<column name="pinsulin_current" prior="ptesting_current" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[current insulin regimen]]></comment>
+			</column>
+			<column name="pbmi" type="float" jt="7" >
+				<comment><![CDATA[current bmi]]></comment>
+			</column>
+			<column name="phba1c_last" type="float" jt="7" >
+				<comment><![CDATA[last measured hba1c
+do we also need a date when this value was measured?]]></comment>
+			</column>
+			<column name="pfbg_last" type="float" jt="7" >
+				<comment><![CDATA[last fbg
+do we also need a date when this value was measured?]]></comment>
+			</column>
+			<column name="ptesting_frequency" type="float" jt="7" />
+			<column name="pstrips_month_est" type="float" jt="7" >
+				<comment><![CDATA[estimated strips per month]]></comment>
+			</column>
+			<column name="phospitalization_last" type="date" jt="91" >
+				<comment><![CDATA[date of last hospitalization due to diabetes emergency or glucose control]]></comment>
+			</column>
+			<index name="Pk_patients_calculated_pid" unique="PRIMARY_KEY" >
+				<column name="pid" />
+			</index>
+		</table>
+		<table name="patients_changes" prior="Tbl" >
+			<comment><![CDATA[changes to non-numerical patient data 
+
+should this be wide instead?]]></comment>
+			<column name="pid" type="integer" jt="4" />
+			<column name="pvar" type="varchar" length="100" jt="12" >
+				<comment><![CDATA[variable that changed
+- status
+- education 
+- testing regimen 
+- province 
+- name 
+- a4d id]]></comment>
+			</column>
+			<column name="pvalue" type="varchar" length="1000" jt="12" >
+				<comment><![CDATA[new value]]></comment>
+			</column>
+			<column name="pdate" type="date" jt="91" >
+				<comment><![CDATA[date of the change]]></comment>
+			</column>
 		</table>
 		<table name="products" prior="Tbl" >
 			<comment><![CDATA[info about the products]]></comment>
@@ -128,17 +223,15 @@ distinguish between measurements and visits?]]></comment>
 		</table>
 	</schema>
 	<layout name="Default Layout" id="Layout_4ef" show_relation="columns" >
-		<entity schema="Default" name="clinics" color="C1D8EE" x="432" y="336" />
-		<entity schema="Default" name="current_product_status" color="C1D8EE" x="880" y="448" />
-		<entity schema="Default" name="measurements" color="C1D8EE" x="96" y="192" />
-		<entity schema="Default" name="patients" color="C1D8EE" x="448" y="176" />
-		<entity schema="Default" name="products" color="C1D8EE" x="816" y="160" />
-		<entity schema="Default" name="released_products" color="C1D8EE" x="624" y="320" />
-		<entity schema="Default" name="visits" color="C1D8EE" x="256" y="320" />
-		<callout x="48" y="48" pointer="Round" >
-			<comment><![CDATA[DbSchema is disconnected from the database.
-New designed tables will be saved to project file and later can be create in any database.
-Right-click the layout to create new tables. Drop this callout from its context menu.]]></comment>
-		</callout>
+		<entity schema="Default" name="clinics" color="C1D8EE" x="400" y="384" />
+		<entity schema="Default" name="current_product_status" color="C1D8EE" x="848" y="496" />
+		<entity schema="Default" name="extra_visits" color="C1D8EE" x="336" y="576" />
+		<entity schema="Default" name="measurements" color="C1D8EE" x="80" y="368" />
+		<entity schema="Default" name="patients" color="C1D8EE" x="176" y="112" />
+		<entity schema="Default" name="patients_calculated" color="C1D8EE" x="336" y="48" />
+		<entity schema="Default" name="patients_changes" color="C1D8EE" x="48" y="48" />
+		<entity schema="Default" name="products" color="C1D8EE" x="784" y="208" />
+		<entity schema="Default" name="released_products" color="C1D8EE" x="592" y="368" />
+		<entity schema="Default" name="visits" color="C1D8EE" x="224" y="368" />
 	</layout>
 </project>
