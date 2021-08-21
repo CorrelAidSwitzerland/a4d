@@ -137,7 +137,6 @@ do we also need a date when this value was measured?]]></comment>
 			<comment><![CDATA[changes to non-numerical patient data 
 
 should this be wide instead?]]></comment>
-			<column name="pchangesid" type="integer" jt="4" mandatory="y" />
 			<column name="pid" type="integer" jt="4" />
 			<column name="pvar" type="varchar" length="100" jt="12" >
 				<comment><![CDATA[variable that changed
@@ -154,13 +153,6 @@ should this be wide instead?]]></comment>
 			<column name="pdate" type="date" jt="91" >
 				<comment><![CDATA[date of the change]]></comment>
 			</column>
-			<index name="Pk_patients_changes_pchangesid" unique="PRIMARY_KEY" >
-				<column name="pchangesid" />
-			</index>
-			<fk name="pid" to_schema="Default" to_table="patients" >
-				<fk_column name="pid" pk="pid" />
-				<comment><![CDATA[Unique patient id]]></comment>
-			</fk>
 		</table>
 		<table name="products" prior="Tbl" >
 			<comment><![CDATA[info about the products]]></comment>
@@ -231,23 +223,15 @@ distinguish between measurements and visits?]]></comment>
 		</table>
 	</schema>
 	<layout name="Default Layout" id="Layout_4ef" show_relation="columns" >
-		<entity schema="Default" name="clinics" color="C1D8EE" x="352" y="480" />
-		<entity schema="Default" name="current_product_status" color="C1D8EE" x="832" y="512" />
-		<entity schema="Default" name="extra_visits" color="C1D8EE" x="336" y="656" />
-		<entity schema="Default" name="measurements" color="C1D8EE" x="48" y="640" />
-		<entity schema="Default" name="patients" color="C1D8EE" x="288" y="112" />
-		<entity schema="Default" name="patients_calculated" color="C1D8EE" x="560" y="48" />
-		<entity schema="Default" name="patients_changes" color="C1D8EE" x="80" y="64" />
-		<entity schema="Default" name="products" color="C1D8EE" x="784" y="288" />
-		<entity schema="Default" name="released_products" color="C1D8EE" x="592" y="448" />
-		<entity schema="Default" name="visits" color="C1D8EE" x="128" y="416" />
-		<query id="Query_1f35" name="patients_changes" >
-			<query_table schema="Default" name="patients_changes" alias="pc" x="48" y="48" >
-				<column name="pid" />
-				<column name="pvar" />
-				<column name="pvalue" />
-				<column name="pdate" />
-			</query_table>
-		</query>
+		<entity schema="Default" name="clinics" color="C1D8EE" x="400" y="384" />
+		<entity schema="Default" name="current_product_status" color="C1D8EE" x="848" y="496" />
+		<entity schema="Default" name="extra_visits" color="C1D8EE" x="336" y="576" />
+		<entity schema="Default" name="measurements" color="C1D8EE" x="80" y="368" />
+		<entity schema="Default" name="patients" color="C1D8EE" x="176" y="112" />
+		<entity schema="Default" name="patients_calculated" color="C1D8EE" x="336" y="48" />
+		<entity schema="Default" name="patients_changes" color="C1D8EE" x="48" y="48" />
+		<entity schema="Default" name="products" color="C1D8EE" x="784" y="208" />
+		<entity schema="Default" name="released_products" color="C1D8EE" x="592" y="368" />
+		<entity schema="Default" name="visits" color="C1D8EE" x="224" y="368" />
 	</layout>
 </project>
