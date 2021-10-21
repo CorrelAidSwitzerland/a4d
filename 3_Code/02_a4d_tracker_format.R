@@ -28,12 +28,13 @@ date_fix <- function(d) {
 }
 
 
-# [1] "no" ####                                
-# [2] "patient_name" ####   
-# No Check
-
-# [3] "province" ####                          
-# TODO: Check needed?
+# [1,2, 3] String IDs without NAs  ####               
+keep_chr_without_NAs <- function(d) {
+  na_exist_in_d <- try(any(is.na(d)), silent = TRUE)
+  if (class(d) == "try-error" | na_exist_in_d) {
+    d  <- 999999 }
+  return(d)
+}
 
 # [4] "gender" ####     
 # TODO: Check for F/M, female/male ..
