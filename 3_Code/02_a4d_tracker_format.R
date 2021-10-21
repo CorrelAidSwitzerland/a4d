@@ -8,6 +8,8 @@
 
 
 
+
+
 # PACKAGES ----------------------------------------------------------------
 
 library(tidyverse)
@@ -27,10 +29,18 @@ date_fix <- function(d) {
 
 
 # [1] "no" ####                                
-# [2] "patient_name" ####                      
+# [2] "patient_name" ####   
+# No Check
+
 # [3] "province" ####                          
-# [4] "gender" ####                            
-# [6] "age" ####                               
+# TODO: Check needed?
+
+# [4] "gender" ####     
+# TODO: Check for F/M, female/male ..
+
+# [6] "age" ####               
+# TODO: Double check age by taking dif between birth & last visit date
+
 # [7] "age_diagnosis" ####  
 # ______________________________________________
 #### AGE DIAGNOSIS
@@ -57,6 +67,7 @@ date_fix <- function(d) {
 # [9,10] "hba1c_prc" ####    
 # ______________________________________________
 #### HBA1C 
+# TODO: Check whether values are realistic, what units are used
 hba1c_fix <- function(d) {
   d <- try(as.numeric(d), silent = TRUE)
   if (class(d) == "try-error") {
@@ -68,6 +79,7 @@ hba1c_fix <- function(d) {
 # [12, 13] "fbg_mldl" ####  
 # ______________________________________________
 #### FBG 
+# TODO: Check whether values are realistic, what units are used
 fbg_fix <- function(d) {
   d <- try(as.numeric(d), silent = TRUE)
   if (class(d) == "try-error") {
@@ -90,6 +102,8 @@ supporta4d_fix <- function(d) {
 # [16] "testing_fqr" ####   
 # ______________________________________________
 #### TESTING FQR 
+# TODO: Integer values make sense, why 3.2 ... ?
+
 testfqr_fix <- function(d) {
   d <- try(as.numeric(d), silent = TRUE)
   if (class(d) == "try-error") {
@@ -123,6 +137,7 @@ status_fix <- function(d) {
 # [19] "updated_fbg_sample" ####
 # ______________________________________________
 #### UPDATED FBG SAMPLE
+# TODO: Replace "" values with NA
 fbg_sample_fix <- function(d) {
   d <- try(as.character(d), silent = TRUE)
   if (!d %in% c("SMBG", "CBG")) {
@@ -131,10 +146,19 @@ fbg_sample_fix <- function(d) {
 }
 
 
-# [20] "tracker_year" ####                      
+# [20] "tracker_year" ####   
+# TODO: Read out single year, check that all years are the same and match the input of the year function?
+
 # [21] "clinic_code" ####                       
+# TODO: When we have data, using list of clinics to double check?
+
 # [22] "country_code" ####                      
+# TODO: When we have data, using list of countries to double check?
+
+
 # [23] "sheet_name" ####                        
+# TODO: Transform to "tracker_month"
+
 # [24] "insulin_regimen" #### 
 # ______________________________________________
 #### INSULIN REGIMEN
@@ -146,45 +170,48 @@ insulin_reg_fix <- function(d) {
 }
 
 
-# [25] "blood_pressure_sys_mmhg" ####           
+# [25] "blood_pressure_sys_mmhg" ####    
+# TODO: Check realistic values and filter based on that
+
+
 # [26] "blood_pressure_dias_mmhg" ####          
+# TODO: Check realistic values and filter based on that
+
 # [27] "weight" ####                            
-# [28] "height" ####                            
-# [29] "bmi" ####                               
-# [31] "edu_occ" ####                           
-# [32] "hospitalisation" ####                   
-# [33] "last_clinic_visit_date" ####           
-# [34] "additional_support" ####                
+# TODO: Check realistic values and filter based on that
+
+
+# [28] "height" ####    
+# TODO: Check realistic values and filter based on that
+
+# [29] "bmi" ####      
+# TODO: Check realistic values and filter based on that
+
+# [31] "edu_occ" ####         
+# TODO: match Thai words with englisch:
+# ประถมศึกษาปีที่= elementary
+# อนุบาล=kindergarden
+# Take years behind in consideration, e.g."ประถมศึกษาปีที่ 4" 
+
+
+# [32] "hospitalisation" ####         
+# TODO: Check column in detail, very complex date column with outwritten text, set "NA" to NA
+
+# [34] "additional_support" ####   
+# ?
+
 # [35] "id" ####                                
+# what id?
+
 # [36] "latest_complication_screening_type" ####
+# take as chr?
+
 # [38] "remarks" ####
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# take as chr?
 
 
 #### BLOOD PRESSURE SYS
-# need to add a condition about reasonable values
+# TODO: need to add a condition about reasonable values
 #### BLOOD PRESSURE DYAS
 
 
@@ -193,7 +220,9 @@ insulin_reg_fix <- function(d) {
 
 # MAIN/WRAPPER FUNCTION ---------------------------------------------------
 
-# row by row check the data + create 2 output tables: one with the actual clen values the hte other with the data checks
+# Process: Check data rowwise
+# Output 1: Cleaned data table
+# Output 2: Table containing data checklist
 
 cleaning_a4d_tracker <- function(data) {
   
@@ -234,10 +263,10 @@ cleaning_a4d_tracker <- function(data) {
 
 # TEST --------------------------------------------------------------------
 
-# reading the data frame
 
 # Run test only if script is not sourced
 if (!interactive()) {
+  # reading the data frame
   spec_cols <- cols(
     no = col_character(),
     patient_name = col_character(),
