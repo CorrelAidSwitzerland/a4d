@@ -85,6 +85,7 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
                 
                 
                 ####------------2017 PATIENT DATA ----------------------------###
+                #### 2017 ####
                 
                 if (year == 2017) {
                         #Index (i.e., from which row to select the data)
@@ -160,7 +161,7 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
                 } # 2017 tracker
                 
                 ####------------ 2018 PATIENT DATA ----------------------------###
-                
+                # 2018 ####
                 if (year == 2018) {
                         
                         #Index (i.e., from which row to select the data)
@@ -235,6 +236,7 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
                 } # 2018 tracker
                 
                 ####------------ 2019 PATIENT DATA ----------------------------###
+                #### 2019 ####
                 
                 if (year == 2019) {
                         
@@ -327,6 +329,7 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
                 } # 2019 tracker
                 
                 ####------------ 2020 PATIENT DATA ----------------------------###
+                #### 2020 ####
                 
                 if (year == 2020) {
                         
@@ -423,6 +426,8 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
                 
                 
                 ####------------2021 PATIENT DATA ----------------------------###
+                #### 2021 ####
+                
                 
                 if (year == 2021) {
                         
@@ -521,7 +526,7 @@ reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
 
                 } # 2021 tracker
                 
-                
+                #### Save data ####
                 # save data in a list
                 tidy_tracker_list[[sheet_num]] <- patient_df %>% 
                         mutate(sheet_name = CurrSheet) %>%
