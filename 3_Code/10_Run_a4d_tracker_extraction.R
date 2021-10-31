@@ -9,8 +9,8 @@ setwd("D:/Work/Correlaid/A4D/a4d_analytics")
 example_tracker_path <- "2_Data/2021_Tracker.xlsx"
 
 # Setup
-source("3_Code/a4d_tracker_function.R")
-source("3_Code/a4d_tracker_functionii.R")
+source("3_Code/01_a4d_tracker_extract.R")
+source("3_Code/02_a4d_tracker_format.R")
 
 
 

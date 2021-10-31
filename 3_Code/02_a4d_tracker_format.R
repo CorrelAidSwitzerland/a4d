@@ -13,13 +13,16 @@
 # PACKAGES ----------------------------------------------------------------
 
 library(tidyverse)
+library(dplyr)
+library(readr)
+
 
 # FUNCTIONS TO FIX DATA ---------------------------------------------------
 
 # [5,8,11,14,30,33,37] dates ####     
 # ______________________________________________
 #### DATE OF BIRTH/RECRUITEMENT/UPDATED FBG/ UPDATED HB1AC/LAST CLINIC DATE
-date_fix <- function(d) {
+fix_date_cols <- function(d) {
   d <- try(as.Date(parse_date_time(d)), silent = TRUE)
   if (class(d) == "try-error") {
     d  <- as.Date("9999","-", "99","-", "99") }
@@ -28,49 +31,96 @@ date_fix <- function(d) {
 }
 
 
-# [1,2, 3] String IDs without NAs  ####               
-keep_chr_without_NAs <- function(d) {
+# [1,2,3] String IDs without NAs  ####               
+fix_chr_without_NAs <- function(d) {
   na_exist_in_d <- try(any(is.na(d)), silent = TRUE)
   if (class(d) == "try-error" | na_exist_in_d) {
     d  <- 999999 }
   return(d)
 }
 
-# [4] "gender" ####     
-# TODO: Check for F/M, female/male ..
+# [4] "gender" ####  
+# ______________________________________________
+# TODO: Include in final function
+
+
+## Synonyms for gender
+synonyms_lower_female <- c("female", "girl", "woman", "fem", "feminine", "f")
+synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
+
+replace_gender_synonyms <- function(x, 
+                                    synonyms_f = synonyms_lower_female,
+                                    synonyms_m = synonyms_lower_male){
+  y <- case_when(
+    tolower(x) %in% synonyms_f ~ "F",
+    tolower(x) %in% synonyms_m ~ "M",
+    TRUE ~ "Other"
+  )
+}
+
+fix_gender <- function(d) {
+  cleaned_gender <- try(replace_gender_synonyms(d), silent = TRUE)
+  if (class(cleaned_gender) == "try-error") {
+    cleaned_gender  <- 999999 }
+  return(cleaned_gender)
+}
+
+
+
 
 # [6] "age" ####               
-# TODO: Double check age by taking dif between birth & last visit date
+# ______________________________________________
+# TODO: Double check age by taking dif between birth date & last visit date
+# TODO: Include in final function
 
-# [7] "age_diagnosis" ####  
+fix_age <- function(x){
+  x <- try(any(as.numeric(x)), silent = TRUE)
+  if (class(d) == "try-error") {
+    x <- 999999 }
+  return(x)
+}
+
+
+# [7] "age_diagnosis" ####
 # ______________________________________________
 #### AGE DIAGNOSIS
-# agediag_fix <- function(d) {
-#   
-#   if (grepl("birth", d)) {
-#     d <- 0
-#   }
-#   else {
-#     d <- try(as.numeric(d))
-#     
-#     if (class(d) == "try-error") {
-#       
-#       else {
-#         d  <- 99999
-#       }
-#       
-#     }
-#   }
-#   return(d)
-# }
+# TODO: Include in final function
+
+fix_age_diagnosis <- function(d) {
+
+  if (grepl("birth", d)) {
+    d <- 0
+  } else {
+    d <- try(as.numeric(d))
+    if (class(d) == "try-error") {
+        d <- 99999
+        }
+    }
+  return(d)
+}
 
 
-# [9,10] "hba1c_prc" ####    
+# [9,10] "hba1c_prc" ####
 # ______________________________________________
 #### HBA1C 
-# TODO: Check whether values are realistic, what units are used
-hba1c_fix <- function(d) {
-  d <- try(as.numeric(d), silent = TRUE)
+# TODO: Check whether values are realistic, what units are used (input by Tyla)
+# TODO Operationalization: Show where NA values exist
+# TODO: Include in final function
+
+# Set realistic hb1c values [%]
+lower_hb1c <- 2
+upper_hb1c <- 30
+
+# Functions for replacement
+exclude_unrealistic_hba1c <- function(x,
+                                      lower_hb1c,
+                                      upper_hb1c){
+  x <- as.numeric(x)
+  y <- replace(x, (x < lower_hb1c | x > upper_hb1c), NA)
+}
+
+fix_hba1c <- function(d) {
+  d <- try(exclude_unrealistic_hba1c(d), silent = TRUE)
   if (class(d) == "try-error") {
     d  <- 999999 }
   return(d)
@@ -80,7 +130,11 @@ hba1c_fix <- function(d) {
 # [12, 13] "fbg_mldl" ####  
 # ______________________________________________
 #### FBG 
-# TODO: Check whether values are realistic, what units are used
+# TODO: integrate logic to replace unrealistic values with NAs
+# TODO: Check whether values are realistic, what units are used (input by Tyla)
+# TODO Operationalization: Show where NA values exist
+# TODO: Include in final function
+
 fbg_fix <- function(d) {
   d <- try(as.numeric(d), silent = TRUE)
   if (class(d) == "try-error") {
@@ -103,10 +157,15 @@ supporta4d_fix <- function(d) {
 # [16] "testing_fqr" ####   
 # ______________________________________________
 #### TESTING FQR 
-# TODO: Integer values make sense, why 3.2 ... ?
+
+# If ranges, take mean
+replace_testfqr_strings_mean <- function(x){
+  y <- unlist(map(str_split(x, pattern = "-"), 
+           function(z) mean(as.numeric(z))))
+}
 
 testfqr_fix <- function(d) {
-  d <- try(as.numeric(d), silent = TRUE)
+  d <- try(replace_testfqr_strings_mean(d), silent = TRUE)
   if (class(d) == "try-error") {
     d  <- 999999 }
   return(d)
@@ -139,7 +198,7 @@ status_fix <- function(d) {
 # ______________________________________________
 #### UPDATED FBG SAMPLE
 # TODO: Replace "" values with NA
-fbg_sample_fix <- function(d) {
+fix_fbg_sample <- function(d) {
   d <- try(as.character(d), silent = TRUE)
   if (!d %in% c("SMBG", "CBG")) {
     d  <- "999999" }
@@ -152,18 +211,33 @@ fbg_sample_fix <- function(d) {
 
 # [21] "clinic_code" ####                       
 # TODO: When we have data, using list of clinics to double check?
+# TODO Operationalization: Read out clinic table in database to check data with
 
 # [22] "country_code" ####                      
 # TODO: When we have data, using list of countries to double check?
+# TODO Operationalization: Read out clinic table in database to check data with
 
 
 # [23] "sheet_name" ####                        
-# TODO: Transform to "tracker_month"
+# TODO: Include in final function
+
+parse_sheet_name <- function(x){
+  y <- unlist(map(as.character(x), function(z)
+    (format(readr::parse_date(z,"%b'%y"), format = "%Y-%m"))))
+}
+
+transform_sheet_name_to_tracker_month <- function(x) {
+  x <- try(parse_sheet_name(x), silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
+
 
 # [24] "insulin_regimen" #### 
 # ______________________________________________
 #### INSULIN REGIMEN
-insulin_reg_fix <- function(d) {
+fix_insulin_reg <- function(d) {
   d <- try(as.character(d), silent = TRUE)
   if (!tolower(d) %in% c("basal-bolus", "premixed 30/70 bd", "	insulin pump")) {
     d  <- "999999" }
@@ -216,6 +290,7 @@ insulin_reg_fix <- function(d) {
 #### BLOOD PRESSURE DYAS
 
 
+# TODO: Add checks for DC_V2_Anon Example csv
 
 
 
@@ -227,6 +302,8 @@ insulin_reg_fix <- function(d) {
 
 cleaning_a4d_tracker <- function(data) {
   
+  # TODO: Transform for loop by dplyr::mutate
+  
   data_c <- data
   # create a clean data frame
   data_c[,] <- NA
@@ -234,22 +311,22 @@ cleaning_a4d_tracker <- function(data) {
   for (i in 1:nrow(data)) {
     
     
-    data_c$dob[i] <- date_fix(data[i,]$dob)
-    data_c$updated_fbg_date[i] = date_fix(data[i,]$updated_fbg_date)
-    data_c$updated_hba1c_date[i] = date_fix(data[i,]$updated_hba1c_date)
-    data_c$bmi_date[i] = date_fix(data[i,]$bmi_date)
-    data_c$recruitment_date[i] = date_fix(data[i,]$recruitment_date)
-    data_c$last_clinic_visit_date[i] = date_fix(data[i,]$last_clinic_visit_date)
-    data_c$latest_complication_screening_date[i] = date_fix(data[i,]$latest_complication_screening_date)
+    data_c$dob[i] <- fix_date_cols(data[i,]$dob)
+    data_c$updated_fbg_date[i] = fix_date_cols(data[i,]$updated_fbg_date)
+    data_c$updated_hba1c_date[i] = fix_date_cols(data[i,]$updated_hba1c_date)
+    data_c$bmi_date[i] = fix_date_cols(data[i,]$bmi_date)
+    data_c$recruitment_date[i] = fix_date_cols(data[i,]$recruitment_date)
+    data_c$last_clinic_visit_date[i] = fix_date_cols(data[i,]$last_clinic_visit_date)
+    data_c$latest_complication_screening_date[i] = fix_date_cols(data[i,]$latest_complication_screening_date)
     
     # data[i,]$age_diagnosis = agediag_fix(data[i,]$age_diagnosis)
     
-    data_c$updated_hba1c_prc[i] = hba1c_fix(data[i,]$updated_hba1c_prc)
-    data_c$baseline_hba1c_prc[i] = hba1c_fix(data[i,]$baseline_hba1c_prc)
+    data_c$updated_hba1c_prc[i] = fix_hba1c(data[i,]$updated_hba1c_prc)
+    data_c$baseline_hba1c_prc[i] = fix_hba1c(data[i,]$baseline_hba1c_prc)
     
-    data_c$updated_fbg_sample[i] = fbg_sample_fix(data[i,]$updated_fbg_sample)
+    data_c$updated_fbg_sample[i] = fix_fbg_sample(data[i,]$updated_fbg_sample)
     
-    data_c$insulin_regimen[i] = insulin_reg_fix(data[i,]$insulin_regimen)
+    data_c$insulin_regimen[i] = fix_insulin_reg(data[i,]$insulin_regimen)
     
     
     

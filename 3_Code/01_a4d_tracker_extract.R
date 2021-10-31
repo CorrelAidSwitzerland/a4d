@@ -65,6 +65,10 @@ library(zoo)
 library(readr)
 library(lubridate)
 
+## TODO:
+# - Add logic to extract columns from "DC_V2_Anon Example"
+
+
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
 reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
