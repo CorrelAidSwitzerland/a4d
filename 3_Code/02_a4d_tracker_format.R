@@ -17,6 +17,27 @@ library(dplyr)
 library(readr)
 
 
+# Base Functions ####
+
+check_numeric_borders <- function(vector,
+                                  max,
+                                  min){
+  vector <- as.numeric(vector)
+  vector <- ifelse(vector >= max,
+                   NA,
+                   vector)
+  vector <- ifelse(vector < min,
+                   NA,
+                   vector)
+}
+
+replace_empty_string_with_NA <- function(string_vector){
+  output <- ifelse(string_vector == "", NA, string_vector)
+}
+
+
+
+
 # FUNCTIONS TO FIX DATA ---------------------------------------------------
 
 # [5,8,11,14,30,33,37] dates ####     
@@ -45,12 +66,12 @@ fix_chr_without_NAs <- function(d) {
 
 
 ## Synonyms for gender
-synonyms_lower_female <- c("female", "girl", "woman", "fem", "feminine", "f")
-synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
+par_synonyms_lower_female <- c("female", "girl", "woman", "fem", "feminine", "f")
+par_synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
 
 replace_gender_synonyms <- function(x, 
-                                    synonyms_f = synonyms_lower_female,
-                                    synonyms_m = synonyms_lower_male){
+                                    synonyms_f = par_synonyms_lower_female,
+                                    synonyms_m = par_synonyms_lower_male){
   y <- case_when(
     tolower(x) %in% synonyms_f ~ "F",
     tolower(x) %in% synonyms_m ~ "M",
@@ -108,8 +129,8 @@ fix_age_diagnosis <- function(d) {
 # TODO: Include in final function
 
 # Set realistic hb1c values [%]
-lower_hb1c <- 2
-upper_hb1c <- 30
+par_lower_hb1c <- 2
+par_upper_hb1c <- 30
 
 # Functions for replacement
 exclude_unrealistic_hba1c <- function(x,
@@ -120,7 +141,8 @@ exclude_unrealistic_hba1c <- function(x,
 }
 
 fix_hba1c <- function(d) {
-  d <- try(exclude_unrealistic_hba1c(d), silent = TRUE)
+  d <- try(exclude_unrealistic_hba1c(d, par_lower_hb1c, par_upper_hb1c), 
+           silent = TRUE)
   if (class(d) == "try-error") {
     d  <- 999999 }
   return(d)
@@ -197,9 +219,8 @@ status_fix <- function(d) {
 # [19] "updated_fbg_sample" ####
 # ______________________________________________
 #### UPDATED FBG SAMPLE
-# TODO: Replace "" values with NA
 fix_fbg_sample <- function(d) {
-  d <- try(as.character(d), silent = TRUE)
+  d <- try(replace_empty_string_with_NA(as.character(d)), silent = TRUE)
   if (!d %in% c("SMBG", "CBG")) {
     d  <- "999999" }
   return(d)
@@ -245,52 +266,127 @@ fix_insulin_reg <- function(d) {
 }
 
 
-# [25] "blood_pressure_sys_mmhg" ####    
-# TODO: Check realistic values and filter based on that
+# [25] "blood_pressure_sys_mmhg" #### 
+# ______________________________________________   
+par_highest_blood_pressure_sys <- 250
+par_lowest_blood_pressure_sys <- 20
 
+fix_blood_pressure_sys <- function(x) {
+  x <- try(check_numeric_borders(
+    x,
+    par_highest_blood_pressure_sys,
+    par_lowest_blood_pressure_sys), silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
 
-# [26] "blood_pressure_dias_mmhg" ####          
-# TODO: Check realistic values and filter based on that
+# [26] "blood_pressure_dias_mmhg" ####    
+# ______________________________________________      
 
-# [27] "weight" ####                            
-# TODO: Check realistic values and filter based on that
+par_highest_blood_pressure_dias <- 220
+par_lowest_blood_pressure_dias <- 20
+
+fix_blood_pressure_dias <- function(x) {
+  x <- try(check_numeric_borders(
+    x,
+    par_highest_blood_pressure_dias,
+    par_lowest_blood_pressure_dias), silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
+
+# [27] "weight" ####             
+# ______________________________________________               
+par_max_weight_kg <- 200
+par_min_weight_kg <- 0
+
+fix_weight <- function(x) {
+  x <- try(check_numeric_borders(x, par_max_weight_kg, par_min_weight_kg), 
+           silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
 
 
 # [28] "height" ####    
-# TODO: Check realistic values and filter based on that
+# ______________________________________________
+par_max_height <- 200
+par_min_height <- 0
+
+transform_cm_to_m <- function(height){
+  height <- as.numeric(height)
+  height <- ifelse(height > 50,
+                   height/100,
+                   height)
+}
+
+fix_height <- function(x) {
+  x <- try(
+    check_numeric_borders(
+      transform_cm_to_m(x), 
+      par_max_height, par_min_height), 
+           silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
 
 # [29] "bmi" ####      
-# TODO: Check realistic values and filter based on that
+# ______________________________________________
+par_max_bmi <- 60
+par_min_bmi <- 4
+
+replace_NA_bmi <- function(bmi_vector,
+                           height_vector,
+                           weight_vector){
+  calc_bmi <- as.numeric(weight_vector) / (height_vector^2)
+  
+  output <- ifelse(is.na(bmi_vector), calc_bmi, bmi_vector)
+}
+
+fix_bmi <- function(x, fixed_weight_kg, fixed_height_m) {
+  x <- try(check_numeric_borders(x, par_max_bmi, par_min_bmi), 
+           silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
+
 
 # [31] "edu_occ" ####         
+# ______________________________________________
 # TODO: match Thai words with englisch:
 # ประถมศึกษาปีที่= elementary
 # อนุบาล=kindergarden
 # Take years behind in consideration, e.g."ประถมศึกษาปีที่ 4" 
 
 
-# [32] "hospitalisation" ####         
+# [32] "hospitalisation" ####     
+# ______________________________________________    
 # TODO: Check column in detail, very complex date column with outwritten text, set "NA" to NA
 
 # [34] "additional_support" ####   
+# ______________________________________________
 # ?
 
-# [35] "id" ####                                
+# [35] "id" ####                  
+# ______________________________________________              
 # what id?
 
 # [36] "latest_complication_screening_type" ####
+# ______________________________________________
 # take as chr?
 
 # [38] "remarks" ####
+# ______________________________________________
 # take as chr?
 
 
-#### BLOOD PRESSURE SYS
-# TODO: need to add a condition about reasonable values
-#### BLOOD PRESSURE DYAS
 
-
-# TODO: Add checks for DC_V2_Anon Example csv
+# TODO: Add checks & new columns for DC_V2_Anon Example csv
 
 
 
@@ -302,6 +398,8 @@ fix_insulin_reg <- function(d) {
 
 cleaning_a4d_tracker <- function(data) {
   
+  
+  
   # TODO: Transform for loop by dplyr::mutate
   
   data_c <- data
@@ -310,7 +408,9 @@ cleaning_a4d_tracker <- function(data) {
 
   for (i in 1:nrow(data)) {
     
+    # TODO: Check if [i,]$column can be replcaed by $column[i]
     
+    # Dates
     data_c$dob[i] <- fix_date_cols(data[i,]$dob)
     data_c$updated_fbg_date[i] = fix_date_cols(data[i,]$updated_fbg_date)
     data_c$updated_hba1c_date[i] = fix_date_cols(data[i,]$updated_hba1c_date)
@@ -328,7 +428,9 @@ cleaning_a4d_tracker <- function(data) {
     
     data_c$insulin_regimen[i] = fix_insulin_reg(data[i,]$insulin_regimen)
     
-    
+    data_c$height[i] <- fix_height(data$height[i])
+    data_c$weight[i] <- fix_weight(data$weight[i])
+    data_c$bmi[i] <- fix_bmi(data$bmi[i], data_c$weight[i], data_c$height[i] )
     
   }
   
