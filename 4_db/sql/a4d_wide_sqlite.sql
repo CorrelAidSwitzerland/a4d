@@ -10,14 +10,14 @@ BEGIN TRANSACTION;
 
 
 CREATE TABLE `trackers` (
-`iid` int UNIQUE PRIMARY KEY NOT NULL AUTO_INCREMENT,
+`iid` int UNIQUE PRIMARY KEY NOT NULL ,
 `ihash` TEXT,
 `iname` TEXT,
 `itracker_year` int
 );
 
 CREATE TABLE `clinics` (
-`cid` int UNIQUE PRIMARY KEY NOT NULL AUTO_INCREMENT,
+`cid` int UNIQUE PRIMARY KEY NOT NULL ,
 `cname` TEXT,
 `ccountry` TEXT,
 `caddress` TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE `clinics` (
 );
 
 CREATE TABLE `patients` (
-`pid` int UNIQUE PRIMARY KEY NOT NULL AUTO_INCREMENT,
+`pid` int UNIQUE PRIMARY KEY NOT NULL ,
 `pid_a4d` TEXT,
 `pname` TEXT,
 `pdob` TEXT,
@@ -42,7 +42,8 @@ CREATE TABLE `patients_calculated` (
 `page` float,
 `pbmi` float,
 `ptesting_frq_pday` float,
-`pest_strips_pmonth` float
+`pest_strips_pmonth` float, 
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`)
 );
 
 CREATE TABLE `patients_latest` (
@@ -56,7 +57,8 @@ CREATE TABLE `patients_latest` (
 `pdate_hba1c` date,
 `pval_fbg` float,
 `pdate_fbg` date,
-`phospitalization_last` date
+`phospitalization_last` date,
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`)
 );
 
 CREATE TABLE `patient_changes` (
@@ -64,7 +66,8 @@ CREATE TABLE `patient_changes` (
 `pvar` TEXT,
 `pval_old` TEXT,
 `pval_new` TEXT,
-`pdate` date
+`pdate` date,
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`)
 );
 
 CREATE TABLE `measurement_visits_w` (
@@ -94,11 +97,15 @@ CREATE TABLE `measurement_visits_w` (
 `mage` float,
 `mbmi` float,
 `mtesting_fqr_pday` float,
-`mest_strips_pmonth` float
+`mest_strips_pmonth` float,
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`),
+FOREIGN KEY (`cid`) REFERENCES `clinics` (`cid`),
+FOREIGN KEY (`iid`) REFERENCES `trackers` (`iid`)
+
 );
 
 CREATE TABLE `products` (
-`rid` int UNIQUE PRIMARY KEY NOT NULL AUTO_INCREMENT,
+`rid` int UNIQUE PRIMARY KEY NOT NULL ,
 `rname` TEXT,
 `rcontaining` int
 );
@@ -109,29 +116,20 @@ CREATE TABLE `released_products` (
 `runits` int,
 `rdate` date,
 `cid` int,
-`iid` int
+`iid` int,
+FOREIGN KEY (`rid`) REFERENCES `products` (`rid`),
+FOREIGN KEY (`iid`) REFERENCES `trackers` (`iid`),
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`),
+FOREIGN KEY (`cid`) REFERENCES `clinics` (`cid`)
 );
 
 CREATE TABLE `current_product_status` (
 `pid` int,
 `rid` int,
-`rquantity_current` int
+`rquantity_current` int,
+FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`),
+FOREIGN KEY (`rid`) REFERENCES `products` (`rid`)
 );
-ALTER TABLE `patients_calculated` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `patients_latest` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `patient_changes` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `measurement_visits_w` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `measurement_visits_w` ADD FOREIGN KEY (`cid`) REFERENCES `clinics` (`cid`);
-ALTER TABLE `measurement_visits_w` ADD FOREIGN KEY (`iid`) REFERENCES `trackers` (`iid`);
-ALTER TABLE `released_products` ADD FOREIGN KEY (`rid`) REFERENCES `products` (`rid`);
-ALTER TABLE `released_products` ADD FOREIGN KEY (`iid`) REFERENCES `trackers` (`iid`);
-ALTER TABLE `released_products` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `released_products` ADD FOREIGN KEY (`cid`) REFERENCES `clinics` (`cid`);
-ALTER TABLE `current_product_status` ADD FOREIGN KEY (`pid`) REFERENCES `patients` (`pid`);
-ALTER TABLE `current_product_status` ADD FOREIGN KEY (`rid`) REFERENCES `products` (`rid`);
-
-
-
 
 
 COMMIT;
