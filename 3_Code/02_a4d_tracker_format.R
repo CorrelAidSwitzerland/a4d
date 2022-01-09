@@ -40,11 +40,11 @@ replace_empty_string_with_NA <- function(string_vector){
 
 # FUNCTIONS TO FIX DATA ---------------------------------------------------
 
-# [5,8,11,14,30,33,37] dates ####     
+#### [5,8,11,14,30,33,37] dates #####
 # ______________________________________________
 #### DATE OF BIRTH/RECRUITEMENT/UPDATED FBG/ UPDATED HB1AC/LAST CLINIC DATE
 fix_date_cols <- function(d) {
-  d <- try(as.Date(parse_date_time(d)), silent = TRUE)
+  d <- try(as.Date(d, format="%Y-%m-%d"), silent = TRUE)
   if (class(d) == "try-error") {
     d  <- as.Date("9999","-", "99","-", "99") }
   
@@ -62,7 +62,6 @@ fix_chr_without_NAs <- function(d) {
 
 # [4] "gender" ####  
 # ______________________________________________
-# TODO: Include in final function
 
 
 ## Synonyms for gender
@@ -92,11 +91,10 @@ fix_gender <- function(d) {
 # [6] "age" ####               
 # ______________________________________________
 # TODO: Double check age by taking dif between birth date & last visit date
-# TODO: Include in final function
 
 fix_age <- function(x){
-  x <- try(any(as.numeric(x)), silent = TRUE)
-  if (class(d) == "try-error") {
+  x <- try(as.numeric(x), silent = TRUE)
+  if (class(x) == "try-error") {
     x <- 999999 }
   return(x)
 }
@@ -105,8 +103,7 @@ fix_age <- function(x){
 # [7] "age_diagnosis" ####
 # ______________________________________________
 #### AGE DIAGNOSIS
-# TODO: Include in final function
-
+# TODO: Improve error handling by taking care of "1y 6m"
 fix_age_diagnosis <- function(d) {
 
   if (grepl("birth", d)) {
@@ -124,9 +121,7 @@ fix_age_diagnosis <- function(d) {
 # [9,10] "hba1c_prc" ####
 # ______________________________________________
 #### HBA1C 
-# TODO: Check whether values are realistic, what units are used (input by Tyla)
 # TODO Operationalization: Show where NA values exist
-# TODO: Include in final function
 
 # Set realistic hb1c values [%]
 par_lower_hb1c <- 2
@@ -151,14 +146,103 @@ fix_hba1c <- function(d) {
 
 # [12, 13] "fbg_mldl" ####  
 # ______________________________________________
+# Apply to baseline and updated values
+
 #### FBG 
-# TODO: integrate logic to replace unrealistic values with NAs
-# TODO: Check whether values are realistic, what units are used (input by Tyla)
 # TODO Operationalization: Show where NA values exist
 # TODO: Include in final function
+# Todo: Validate that correct hospital and country ids were used to assign units (see Tyla Mail 05/11/21)
+# TODO: FBG value input have two values e.g. "120-145". Column needs to be transformed to make
+#       correct sanity checks and transformation.
 
-fbg_fix <- function(d) {
-  d <- try(as.numeric(d), silent = TRUE)
+
+# Assign countries & hospitals to unit of fbg measurement
+mmol_countries <- c()
+mmol_hospitals <- c(
+  "Clinic_LU", "Clinic_PE", "Clinic_YA", "Clinic_PU")
+mg_countries <- c(
+  "Country_1", "Country_2", "Country_3")
+mg_hospitals <- c(
+  "Clinic_DW", "Clinic_TN", "Clinic_EO", "Clinic_VF", "Clinic_BR",
+  "Clinic_KH", "Clinic_XD", "Clinic_QG", "Clinic_YB", "Clinic_FY",
+  "Clinic_CJ", "Clinic_VW", "Clinic_IX", "Clinic_YA", "Clinic_ZB",
+  "Clinic_EU", "Clinic_IH"
+)
+
+# @Description: For a given country/hospital the fbg unit is returned
+# @country_id: ID of the country where patient values were taken
+# @hospital_id: ID of the hospital where patient values were taken
+# @Output: String with fbg unit "mg/dL", "mmol/L" or NA
+assign_fbg_unit_per_hospital <- function(
+  hospital_id, country_id,
+  mmol_ct = mmol_countries,
+  mmol_hos = mmol_hospitals,
+  mg_ct = mg_countries,
+  mg_hos = mg_hospitals){
+  
+  returned_unit <- case_when(
+    is.na(hospital_id) & is.na(country_id) ~ NA,
+    hospital_id %in% mg_hos ~ "mg/dL",
+    country_id %in% mg_ct ~ "mg/dL",
+    hospital_id %in% mmol_hos ~ "mmol/L",
+    country_id %in% mmol_ct ~ "mmol/L",
+    TRUE ~ NA
+  )
+  
+  if(is.na(returned_unit)){
+    warning("FBG unit used by hospital could not be matched ~ Assumed to be mmol/L")
+  }
+  return(returned_unit)
+}
+
+# @Description: Makes sure FBG values are in mmol/L
+# @fbg: Any fbg value in mg/dL or mmol/L
+# @country_id: ID of the country where patient values were taken
+# @hospital_id: ID of the hospital where patient values were taken
+# @Output: FBG value in mmol/L or NA if not matched
+transform_fbg_in_mg <- function(fbg, country_id, hospital_id) {
+  
+  factor_mmol_in_mg <- 18.02
+  measure_unit <- assign_fbg_unit_per_hospital(country_id = country_id, 
+                                               hospital_id = hospital_id)
+  
+  fbg_mmol <- case_when(
+    measure_unit == "mg/dL" ~ fbg / factor_mml_in_mg,
+    measure_unit == "mmol/L" ~ fbg ,
+    is.na(measure_unit) ~ fbg,
+    TRUE ~ NA
+  )
+  
+  return(as.numeric(fbg_mmol))
+}
+
+
+fbg_mmol_lower_bound <- 0
+fbg_mmol_upper_bound <- 136.5 # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
+
+# @Description: Check if FBG value is realistic
+# @fbg_mmol: FBG value in mmol/L
+# @fbg_min, fbg_max: Lower and upper bound of realistic fbg values
+# @Output: FBG mmol value if no error. Otherwise raised error & NA
+sanity_check_fbg_mmol <- function(fbg_mmol, min_fbg = fbg_mmol_lower_bound,
+                                max_fbg = fbg_mmol_upper_bound) {
+  fbg_result <- case_when(
+    fbg_mmol >= min_fbg & fbg_mmol <= max_fbg ~ fbg_mmol,
+    TRUE ~ NA
+  )
+  
+  if(is.na(fbg_result)){
+    stop("ERROR: FBG value outside realistic scale")
+  }
+  
+  return(fbg_result)
+}
+
+
+fbg_fix <- function(fbg, country, hospital) {
+  d <- try(sanity_check_fbg_mmol(transform_fbg_in_mg(
+    fbg, country_id = country, hospital_id = hospital)),
+    silent = TRUE)
   if (class(d) == "try-error") {
     d  <- 999999 }
   return(d)
@@ -411,27 +495,58 @@ cleaning_a4d_tracker <- function(data) {
     # TODO: Check if [i,]$column can be replcaed by $column[i]
     
     # Dates
-    data_c$dob[i] <- fix_date_cols(data[i,]$dob)
-    data_c$updated_fbg_date[i] = fix_date_cols(data[i,]$updated_fbg_date)
-    data_c$updated_hba1c_date[i] = fix_date_cols(data[i,]$updated_hba1c_date)
-    data_c$bmi_date[i] = fix_date_cols(data[i,]$bmi_date)
-    data_c$recruitment_date[i] = fix_date_cols(data[i,]$recruitment_date)
-    data_c$last_clinic_visit_date[i] = fix_date_cols(data[i,]$last_clinic_visit_date)
-    data_c$latest_complication_screening_date[i] = fix_date_cols(data[i,]$latest_complication_screening_date)
+    data_c$dob[i] <- fix_date_cols(data$dob[i])
+    data_c$updated_fbg_date[i] = fix_date_cols(data$updated_fbg_date[i])
+    data_c$updated_hba1c_date[i] = fix_date_cols(data$updated_hba1c_date[i])
     
-    # data[i,]$age_diagnosis = agediag_fix(data[i,]$age_diagnosis)
+    # TODO: Rework function to capture bmi date being "2020-12" not "2020-12-02"
+    data_c$bmi_date[i] = fix_date_cols(data$bmi_date[i])
+    data_c$recruitment_date[i] = fix_date_cols(data$recruitment_date[i])
+    data_c$last_clinic_visit_date[i] = fix_date_cols(data$last_clinic_visit_date[i])
+    data_c$latest_complication_screening_date[i] = fix_date_cols(
+      data$latest_complication_screening_date[i])
     
-    data_c$updated_hba1c_prc[i] = fix_hba1c(data[i,]$updated_hba1c_prc)
-    data_c$baseline_hba1c_prc[i] = fix_hba1c(data[i,]$baseline_hba1c_prc)
+    # Static patient information
+    # TODO: How are Hospital ID, Country ID and general ID captured?
+    data_c$id[i] <- fix_chr_without_NAs(data$id[i])
+    data_c$patient_name[i] <- fix_chr_without_NAs(data$patient_name[i])
+    data_c$province[i] <- fix_chr_without_NAs(data$province[i])
     
-    data_c$updated_fbg_sample[i] = fix_fbg_sample(data[i,]$updated_fbg_sample)
+    data_c$gender[i] <- fix_gender(data$gender[i])
+    data_c$age[i]    <- fix_age(data$age[i])
+    data$age_diagnosis[i] <- fix_age_diagnosis(data$age_diagnosis[i])
     
-    data_c$insulin_regimen[i] = fix_insulin_reg(data[i,]$insulin_regimen)
-    
+    # Dynamic body information
     data_c$height[i] <- fix_height(data$height[i])
     data_c$weight[i] <- fix_weight(data$weight[i])
-    data_c$bmi[i] <- fix_bmi(data$bmi[i], data_c$weight[i], data_c$height[i] )
+    data_c$bmi[i]    <- fix_bmi(data$bmi[i], data_c$weight[i], data_c$height[i] )
     
+    # Blood values
+    data_c$updated_hba1c_prc[i]  <- fix_hba1c(data$updated_hba1c_prc[i])
+    data_c$baseline_hba1c_prc[i] <- fix_hba1c(data$baseline_hba1c_prc[i])
+    
+    data_c$insulin_regimen[i]    <- fix_insulin_reg(data$insulin_regimen[i])
+    
+    # FBG
+    # Need to take care of two values "120-152" instead of one "125"
+    # data_c$updated_fbg_mmoll <- fbg_fix(data_c$updated_fbg_mldl,
+    #                                     country  = data_c$country_id,
+    #                                     hospital = data_c$hospital_id)
+    # Need to do the same for FBG baseline
+    # data_c$baseline_fbg_mmoll <- fbg_fix(data_c$baseline_fbg_mldl,
+    #                                     country  = data_c$country_id,
+    #                                     hospital = data_c$hospital_id)
+    data_c$updated_fbg_sample[i] <- fix_fbg_sample(data$updated_fbg_sample[i])
+    
+    data_c$blood_pressure_dias_mmhg[i] <- fix_blood_pressure_dias(
+      data$blood_pressure_dias_mmhg[i])
+    
+    data_c$blood_pressure_sys_mmhg[i] <- fix_blood_pressure_sys(
+      data$blood_pressure_sys_mmhg[i])
+    
+    # Other
+    data_c$support_from_a4d[i] <- supporta4d_fix(data$support_from_a4d[i])
+    data_c$testing_fqr[i] <- testfqr_fix(data$testing_fqr[i])
   }
   
   
@@ -494,5 +609,12 @@ if (!interactive()) {
   
   testing <- cleaning_a4d_tracker(data = data)
 }
+
+
+
+# TODOs:
+## 1. Variables until [16] testing_fqr are part of the final wrapper. EVerything afterwards
+#      (and buggy ones lige age_diagnosis) need to be finalized and added to the wrapper
+## 2. Final check if all variables have been transformed correctly
 
 

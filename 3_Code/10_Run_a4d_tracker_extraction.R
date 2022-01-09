@@ -23,5 +23,5 @@ df_raw <- reading_a4d_tracker(tracker_data_file = example_tracker_path,
 
 ### Data cleanse
 df_cleaned <- cleaning_a4d_tracker(data = df_raw)
-View(df_raw)
+# View(df_raw)
 View(df_cleaned)
