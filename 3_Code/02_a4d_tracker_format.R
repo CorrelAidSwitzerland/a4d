@@ -103,17 +103,54 @@ fix_age <- function(x){
 # [7] "age_diagnosis" ####
 # ______________________________________________
 #### AGE DIAGNOSIS
-# TODO: Improve error handling by taking care of "1y 6m"
-fix_age_diagnosis <- function(d) {
 
-  if (grepl("birth", d)) {
-    d <- 0
-  } else {
-    d <- try(as.numeric(d))
-    if (class(d) == "try-error") {
+# Description: Transforms "1 y 6m" to "1.5" age, if not possible return NA
+extract_age_from_y_m <- function(age){
+  final_age <- NA_real_
+  suppressWarnings(
+    if(is.na(as.numeric(age))){
+      age_str <- str_split(age, " |y|m") %>%
+        unlist()
+      age_str <- subset(age_str, age_str != "")
+      
+      if(length(age_str) > 1){
+        years <- as.numeric(age_str[1])
+        months <- mean(as.numeric(age_str[-1]))
+      } else {
+        years <- age_str
+        months <- 0
+      }
+      
+      final_age <- years + (round(months / 12, 1))
+    }
+  )
+  return(final_age)
+  
+}
+
+# @Description: Checks different possibilities for age of birth and transforms it into numeric age
+handle_age_diagnosis <- function(age_x){
+  
+  suppressWarnings(
+    age_corrected <- ifelse(
+      grepl("birth|born", tolower(age_x)),
+      0,
+      ifelse(!is.na(as.numeric(age_x)),
+             as.numeric(age_x),
+             extract_age_from_y_m(age_x)
+      )
+    )
+  )
+  return(age_corrected)
+}
+
+# @Description: Try to tranfsorm age of diagnosis. If error occur give out 99999
+fix_age_diagnosis <- function(d) {
+  
+  d <- try(handle_age_diagnosis(d))
+  if (class(d) == "try-error") {
         d <- 99999
         }
-    }
   return(d)
 }
 
@@ -150,10 +187,6 @@ fix_hba1c <- function(d) {
 
 #### FBG 
 # TODO Operationalization: Show where NA values exist
-# TODO: Include in final function
-# Todo: Validate that correct hospital and country ids were used to assign units (see Tyla Mail 05/11/21)
-# TODO: FBG value input have two values e.g. "120-145". Column needs to be transformed to make
-#       correct sanity checks and transformation.
 
 
 # Assign countries & hospitals to unit of fbg measurement
@@ -181,12 +214,12 @@ assign_fbg_unit_per_hospital <- function(
   mg_hos = mg_hospitals){
   
   returned_unit <- case_when(
-    is.na(hospital_id) & is.na(country_id) ~ NA,
+    is.na(hospital_id) & is.na(country_id) ~ NA_character_,
     hospital_id %in% mg_hos ~ "mg/dL",
     country_id %in% mg_ct ~ "mg/dL",
     hospital_id %in% mmol_hos ~ "mmol/L",
     country_id %in% mmol_ct ~ "mmol/L",
-    TRUE ~ NA
+    TRUE ~ NA_character_
   )
   
   if(is.na(returned_unit)){
@@ -200,17 +233,19 @@ assign_fbg_unit_per_hospital <- function(
 # @country_id: ID of the country where patient values were taken
 # @hospital_id: ID of the hospital where patient values were taken
 # @Output: FBG value in mmol/L or NA if not matched
-transform_fbg_in_mg <- function(fbg, country_id, hospital_id) {
+transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
   
+  fbg_num <- as.numeric(fbg) 
   factor_mmol_in_mg <- 18.02
   measure_unit <- assign_fbg_unit_per_hospital(country_id = country_id, 
                                                hospital_id = hospital_id)
   
+  # If not unit "mmol/L" is assumed
   fbg_mmol <- case_when(
-    measure_unit == "mg/dL" ~ fbg / factor_mml_in_mg,
-    measure_unit == "mmol/L" ~ fbg ,
-    is.na(measure_unit) ~ fbg,
-    TRUE ~ NA
+    measure_unit == "mg/dL" ~ fbg_num / factor_mmol_in_mg,
+    measure_unit == "mmol/L" ~ fbg_num,
+    is.na(measure_unit) ~ fbg_num,
+    TRUE ~ NA_real_
   )
   
   return(as.numeric(fbg_mmol))
@@ -227,8 +262,8 @@ fbg_mmol_upper_bound <- 136.5 # https://www.cleveland19.com/story/1425584/ohio-m
 sanity_check_fbg_mmol <- function(fbg_mmol, min_fbg = fbg_mmol_lower_bound,
                                 max_fbg = fbg_mmol_upper_bound) {
   fbg_result <- case_when(
-    fbg_mmol >= min_fbg & fbg_mmol <= max_fbg ~ fbg_mmol,
-    TRUE ~ NA
+    fbg_mmol <= min_fbg & fbg_mmol >= max_fbg ~ fbg_mmol,
+    TRUE ~ NA_real_
   )
   
   if(is.na(fbg_result)){
@@ -238,10 +273,45 @@ sanity_check_fbg_mmol <- function(fbg_mmol, min_fbg = fbg_mmol_lower_bound,
   return(fbg_result)
 }
 
+# @Description: FBG input is often a range (200-300) but functions only
+#               work with unique values. This wrapper hence loops the range through 
+#               the functions.
+# @hid: Hospital ID
+# @cid: country ID
+fbg_wrapper <- function(fbg_range, hid, cid){
+  
+  # Source for levels: https://www.cdc.gov/diabetes/basics/getting-tested.html
+  fbg_range <- case_when(
+    grepl("high|bad", tolower(fbg_range)) ~ "200",
+    grepl("med|medium", tolower(fbg_range)) ~ "140-199",
+    grepl("low|good|okay", tolower(fbg_range)) ~ "140",
+    TRUE ~ fbg_range
+  )
+  
+  
+  lower_upper_fbg <- fbg_range %>% str_split("-") %>%
+    unlist() %>%
+    as.numeric()
+  
+  for(i in 1:length(lower_upper_fbg)){
+    lower_upper_fbg[i] <- sanity_check_fbg_mmol(
+      transform_fbg_in_mmol(
+        lower_upper_fbg[i], 
+        country_id = cid, 
+        hospital_id = hid
+        )
+      )
+  }
+  
+  final <- paste(lower_upper_fbg, collapse = "-")
+  
+}
+
 
 fbg_fix <- function(fbg, country, hospital) {
-  d <- try(sanity_check_fbg_mmol(transform_fbg_in_mg(
-    fbg, country_id = country, hospital_id = hospital)),
+  d <- try(
+    fbg_wrapper(
+    fbg, cid = country, hid = hospital),
     silent = TRUE)
   if (class(d) == "try-error") {
     d  <- 999999 }
@@ -313,18 +383,22 @@ fix_fbg_sample <- function(d) {
 
 # [20] "tracker_year" ####   
 # TODO: Read out single year, check that all years are the same and match the input of the year function?
+# Currently uses fix_chr_without_NAs 
 
 # [21] "clinic_code" ####                       
 # TODO: When we have data, using list of clinics to double check?
 # TODO Operationalization: Read out clinic table in database to check data with
+# Currently uses fix_chr_without_NAs 
 
 # [22] "country_code" ####                      
 # TODO: When we have data, using list of countries to double check?
 # TODO Operationalization: Read out clinic table in database to check data with
+# Currently uses fix_chr_without_NAs 
 
 
 # [23] "sheet_name" ####                        
 # TODO: Include in final function
+# Currently uses fix_chr_without_NAs 
 
 parse_sheet_name <- function(x){
   y <- unlist(map(as.character(x), function(z)
@@ -442,15 +516,54 @@ fix_bmi <- function(x, fixed_weight_kg, fixed_height_m) {
 
 # [31] "edu_occ" ####         
 # ______________________________________________
-# TODO: match Thai words with englisch:
+# TODO: Instead of determining "elementary", identify year of education &
+#       Ensure saving of thai strings works as planned
 # ประถมศึกษาปีที่= elementary
 # อนุบาล=kindergarden
 # Take years behind in consideration, e.g."ประถมศึกษาปีที่ 4" 
 
 
+# @Description: Match thai education words and return level of education
+match_education_strings <- function(str){
+  
+  str_out <- case_when(
+    grepl(paste0("ประถมศึกษาปี", "|elementary"), str) ~ "elementary",
+    grepl(paste0("อนุบา", "|kindergarden"), str) ~ "kindergarden",
+    grepl(paste0("มหาวิทยาลั","|university"), str) ~ "university",
+    TRUE ~ str
+  )
+  return(str_out)
+  }
+
+
+fix_edu_occ <- function(x) {
+  x <- try(match_education_strings(x), 
+           silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
+
+
 # [32] "hospitalisation" ####     
 # ______________________________________________    
-# TODO: Check column in detail, very complex date column with outwritten text, set "NA" to NA
+# TODO: If possible transform all texted dates into real dates. Complex manual function necessary
+
+extract_hospitalisation_date <- function(hosp_str){
+  
+  str_out <- hosp_str %>%
+    replace(hosp_str == "NA", NA)
+  
+}
+
+fix_hospitalisation <- function(x) {
+  x <- try(extract_hospitalisation_date(x), 
+           silent = TRUE)
+  if (class(x) == "try-error") {
+    x <- "999999" }
+  return(x)
+}
+
 
 # [34] "additional_support" ####   
 # ______________________________________________
@@ -492,29 +605,32 @@ cleaning_a4d_tracker <- function(data) {
 
   for (i in 1:nrow(data)) {
     
-    # TODO: Check if [i,]$column can be replcaed by $column[i]
-    
     # Dates
     data_c$dob[i] <- fix_date_cols(data$dob[i])
     data_c$updated_fbg_date[i] = fix_date_cols(data$updated_fbg_date[i])
     data_c$updated_hba1c_date[i] = fix_date_cols(data$updated_hba1c_date[i])
-    
-    # TODO: Rework function to capture bmi date being "2020-12" not "2020-12-02"
-    data_c$bmi_date[i] = fix_date_cols(data$bmi_date[i])
+    data_c$bmi_date[i] = fix_date_cols(paste(data$bmi_date[i], "01", sep = "-"))
     data_c$recruitment_date[i] = fix_date_cols(data$recruitment_date[i])
     data_c$last_clinic_visit_date[i] = fix_date_cols(data$last_clinic_visit_date[i])
     data_c$latest_complication_screening_date[i] = fix_date_cols(
       data$latest_complication_screening_date[i])
     
     # Static patient information
-    # TODO: How are Hospital ID, Country ID and general ID captured?
     data_c$id[i] <- fix_chr_without_NAs(data$id[i])
     data_c$patient_name[i] <- fix_chr_without_NAs(data$patient_name[i])
     data_c$province[i] <- fix_chr_without_NAs(data$province[i])
+    data_c$edu_occ[i] <- fix_edu_occ(data$edu_occ[i])
+    
+    data_c$tracker_year[i] <- fix_chr_without_NAs(data$tracker_year[i])
+    data_c$clinic_code[i] <- fix_chr_without_NAs(data$clinic_code[i])
+    data_c$country_code[i] <- fix_chr_without_NAs(data$country_code[i])
+    data_c$sheet_name[i] <- fix_chr_without_NAs(data$sheet_name[i])
+    
     
     data_c$gender[i] <- fix_gender(data$gender[i])
     data_c$age[i]    <- fix_age(data$age[i])
-    data$age_diagnosis[i] <- fix_age_diagnosis(data$age_diagnosis[i])
+    data_c$age_diagnosis[i] <- fix_age_diagnosis(data$age_diagnosis[i])
+    data_c$status[i] <- status_fix(data$status[i])
     
     # Dynamic body information
     data_c$height[i] <- fix_height(data$height[i])
@@ -528,14 +644,12 @@ cleaning_a4d_tracker <- function(data) {
     data_c$insulin_regimen[i]    <- fix_insulin_reg(data$insulin_regimen[i])
     
     # FBG
-    # Need to take care of two values "120-152" instead of one "125"
-    # data_c$updated_fbg_mmoll <- fbg_fix(data_c$updated_fbg_mldl,
-    #                                     country  = data_c$country_id,
-    #                                     hospital = data_c$hospital_id)
-    # Need to do the same for FBG baseline
-    # data_c$baseline_fbg_mmoll <- fbg_fix(data_c$baseline_fbg_mldl,
-    #                                     country  = data_c$country_id,
-    #                                     hospital = data_c$hospital_id)
+    data_c$updated_fbg_mmoll <- fbg_fix(data_c$updated_fbg_mldl,
+                                        country  = data_c$country_code,
+                                        hospital = data_c$clinic_code)
+    data_c$baseline_fbg_mmoll <- fbg_fix(data_c$baseline_fbg_mldl,
+                                        country  = data_c$country_code,
+                                        hospital = data_c$clinic_code)
     data_c$updated_fbg_sample[i] <- fix_fbg_sample(data$updated_fbg_sample[i])
     
     data_c$blood_pressure_dias_mmhg[i] <- fix_blood_pressure_dias(
@@ -547,8 +661,14 @@ cleaning_a4d_tracker <- function(data) {
     # Other
     data_c$support_from_a4d[i] <- supporta4d_fix(data$support_from_a4d[i])
     data_c$testing_fqr[i] <- testfqr_fix(data$testing_fqr[i])
+    data_c$hospitalisation[i] <- fix_hospitalisation(data$hospitalisation[i])
   }
   
+  # Keep FBG in mmol/L unit
+  data_c <- data_c %>%
+    dplyr::select(
+      -c("updated_fbg_mldl", "baseline_fbg_mldl")
+    )
   
   return(data_c)
 }
@@ -615,6 +735,21 @@ if (!interactive()) {
 # TODOs:
 ## 1. Variables until [16] testing_fqr are part of the final wrapper. EVerything afterwards
 #      (and buggy ones lige age_diagnosis) need to be finalized and added to the wrapper
-## 2. Final check if all variables have been transformed correctly
+#  2. Dates are transformed as dates but only show raw date number (e.g. "123123")
+#      instead of actual date ("2020-02-02")
+#  3. Edu_Occ can't be matched by thai vocabulary. Functions should work but it seems
+#     that some R language encryption issues arise when saving thai strings.
+#  4. Columns that are not correctly extracted yet, input needed:
+#        latest_complication_screening_type, latest_complication_screening_date,
+#        remarks, additional_support, est_strips_pmonth
+## 4. Final check if all variables have been transformed correctly
+
+# testing on correct data:
+# 1. Currently the fbg ranges will be excluded due to values out of realistic range.
+#    This is on purpose since we only know the units for specific hospitals/countries.
+#    In the fake data the hospital and country codes are fake. We need to test the
+#    function on the original data to ensure that the functions correctly transform
+#    the unit of the fbg values (and hence include them) in the data.
+#    See [12, 13] fbg and make adjustments if needed
 
 
