@@ -3,7 +3,7 @@
 
 
 ## Set wd equal path of repository
-setwd("D:/Work/Correlaid/A4D/a4d_analytics")
+# setwd("D:/Work/Correlaid/A4D/a4d_analytics")
 
 # Tracker path
 example_tracker_path <- "2_Data/2021_Tracker.xlsx"
@@ -25,3 +25,4 @@ df_raw <- reading_a4d_tracker(tracker_data_file = example_tracker_path,
 df_cleaned <- cleaning_a4d_tracker(data = df_raw)
 View(df_raw)
 View(df_cleaned)
+
