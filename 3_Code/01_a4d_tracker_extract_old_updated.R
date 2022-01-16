@@ -65,8 +65,6 @@ library(zoo)
 library(readr)
 library(lubridate)
 library(data.table)
-library(tidyr)
-library(dplyr)
 
 ## TODO:
 # - Add logic to extract columns from "DC_V2_Anon Example
@@ -74,109 +72,8 @@ library(dplyr)
 
 tracker_data_file <- "/Volumes/A4D_project/01_2019 AN Clinic_YA A4D Tracker.xlsx"
 
-
-
-extract_country_clinic_code <- function(tracker_data){
-  # extract country and clinic
-  country_code <- toupper(tracker_data[grepl("country",tolower(tracker_data[,2])),2])
-  clinic_code <- toupper(tracker_data[grepl("clinic",tolower(tracker_data[,2])),2])
-  country_code <- substr(country_code, 9, 10)
-  clinic_code <- substr(clinic_code, 8, 9)
-  
-  if (is.na(country_code) |is.na(clinic_code)) {
-    # extract country and clinic
-    id_loc <- na.exclude(tracker_data[str_detect(tracker_data[,2], "_"),2])[1]
-    country_code <- substr(id_loc, 1, 2)
-    clinic_code <- substr(id_loc, 4, 5)
-  }      
-  
-  output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
-  return(output_list)
-  
-  ## alternative: 
-  # if (sheet_num == 1) {
-  #   # extract country and clinic
-  #   country_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("country",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-  #   clinic_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("clinic",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-  #   print(country_code)
-  #   
-  # }
-  
-}
-  
-
-extract_patient_data <- function(tracker_data, country_code, clinic_code){
-  
-  i <- min(which(tracker_data$CLINIC.SUPPORT.PROGRAMME == "Patient ID"))
-  all_rows_with_patient_id = tracker_data$CLINIC.SUPPORT.PROGRAMME %like% paste0(country_code, "_")
-  j <- max(which(all_rows_with_patient_id))
-  patient_df <- data.frame(tracker_data[i:j,])
-  
-  # rename cols
-  patient_df_headers <- patient_df[1,]
-  colnames(patient_df) <- patient_df_headers
-  
-  # remove 1st column & row
-  patient_df <- patient_df[,-1]
-  patient_df <- patient_df[-1,]
-  
-  view(patient_df)
-  return(patient_df)
-  
-}
-
-# @Description: Imports the patient df, cleanse it and match it against 
-#               column synonyms to unify column names
-# @columns_synonyms: Long format output of read_column_synonyms to match columns
-harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
-# TODO: TEst this
-        # TODO: Test if header cleaning works as expected        
-        patient_df_headers <- colnames(patient_df) %>%
-                tolower() %>%            # all lowercase
-                str_squish()        # merge multiple spaces into one
-          
-        for(i in 1:length(patient_df_headers)){
-                patient_df_headers[i] <- columns_synonyms$name_clean[which(patient_df_headers[i] == columns_synonyms$name_to_be_matched)]
-        }      
-
-        
-        colnames(patient_df) <- patient_df_headers
-        return(patient_df)
-}
-
-# @Description: Imports the codebook, cleans, removes duplicates and transforms it
-#               into long df format
-read_column_synonyms <- function(codebook_data_file){
-  codebook <- codebook_data_file %>%
-          read_xlsx("synonyms_PatientData") %>%
-          as_tibble() %>%
-          pivot_longer(cols = everything(),
-                       names_to = "name_clean",
-                       values_to = "name_to_be_matched") %>%
-          subset(!is.na(name_to_be_matched)) %>%
-          lapply(tolower) %>%
-          lapply(str_squish) %>%
-          as_tibble() %>%
-          group_by(name_to_be_matched) %>%
-          slice(1) %>%
-          ungroup()
-  
-  return(columns_synonyms)
-}
-
-sanitize_column_name <- function(column_name){
-        column_name_clean <- column_name %>%
-                tolower() %>%            # all lowercase
-                str_squish()             # merge multiple spaces into one
-        
-  return(column_name_clean)
-}
-
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
-reading_a4d_tracker <- function(tracker_data_file, codebook) {
-  
-        columns_synonyms <- read_column_synonyms(codebook) 
-  
+reading_a4d_tracker <- function(tracker_data_file) {
         
         # list the sheets in excel workbook & filter these
         sheet_list <- excel_sheets(tracker_data_file)
@@ -188,9 +85,8 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
         patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
         # AN PATIENT DATA DATA (merge/join at the end of the if year):
         an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-        # print(month_list)
-        all_patient_ids <- an_patient_data$Patient.ID
-        view(an_patient_data)
+        
+        
         
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
@@ -199,55 +95,74 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
         
         sheet_num <- 1
         for (CurrSheet in month_list) {
-          
-                print(CurrSheet)
                 
                 tracker_data <- data.frame(read_xlsx(tracker_data_file, CurrSheet))
                 
-                # extract country and clinic codes 
-                # current approach doesn't work for 2018+ -> no clinic info upfront, need to be read out from the patient IDs / filename 
-                cc_codes <- extract_country_clinic_code(tracker_data)
-                country_code <- cc_codes$country_code
-                clinic_code <- cc_codes$clinic_code
+                # extract country and clinic
+                country_code <- toupper(tracker_data[grepl("country",tolower(tracker_data[,2])),2])
+                clinic_code <- toupper(tracker_data[grepl("clinic",tolower(tracker_data[,2])),2])
+                country_code <- substr(country_code, 9, 10)
+                clinic_code <- substr(clinic_code, 8, 9)
                 
-                view(tracker_data)
+                if (is.na(country_code) |is.na(clinic_code)) {
+                        # extract country and clinic
+                        id_loc <- na.exclude(tracker_data[str_detect(tracker_data[,2], "_"),2])[1]
+                        country_code <- substr(id_loc, 1, 2)
+                        clinic_code <- substr(id_loc, 4, 5)
+                }      
+                
+                
+                
                 
                 
                 ####------------2017 PATIENT DATA ----------------------------###
                 #### 2017 ####
                 
                 if (year == 2017) {
-
+                        if (sheet_num == 1) {
+                                # extract country and clinic
+                                country_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("country",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
+                                clinic_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("clinic",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
+                                
+                        }
                         
                         #Index (i.e., from which row to select the data)
-                  
-                        patient_df = extract_patient_data(tracker_data, country_code)
-                        patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-                    
+                        i <- min(which(tracker_data$CLINIC.SUPPORT.PROGRAMME == "Patient ID"))
+                        j <- max(which(tracker_data$CLINIC.SUPPORT.PROGRAMME %like% toupper(substr(country_code, 9, 10))))
+                        # selecting relevant rows
+                        patient_df <- data.frame(tracker_data[i:j,])
                         
-                        # # remove certain columns (part of AN tab)
-                        # patient_df <- patient_df[,-c(2,3,5)]
-                        # 
-                        # # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
-                        # # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
-                        # colnames(patient_df) <- c("id",
-                        #                           "gender",
-                        #                           "age",
-                        #                           "age_diagnosis",
-                        #                           "recruitment_date",
-                        #                           "baseline_hba1c_prc", 
-                        #                           "updated_hba1c_prc", # also has date
-                        #                           "baseline_fbg_mgdl", 
-                        #                           "updated_fbg_mgdl",# also has date + whether it is CBG or SMBG
-                        #                           "support_from_a4d",
-                        #                           "insulin_regimen",# hidden col
-                        #                           "insulin_dosage", # hidden col
-                        #                           "testing_fqr", 
-                        #                           "required_insulin", # hidden col
-                        #                           "product_name", # hidden col
-                        #                           "est_strips_pmoth",
-                        #                           "status")
-                        view(patient_df)
+                        
+                        # rename cols
+                        colnames(patient_df) <- patient_df[1,]
+                        
+                        # remove 1st column & row
+                        patient_df <- patient_df[,-1]
+                        patient_df <- patient_df[-1,]
+                        
+                        # remove certain columns (part of AN tab)
+                        patient_df <- patient_df[,-c(2,3,5)]
+                        
+                        # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
+                        # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
+                        colnames(patient_df) <- c("id",
+                                                  "gender",
+                                                  "age",
+                                                  "age_diagnosis",
+                                                  "recruitment_date",
+                                                  "baseline_hba1c_prc", 
+                                                  "updated_hba1c_prc", # also has date
+                                                  "baseline_fbg_mgdl", 
+                                                  "updated_fbg_mgdl",# also has date + whether it is CBG or SMBG
+                                                  "support_from_a4d",
+                                                  "insulin_regimen",# hidden col
+                                                  "insulin_dosage", # hidden col
+                                                  "testing_fqr", 
+                                                  "required_insulin", # hidden col
+                                                  "product_name", # hidden col
+                                                  "est_strips_pmoth",
+                                                  "status")
+                        
                         
                         
                         # fix dates (split dates in cells)

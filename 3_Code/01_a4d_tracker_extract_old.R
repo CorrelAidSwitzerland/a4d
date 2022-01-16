@@ -64,214 +64,104 @@ library(readxl)
 library(zoo)
 library(readr)
 library(lubridate)
-library(data.table)
-library(tidyr)
-library(dplyr)
 
 ## TODO:
-# - Add logic to extract columns from "DC_V2_Anon Example
-# - Need to fix 2017 - 2021 trackers (2017, 2018 done...)
-
-tracker_data_file <- "/Volumes/A4D_project/01_2019 AN Clinic_YA A4D Tracker.xlsx"
+# - Add logic to extract columns from "DC_V2_Anon Example"
 
 
-
-extract_country_clinic_code <- function(tracker_data){
-  # extract country and clinic
-  country_code <- toupper(tracker_data[grepl("country",tolower(tracker_data[,2])),2])
-  clinic_code <- toupper(tracker_data[grepl("clinic",tolower(tracker_data[,2])),2])
-  country_code <- substr(country_code, 9, 10)
-  clinic_code <- substr(clinic_code, 8, 9)
-  
-  if (is.na(country_code) |is.na(clinic_code)) {
-    # extract country and clinic
-    id_loc <- na.exclude(tracker_data[str_detect(tracker_data[,2], "_"),2])[1]
-    country_code <- substr(id_loc, 1, 2)
-    clinic_code <- substr(id_loc, 4, 5)
-  }      
-  
-  output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
-  return(output_list)
-  
-  ## alternative: 
-  # if (sheet_num == 1) {
-  #   # extract country and clinic
-  #   country_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("country",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-  #   clinic_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("clinic",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-  #   print(country_code)
-  #   
-  # }
-  
-}
-  
-
-extract_patient_data <- function(tracker_data, country_code, clinic_code){
-  
-  i <- min(which(tracker_data$CLINIC.SUPPORT.PROGRAMME == "Patient ID"))
-  all_rows_with_patient_id = tracker_data$CLINIC.SUPPORT.PROGRAMME %like% paste0(country_code, "_")
-  j <- max(which(all_rows_with_patient_id))
-  patient_df <- data.frame(tracker_data[i:j,])
-  
-  # rename cols
-  patient_df_headers <- patient_df[1,]
-  colnames(patient_df) <- patient_df_headers
-  
-  # remove 1st column & row
-  patient_df <- patient_df[,-1]
-  patient_df <- patient_df[-1,]
-  
-  view(patient_df)
-  return(patient_df)
-  
-}
-
-# @Description: Imports the patient df, cleanse it and match it against 
-#               column synonyms to unify column names
-# @columns_synonyms: Long format output of read_column_synonyms to match columns
-harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
-# TODO: TEst this
-        # TODO: Test if header cleaning works as expected        
-        patient_df_headers <- colnames(patient_df) %>%
-                tolower() %>%            # all lowercase
-                str_squish()        # merge multiple spaces into one
-          
-        for(i in 1:length(patient_df_headers)){
-                patient_df_headers[i] <- columns_synonyms$name_clean[which(patient_df_headers[i] == columns_synonyms$name_to_be_matched)]
-        }      
-
-        
-        colnames(patient_df) <- patient_df_headers
-        return(patient_df)
-}
-
-# @Description: Imports the codebook, cleans, removes duplicates and transforms it
-#               into long df format
-read_column_synonyms <- function(codebook_data_file){
-  codebook <- codebook_data_file %>%
-          read_xlsx("synonyms_PatientData") %>%
-          as_tibble() %>%
-          pivot_longer(cols = everything(),
-                       names_to = "name_clean",
-                       values_to = "name_to_be_matched") %>%
-          subset(!is.na(name_to_be_matched)) %>%
-          lapply(tolower) %>%
-          lapply(str_squish) %>%
-          as_tibble() %>%
-          group_by(name_to_be_matched) %>%
-          slice(1) %>%
-          ungroup()
-  
-  return(columns_synonyms)
-}
-
-sanitize_column_name <- function(column_name){
-        column_name_clean <- column_name %>%
-                tolower() %>%            # all lowercase
-                str_squish()             # merge multiple spaces into one
-        
-  return(column_name_clean)
-}
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
-reading_a4d_tracker <- function(tracker_data_file, codebook) {
-  
-        columns_synonyms <- read_column_synonyms(codebook) 
-  
+reading_a4d_tracker <- function(tracker_data_file, year, country, clinic) {
         
-        # list the sheets in excel workbook & filter these
+        
+        # list the sheets in excel workbook & filter these (only select sheets with monthly data)
         sheet_list <- excel_sheets(tracker_data_file)
+        sheet_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         
-        # MONTHLY SHEETS: only select sheets with monthly data
-        month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        
-        # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
-        patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
-        # AN PATIENT DATA DATA (merge/join at the end of the if year):
-        an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-        # print(month_list)
-        all_patient_ids <- an_patient_data$Patient.ID
-        view(an_patient_data)
-        
-        # Extract year
-        year <- 2000 + unique(parse_number(month_list))
         
         tidy_tracker_list <- NULL
-        
         sheet_num <- 1
-        for (CurrSheet in month_list) {
-          
-                print(CurrSheet)
+        
+        
+        for (CurrSheet in sheet_list) {
                 
                 tracker_data <- data.frame(read_xlsx(tracker_data_file, CurrSheet))
                 
-                # extract country and clinic codes 
-                # current approach doesn't work for 2018+ -> no clinic info upfront, need to be read out from the patient IDs / filename 
-                cc_codes <- extract_country_clinic_code(tracker_data)
-                country_code <- cc_codes$country_code
-                clinic_code <- cc_codes$clinic_code
-                
                 view(tracker_data)
-                
                 
                 ####------------2017 PATIENT DATA ----------------------------###
                 #### 2017 ####
                 
                 if (year == 2017) {
-
-                        
                         #Index (i.e., from which row to select the data)
-                  
-                        patient_df = extract_patient_data(tracker_data, country_code)
-                        patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-                    
+                        i <- min(which(tracker_data$PATIENT.ASSISTANCE.PROGRAMME == "No"))
+                        j <- min(which(tracker_data$PATIENT.ASSISTANCE.PROGRAMME == "Suggestion/Feedback")) -1
+                        # selecting relevant rows
+                        patient_df <- data.frame(tracker_data[i:j,])
                         
-                        # # remove certain columns (part of AN tab)
-                        # patient_df <- patient_df[,-c(2,3,5)]
-                        # 
-                        # # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
-                        # # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
-                        # colnames(patient_df) <- c("id",
-                        #                           "gender",
-                        #                           "age",
-                        #                           "age_diagnosis",
-                        #                           "recruitment_date",
-                        #                           "baseline_hba1c_prc", 
-                        #                           "updated_hba1c_prc", # also has date
-                        #                           "baseline_fbg_mgdl", 
-                        #                           "updated_fbg_mgdl",# also has date + whether it is CBG or SMBG
-                        #                           "support_from_a4d",
-                        #                           "insulin_regimen",# hidden col
-                        #                           "insulin_dosage", # hidden col
-                        #                           "testing_fqr", 
-                        #                           "required_insulin", # hidden col
-                        #                           "product_name", # hidden col
-                        #                           "est_strips_pmoth",
-                        #                           "status")
-                        view(patient_df)
+                        # some columns are hidden
+                        names(patient_df) <- patient_df[1,]
+                        patient_df <- patient_df[-1,]
+                        
+                        
+                        # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
+                        # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
+                        col_names <- c("no",
+                                       "patient_name",
+                                       "province",
+                                       "gender",
+                                       "dob",
+                                       "age",
+                                       "age_diagnosis",
+                                       "recruitment_date",
+                                       "baseline_hba1c_prc", 
+                                       "updated_hba1c_prc", # also has date
+                                       "baseline_fbg_mldl", 
+                                       "updated_fbg_mldl",# also has date + whether it is CBG or SMBG
+                                       "support_from_a4d",
+                                       "insulin_regimen",# hidden col
+                                       "insulin_dosage", # hidden col
+                                       "testing_fqr", 
+                                       "required_insulin", # hidden col
+                                       "NA", # hidden col
+                                       "est_strips_pmoth",
+                                       "status")
+                        
+                        colnames(patient_df) <- col_names
+                        
                         
                         
                         # fix dates (split dates in cells)
                         patient_df <- patient_df %>% separate(updated_hba1c_prc, c("updated_hba1c_prc","updated_hba1c_date"), sep = "([(])")
-                        patient_df <- patient_df %>% separate(updated_fbg_mgdl, c("updated_fbg_mgdl","updated_fbg_date"), sep = "([(])")
+                        patient_df <- patient_df %>% separate(updated_fbg_mldl, c("updated_fbg_mldl","updated_fbg_date"), sep = "([(])")
                         
                         #NOT OPTIMAL.... NEEDS SOME TWEEKING!!!!!!!
-                        # patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
-                        #                                     updated_fbg_mgdl = gsub("[^0-9.-]", "", updated_fbg_mgdl))
+                        # fix updated_fbg_mldl (split values with how blood sample was taken)
+                        patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
+                                                            updated_fbg_mldl = gsub("[^0-9.-]", "", updated_fbg_mldl))
                         
                         
                         patient_df <- patient_df %>%
-                                mutate(recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
+                                mutate(dob= as.POSIXct(as.numeric(dob)* (60*60*24),
+                                                       origin="1899-12-30",
+                                                       tz="GMT"),
+                                       recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
                                                                     origin="1899-12-30",
                                                                     tz="GMT"),
                                        updated_hba1c_date = gsub(")", "", updated_hba1c_date),
                                        updated_fbg_date = gsub(")", "", updated_fbg_date),
-                                       updated_fbg_date=  as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       updated_hba1c_date= as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       sheet_name = CurrSheet,
-                                       tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-                                       tracker_year = year)
+                                       updated_fbg_date =  as.Date(updated_fbg_date, format =  "%d/%m/%Y"),
+                                       updated_hba1c_date =  as.Date(updated_hba1c_date, format =  "%d/%m/%Y"),
+                                       updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date),
+                                       updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date),
+                                       tracker_year = year) %>% 
+                                select(-c("insulin_regimen",
+                                          "insulin_dosage", 
+                                          "required_insulin", 
+                                          "NA"))  %>%  # removing hidden columns
+                                mutate(clinic_code = clinic,
+                                       country_code = country)
                         
-                        patient_df[patient_df == "NA"] <- NA 
                         
                 } # 2017 tracker
                 
@@ -279,81 +169,74 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                 # 2018 ####
                 if (year == 2018) {
                         
-                        if (sheet_num == 1) {
-                                # extract country and clinic
-                                country_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("country",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-                                clinic_code <- tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME[grepl("clinic",tolower(tracker_data$CLINIC.SUPPORT.PROGRAMME))])
-                                
-                        }
-                        
                         #Index (i.e., from which row to select the data)
-                        i <- min(which(tracker_data$CLINIC.SUPPORT.PROGRAMME == "Patient ID"))
-                        j <- max(which(tracker_data$CLINIC.SUPPORT.PROGRAMME %like% toupper(substr(country_code, 9, 10))))
+                        i <- min(which(tracker_data$PATIENT.ASSISTANCE.PROGRAMME == "No"))
+                        j <- min(which(tracker_data$PATIENT.ASSISTANCE.PROGRAMME == "Suggestion/Feedback")) -1
                         # selecting relevant rows
                         patient_df <- data.frame(tracker_data[i:j,])
                         
-                        
-                        # rename cols
-                        colnames(patient_df) <- patient_df[1,]
-                        
-                        # remove 1st column & row
-                        patient_df <- patient_df[,-1]
+                        # some columns are hidden
+                        names(patient_df) <- patient_df[1,]
                         patient_df <- patient_df[-1,]
-                        
-                        
-                        # remove certain columns (part of AN tab)
-                        patient_df <- patient_df[,-c(2,3,5)]
                         
                         
                         # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
                         # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
+                        col_names <- c("no",
+                                       "patient_name",
+                                       "province",
+                                       "gender",
+                                       "dob",
+                                       "age",
+                                       "age_diagnosis",
+                                       "recruitment_date",
+                                       "baseline_hba1c_prc", 
+                                       "updated_hba1c_prc", # also has date
+                                       "baseline_fbg_mldl", 
+                                       "updated_fbg_mldl",# also has date + whether it is CBG or SMBG
+                                       "support_from_a4d",
+                                       "insulin_regimen",# hidden col
+                                       "insulin_dosage", # hidden col
+                                       "testing_fqr", 
+                                       "required_insulin", # hidden col
+                                       "NA", # hidden col
+                                       "est_strips_pmoth",
+                                       "status")
                         
-                        colnames(patient_df) <- c("id",
-                                                  "gender",
-                                                  "age",
-                                                  "age_diagnosis",
-                                                  "recruitment_date",
-                                                  "baseline_hba1c_prc", 
-                                                  "updated_hba1c_prc", # also has date
-                                                  "baseline_fbg_mgdl", 
-                                                  "updated_fbg_mgdl",# also has date + whether it is CBG or SMBG
-                                                  "support_from_a4d",
-                                                  "insulin_regimen",
-                                                  "insulin_dosage", 
-                                                  "testing_fqr", 
-                                                  "required_insulin", 
-                                                  "product_name", # hidden column for certain tabs....
-                                                  "est_strips_pmoth",
-                                                  "status")
+                        colnames(patient_df) <- col_names
                         
-                        # # remove additional unwanted columns
-                        # patient_df <- patient_df %>% select(-contains("hidden_column"))
-                        # 
+                        
                         
                         # fix dates (split dates in cells)
                         patient_df <- patient_df %>% separate(updated_hba1c_prc, c("updated_hba1c_prc","updated_hba1c_date"), sep = "([(])")
-                        patient_df <- patient_df %>% separate(updated_fbg_mgdl, c("updated_fbg_mgdl","updated_fbg_date"), sep = "([(])")
+                        patient_df <- patient_df %>% separate(updated_fbg_mldl, c("updated_fbg_mldl","updated_fbg_date"), sep = "([(])")
                         
+                        #NOT OPTIMAL.... NEEDS SOME TWEEKING!!!!!!!
+                        # fix updated_fbg_mldl (split values with how blood sample was taken)
+                        patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
+                                                            updated_fbg_mldl = gsub("[^0-9.-]", "", updated_fbg_mldl))
                         
-                        # fix updated_fbg_mgdl (split values with how blood sample was taken)
-                        # patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mgdl),
-                        #                                     updated_fbg_mgdl = gsub("[^0-9.-]", "", updated_fbg_mgdl))
                         
                         patient_df <- patient_df %>%
-                                mutate(recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
+                                mutate(dob= as.POSIXct(as.numeric(dob)* (60*60*24),
+                                                       origin="1899-12-30",
+                                                       tz="GMT"),
+                                       recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
                                                                     origin="1899-12-30",
                                                                     tz="GMT"),
                                        updated_hba1c_date = gsub(")", "", updated_hba1c_date),
-                                       updated_fbg_date = gsub(")", "", updated_fbg_date) ,
-                                       updated_fbg_date=  as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       updated_hba1c_date= as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       sheet_name = CurrSheet,
-                                       tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-                                       tracker_year = year)
-                        
-                        
-                        patient_df[patient_df == "NA"] <- NA 
-
+                                       updated_fbg_date = gsub(")", "", updated_fbg_date),
+                                       updated_fbg_date=  as.Date(as.yearmon(updated_fbg_date, "%b-%y")), # need to find a way to make it work
+                                       updated_hba1c_date=  as.Date(updated_hba1c_date, format =  "%d/%m/%Y"), 
+                                       updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date),
+                                       updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date),
+                                       tracker_year = year) %>% 
+                                select(-c("insulin_regimen",
+                                          "insulin_dosage", 
+                                          "required_insulin", 
+                                          "NA"))  %>% 
+                                mutate(clinic_code = clinic,
+                                       country_code = country)
                         
                 } # 2018 tracker
                 
@@ -362,125 +245,67 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                 
                 if (year == 2019) {
                         
-                        
                         #Index (i.e., from which row to select the data)
-                        i <- min(which(tracker_data[,2] %like% paste0(country_code, "_",clinic_code)))
-                        j <- max(which(tracker_data[,2] %like%  paste0(country_code, "_",clinic_code)))
+                        i <- min(which(tracker_data$CLINIC.SUPPORT.PROGRAMME == "No"))
+                        
                         # selecting relevant rows
-                        patient_df <- data.frame(tracker_data[i:j,])
+                        patient_df <- data.frame(tracker_data[i:nrow(tracker_data),])
+                        # some column names are split
+                        patient_df[1,] <- paste0(patient_df[1,], patient_df[2,]) 
                         
-                        # 
-                        # # remove unnecessary rows
-                        # patient_df <- patient_df[-c(1:min(which(patient_df[,1] %like% country_code))),]
-                        
-                        
-                        # remove certain columns (part of AN tab)
-                        patient_df <- patient_df[,-c(1,3,4,6)]
-                        
+                        # rename column names (NOT VERY NICE with incomplete columns names as some name are split between two columns 
+                        # (Updated HbA1c & Updated FBG & Latest Complication Screening))
+                        names(patient_df) <- patient_df[1,]
+                        patient_df <- patient_df[-c(1:2),]
+                        names(patient_df) <- str_remove(names(patient_df), "NA")
                         
                         
                         # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
                         # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
-                        if (ncol(patient_df) == 22 & !is.Date(patient_df[1,ncol(patient_df)])) {
-                                
-                                
-                                colnames(patient_df)  <- c("id",
-                                                           "gender",
-                                                           "age",
-                                                           "age_diagnosis",
-                                                           "recruitment_date",
-                                                           "baseline_hba1c_prc",
-                                                           "updated_hba1c_prc",
-                                                           "updated_hba1c_date",
-                                                           "baseline_fbg_mldl",
-                                                           "updated_fbg_mldl", # also has whether it is CBG or SMBG
-                                                           "updated_fbg_date",
-                                                           "blood_pressure_mmhg", # combines systolic and diastolic mmhg
-                                                           "weight",
-                                                           "height",
-                                                           "bmi",
-                                                           "bmi_date",
-                                                           "edu_occ",
-                                                           "hospitalisation",
-                                                           "support_from_a4d",
-                                                           "status",
-                                                           "last_clinic_visit_date",
-                                                           "opportunity_intervention")
-                                
-                        }
+                        col_names <- c("no",
+                                       "patient_name",
+                                       "province",
+                                       "gender",
+                                       "dob",
+                                       "age",
+                                       "age_diagnosis",
+                                       "recruitment_date",
+                                       "baseline_hba1c_prc",
+                                       "updated_hba1c_prc",
+                                       "updated_hba1c_date",
+                                       "baseline_fbg_mldl",
+                                       "updated_fbg_mldl", # also has whether it is CBG or SMBG
+                                       "updated_fbg_date",
+                                       "testing_fqr",
+                                       "insulin_regimen",
+                                       "blood_pressure_mmhg", # combines systolic and diastolic mmhg
+                                       "weight",
+                                       "height",
+                                       "bmi",
+                                       "bmi_date",
+                                       "edu_occ",
+                                       "hospitalisation",
+                                       "support_from_a4d",
+                                       "status",
+                                       "last_clinic_visit_date",
+                                       "additional_support")
                         
-                        
-                        if (ncol(patient_df) == 25) {
-                                
-                                colnames(patient_df)  <- c("id",
-                                                           "gender",
-                                                           "age",
-                                                           "age_diagnosis",
-                                                           "recruitment_date",
-                                                           "baseline_hba1c_prc",
-                                                           "updated_hba1c_prc",
-                                                           "updated_hba1c_date",
-                                                           "baseline_fbg_mldl",
-                                                           "updated_fbg_mldl", # also has whether it is CBG or SMBG
-                                                           "updated_fbg_date",
-                                                           "testing_fqr",
-                                                           "insulin_regimen",
-                                                           "blood_pressure_mmhg", # combines systolic and diastolic mmhg
-                                                           "weight",
-                                                           "height",
-                                                           "bmi",
-                                                           "bmi_date",
-                                                           "edu_occ",
-                                                           "hospitalisation",
-                                                           "complications",
-                                                           "family_support",
-                                                           "support_from_a4d",
-                                                           "status",
-                                                           "last_clinic_visit_date")
-                                
-                        }
-                        
-                        
-                        
-                        if (ncol(patient_df) == 22 & is.Date(patient_df[1,ncol(patient_df)])) {
-                                
-                                
-                                colnames(patient_df)  <- c("id",
-                                                           "gender",
-                                                           "age",
-                                                           "age_diagnosis",
-                                                           "recruitment_date",
-                                                           "baseline_hba1c_prc",
-                                                           "updated_hba1c_prc",
-                                                           "updated_hba1c_date",
-                                                           "baseline_fbg_mldl",
-                                                           "updated_fbg_mldl", # also has whether it is CBG or SMBG
-                                                           "updated_fbg_date",
-                                                           "testing_fqr",
-                                                           "insulin_regimen",
-                                                           "blood_pressure_mmhg", # combines systolic and diastolic mmhg
-                                                           "weight",
-                                                           "height",
-                                                           "bmi",
-                                                           "bmi_date",
-                                                           "edu_occ",
-                                                           "support_from_a4d",
-                                                           "status",
-                                                           "last_clinic_visit_date")
-                        }
-                        
+                        colnames(patient_df) <- col_names
                         
                         #NOT OPTIMAL.... NEEDS SOME TWEEKING!!!!!!!
                         # fix updated_fbg_mldl (split values with how blood sample was taken)
-                        # patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
-                        #                                     updated_fbg_mldl = gsub("[^0-9.-]", "", updated_fbg_mldl))
-                        # 
-                        # 
+                        patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
+                                                            updated_fbg_mldl = gsub("[^0-9.-]", "", updated_fbg_mldl))
+                        
+                        
                         # fix dates
                         patient_df <- patient_df %>%
-                                mutate(recruitment_date = as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
-                                                                     origin="1899-12-30",
-                                                                     tz="GMT"),
+                                mutate(dob= as.POSIXct(as.numeric(dob)* (60*60*24),
+                                                       origin="1899-12-30",
+                                                       tz="GMT"),
+                                       recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
+                                                                    origin="1899-12-30",
+                                                                    tz="GMT"),
                                        last_clinic_visit_date= as.POSIXct(as.numeric(last_clinic_visit_date)* (60*60*24),
                                                                           origin="1899-12-30",
                                                                           tz="GMT"),
@@ -496,28 +321,14 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                                                                       tz="GMT"),
                                        updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date),
                                        updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date),
-                                       sheet_name = CurrSheet,
-                                       tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-                                       tracker_year = year) 
+                                       tracker_year = year)  %>% 
+                                mutate(clinic_code = clinic,
+                                       country_code = country)
                         
-                        
-                        #  BMI fix
-                        patient_df <- patient_df %>%
-                                mutate(bmi = if_else(is.na(height) | is.na(weight), NA_character_, bmi))
                         
                         # fix blood pressure (split systolic and diastolic mmHg)
                         patient_df <- patient_df %>% separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg","blood_pressure_dias_mmhg"), sep = "([/])")
-                        
-                        
-                        if (ncol(an_patient_data) == 6) {
-                                an_patient_data <- an_patient_data[,-2]
-                        }
-                        
-                        colnames(an_patient_data) <- c("id","patient_name", "province", "dob", "edu_occ")
-                        
-                        
-                        # ADDING AN PATIENT DATA
-                        patient_df <- patient_df %>% select(-edu_occ) %>% left_join(an_patient_data, by = "id")
+
                         
                         
                 } # 2019 tracker
@@ -613,7 +424,7 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                         
                         # fix blood pressure (split systolic and diastolic mmHg)
                         patient_df <- patient_df %>% separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg","blood_pressure_dias_mmhg"), sep = "([/])")
-                        
+
                         
                         
                 } # 2020 tracker
@@ -717,13 +528,13 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                         # fix blood pressure (split systolic and diastolic mmHg)
                         patient_df <- patient_df %>% separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg","blood_pressure_dias_mmhg"), sep = "([/])")
                         
-                        
+
                 } # 2021 tracker
-                
                 
                 #### Save data ####
                 # save data in a list
                 tidy_tracker_list[[sheet_num]] <- patient_df %>% 
+                        mutate(sheet_name = CurrSheet) %>%
                         mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
                 
                 sheet_num <- sheet_num + 1        
@@ -734,6 +545,7 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
         
         # standard df, consistent for all tracker years
         standard_df <- tibble(
+                no = character(),
                 patient_name = character(),
                 province = character(),
                 gender = character(),
@@ -775,13 +587,10 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
         
         
         tidydata <- bind_rows(tidy_tracker_list) %>%
-                bind_rows(standard_df)
+                bind_rows(standard_df) %>% 
+                filter(!is.na(dob))# STILL NEED TO FIND A BETTER WAY REMOVE ROWS WITH NO DATA
         
-        filename <- paste0("tracker_", unique(tidydata$country_code), "_", unique(tidydata$clinic_code), "_", unique(tidydata$tracker_year))
-        
-        tracker_info <- list(tidydata,filename)
-        
-        return(tracker_info)
+        return(tidydata)
         
 }     
 
