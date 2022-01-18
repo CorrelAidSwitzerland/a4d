@@ -403,6 +403,7 @@ fix_fbg_sample <- function(d) {
 parse_sheet_name <- function(x){
   y <- unlist(map(as.character(x), function(z)
     (format(readr::parse_date(z,"%b'%y"), format = "%Y-%m"))))
+  # TODO: real trackers use format like "Feb18" not "Feb'18" -> remove the apostrophe upstream?
 }
 
 transform_sheet_name_to_tracker_month <- function(x) {

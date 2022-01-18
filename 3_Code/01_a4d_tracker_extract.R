@@ -102,6 +102,9 @@ extract_country_clinic_code <- function(tracker_data){
   #   
   # }
   
+  # extract country and clinic codes 
+  # current approach doesn't work for 2018+ -> no clinic info upfront, need to be read out from the patient IDs / filename 
+  
 }
   
 
@@ -120,7 +123,7 @@ extract_patient_data <- function(tracker_data, country_code, clinic_code){
   patient_df <- patient_df[,-1]
   patient_df <- patient_df[-1,]
   
-  view(patient_df)
+  # view(patient_df)
   return(patient_df)
   
 }
@@ -129,16 +132,49 @@ extract_patient_data <- function(tracker_data, country_code, clinic_code){
 #               column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
 harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
-# TODO: TEst this
-        # TODO: Test if header cleaning works as expected        
+        patient_df_headers_org <- colnames(patient_df)
         patient_df_headers <- colnames(patient_df) %>%
-                tolower() %>%            # all lowercase
-                str_squish()        # merge multiple spaces into one
-          
+                                sanitize_column_name
+        # TODO: better tracking of erroneous entries -> export both i and unformatted colname?
+        problematic_indices <- list()
+        
+        # iterate through the header names 
         for(i in 1:length(patient_df_headers)){
-                patient_df_headers[i] <- columns_synonyms$name_clean[which(patient_df_headers[i] == columns_synonyms$name_to_be_matched)]
+          this_headername <- patient_df_headers[i]
+          
+          # deal with empty headers by filling in the previous header with an id
+          if (i==1){
+            previous_headername <- "first header"
+          } else {
+            previous_headername <- patient_df_headers_org[i-1]
+          }
+          # if header is empty, carry on the previous header name with a counter at the end
+          if( is.na(this_headername)){
+            print(c("found null column at index ", i))
+            this_headername <- paste(c(previous_headername, " col", i), collapse="") 
+            this_headername <- sanitize_column_name(this_headername)
+            patient_df_headers[i] <- this_headername
+          }
+          
+          # look for a matching headername in the synonyms table
+          # check if the header name is present in current dictionary
+          header_name_present = any(this_headername == columns_synonyms$name_to_be_matched)
+          if (header_name_present){
+                patient_df_headers[i] <- columns_synonyms$name_clean[which(this_headername == columns_synonyms$name_to_be_matched)]
+          }
+          else {
+            print(i)
+            print(this_headername)
+            problematic_indices <- append(problematic_indices, i)
+          }
         }      
-
+        # view(patient_df_headers)
+        if(length(problematic_indices)>0){
+          print("problematic column names found")
+          view(problematic_indices)
+          view(patient_df_headers_org)
+          view(patient_df_headers)
+        }
         
         colnames(patient_df) <- patient_df_headers
         return(patient_df)
@@ -147,54 +183,87 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
 # @Description: Imports the codebook, cleans, removes duplicates and transforms it
 #               into long df format
 read_column_synonyms <- function(codebook_data_file){
-  codebook <- codebook_data_file %>%
+  columns_synonyms <- codebook_data_file %>%
           read_xlsx("synonyms_PatientData") %>%
           as_tibble() %>%
           pivot_longer(cols = everything(),
                        names_to = "name_clean",
                        values_to = "name_to_be_matched") %>%
           subset(!is.na(name_to_be_matched)) %>%
-          lapply(tolower) %>%
-          lapply(str_squish) %>%
+          lapply(sanitize_column_name) %>%
           as_tibble() %>%
           group_by(name_to_be_matched) %>%
           slice(1) %>%
           ungroup()
-  
+  view(columns_synonyms)
   return(columns_synonyms)
 }
 
 sanitize_column_name <- function(column_name){
-        column_name_clean <- column_name %>%
-                tolower() %>%            # all lowercase
-                str_squish()             # merge multiple spaces into one
-        
+  column_name_clean <- column_name %>%
+          tolower() %>%            # all lowercase
+          str_squish()             # merge multiple spaces into one
+
+  # column_name_clean <- column_name 
+  
   return(column_name_clean)
+}
+
+
+extract_date_from_measurement_column <- function(patient_df, colname){
+  # produces columns with names coherent with original naming before refactor 
+  colname_value <- paste(c(colname,""), collapse = "")
+  colname_core = sub('[_][^_]+$', '', colname) #remove last element after "_"
+  colname_date <- paste(c(colname_core,"_date"), collapse = "")
+  patient_df <- separate_(data=patient_df, col=colname,
+                          into=c(colname_value,colname_date),sep = "([(])")
+  print(c("separated column: ", colname))
+  return(patient_df)
+}
+
+initial_clean_up_patient_df <- function(patient_df){
+  # TODO: implement a check that first checks if a given column exists before attempting to mutate 
+  
+   patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mgdl),
+                                       updated_fbg_mgdl = gsub("[^0-9.-]", "", updated_fbg_mgdl))
+
+   patient_df <- patient_df %>%
+           mutate(recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
+                                               origin="1899-12-30",
+                                               tz="GMT"),
+                  updated_hba1c_date = gsub(")", "", updated_hba1c_date),
+                  updated_fbg_date = gsub(")", "", updated_fbg_date),
+                  updated_fbg_date=  as.Date(as.yearmon(updated_fbg_date, "%b-%y")),
+                  updated_hba1c_date= as.Date(as.yearmon(updated_fbg_date, "%b-%y"))
+  )
+  
+  
 }
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
 reading_a4d_tracker <- function(tracker_data_file, codebook) {
   
-        columns_synonyms <- read_column_synonyms(codebook) 
-  
-        
+        columns_synonyms <- codebook
+
         # list the sheets in excel workbook & filter these
         sheet_list <- excel_sheets(tracker_data_file)
-        
+
         # MONTHLY SHEETS: only select sheets with monthly data
         month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        
+
         # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
+        # THIS WON'T WORK WITH AN EXAMPLE TRACKER!!! 
         patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
+        # print(patient_sheet)
+        
         # AN PATIENT DATA DATA (merge/join at the end of the if year):
         an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-        # print(month_list)
         all_patient_ids <- an_patient_data$Patient.ID
-        view(an_patient_data)
+        print("patient AN Data extracted")
         
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
-        
+        print(year)
         tidy_tracker_list <- NULL
         
         sheet_num <- 1
@@ -203,14 +272,14 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                 print(CurrSheet)
                 
                 tracker_data <- data.frame(read_xlsx(tracker_data_file, CurrSheet))
+                print("tracker read in")
                 
-                # extract country and clinic codes 
-                # current approach doesn't work for 2018+ -> no clinic info upfront, need to be read out from the patient IDs / filename 
                 cc_codes <- extract_country_clinic_code(tracker_data)
                 country_code <- cc_codes$country_code
                 clinic_code <- cc_codes$clinic_code
+                print("country and clinic code extracted")
                 
-                view(tracker_data)
+                # view(tracker_data)
                 
                 
                 ####------------2017 PATIENT DATA ----------------------------###
@@ -218,60 +287,31 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                 
                 if (year == 2017) {
 
-                        
-                        #Index (i.e., from which row to select the data)
-                  
                         patient_df = extract_patient_data(tracker_data, country_code)
+                        print("patient df extracted")
                         patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-                    
-                        
-                        # # remove certain columns (part of AN tab)
-                        # patient_df <- patient_df[,-c(2,3,5)]
-                        # 
-                        # # THIS NEEDS TO BE THE SAME/HARMONIZED FOR ALL DATAFRAMES THAT WE WILL LATER COMBINE
-                        # # extracted manually from excel tracker, slightly edited the name, and then added via datapasta
-                        # colnames(patient_df) <- c("id",
-                        #                           "gender",
-                        #                           "age",
-                        #                           "age_diagnosis",
-                        #                           "recruitment_date",
-                        #                           "baseline_hba1c_prc", 
-                        #                           "updated_hba1c_prc", # also has date
-                        #                           "baseline_fbg_mgdl", 
-                        #                           "updated_fbg_mgdl",# also has date + whether it is CBG or SMBG
-                        #                           "support_from_a4d",
-                        #                           "insulin_regimen",# hidden col
-                        #                           "insulin_dosage", # hidden col
-                        #                           "testing_fqr", 
-                        #                           "required_insulin", # hidden col
-                        #                           "product_name", # hidden col
-                        #                           "est_strips_pmoth",
-                        #                           "status")
-                        view(patient_df)
-                        
+                        print("finished harmonizing patient df")
                         
                         # fix dates (split dates in cells)
-                        patient_df <- patient_df %>% separate(updated_hba1c_prc, c("updated_hba1c_prc","updated_hba1c_date"), sep = "([(])")
-                        patient_df <- patient_df %>% separate(updated_fbg_mgdl, c("updated_fbg_mgdl","updated_fbg_date"), sep = "([(])")
+                        patient_df <- extract_date_from_measurement_column(patient_df, "updated_hba1c_prc")
+                        patient_df <- extract_date_from_measurement_column(patient_df, "updated_fbg_mgdl")
+                        print("date extracted from compound cols")
                         
-                        #NOT OPTIMAL.... NEEDS SOME TWEEKING!!!!!!!
-                        # patient_df <- patient_df %>% mutate(updated_fbg_sample = sub("^([[:alpha:]]*).*", "\\1", updated_fbg_mldl),
-                        #                                     updated_fbg_mgdl = gsub("[^0-9.-]", "", updated_fbg_mgdl))
-                        
-                        
+                        patient_df <- initial_clean_up_patient_df(patient_df)
+                        print("initial cleaning done")
+
                         patient_df <- patient_df %>%
-                                mutate(recruitment_date= as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
-                                                                    origin="1899-12-30",
-                                                                    tz="GMT"),
-                                       updated_hba1c_date = gsub(")", "", updated_hba1c_date),
-                                       updated_fbg_date = gsub(")", "", updated_fbg_date),
-                                       updated_fbg_date=  as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       updated_hba1c_date= as.Date(as.yearmon(updated_fbg_date, "%b-%y")), 
-                                       sheet_name = CurrSheet,
-                                       tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-                                       tracker_year = year)
+                               mutate(sheet_name = CurrSheet,
+                                    tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
+                                    tracker_year = year)
+                        print("added tracker metadata")
+                        # view(patient_df)
                         
-                        patient_df[patient_df == "NA"] <- NA 
+                        # TODO: for some reason the N/A detection doesn't work  
+                        # patient_df[patient_df == "NA"] <- NA
+                        # print("filled in the NA")
+                        
+                        print("--------------------")
                         
                 } # 2017 tracker
                 
@@ -744,8 +784,8 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
                 baseline_hba1c_prc = character(),
                 updated_hba1c_prc = character(),
                 updated_hba1c_date = character(),
-                baseline_fbg_mldl = character(),
-                updated_fbg_mldl = character(),
+                baseline_fbg_mgdl = character(),
+                updated_fbg_mgdl = character(),
                 updated_fbg_date = character(),
                 support_from_a4d = character(),
                 testing_fqr = character(),
