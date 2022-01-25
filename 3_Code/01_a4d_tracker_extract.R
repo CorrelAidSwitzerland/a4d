@@ -4,7 +4,7 @@
 # It takes into account all the sheets in the excel workbook that contain patient data, and binds these together. (e.g., if a workbook contains sheets Jan'18, Feb'18
 #  and Mar'18, patient data from each sheet will be combined into one data frame)
 # 
-# INPUT ARGUMENTS: 
+# INPUT ARGUMENTS: -
 #       tracker_data_file = full path of the excel workbook that contains a4d monthly trackers (format: string e.g., "users/Documents/file.xlsx")
 #       year = year of tracker data (format: numeric. e.g., 2018)
 #       country = country code (format: character string e.g., "xyz")

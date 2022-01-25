@@ -645,10 +645,10 @@ cleaning_a4d_tracker <- function(data) {
     data_c$insulin_regimen[i]    <- fix_insulin_reg(data$insulin_regimen[i])
     
     # FBG
-    data_c$updated_fbg_mmoll <- fbg_fix(data_c$updated_fbg_mldl,
+    data_c$updated_fbg_mmoll <- fbg_fix(data_c$updated_fbg_mgdl,
                                         country  = data_c$country_code,
                                         hospital = data_c$clinic_code)
-    data_c$baseline_fbg_mmoll <- fbg_fix(data_c$baseline_fbg_mldl,
+    data_c$baseline_fbg_mmoll <- fbg_fix(data_c$baseline_fbg_mgdl,
                                         country  = data_c$country_code,
                                         hospital = data_c$clinic_code)
     data_c$updated_fbg_sample[i] <- fix_fbg_sample(data$updated_fbg_sample[i])
@@ -668,7 +668,7 @@ cleaning_a4d_tracker <- function(data) {
   # Keep FBG in mmol/L unit
   data_c <- data_c %>%
     dplyr::select(
-      -c("updated_fbg_mldl", "baseline_fbg_mldl")
+      -c("updated_fbg_mgdl", "baseline_fbg_mgdl")
     )
   
   return(data_c)
@@ -695,8 +695,8 @@ if (!interactive()) {
     baseline_hba1c_prc = col_character(),
     updated_hba1c_prc = col_character(),
     updated_hba1c_date = col_character(),
-    baseline_fbg_mldl = col_character(),
-    updated_fbg_mldl = col_character(),
+    baseline_fbg_mgdl = col_character(),
+    updated_fbg_mgdl = col_character(),
     updated_fbg_date = col_character(),
     support_from_a4d = col_character(),
     testing_fqr = col_character(),

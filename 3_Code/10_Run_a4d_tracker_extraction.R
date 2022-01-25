@@ -20,11 +20,12 @@ codebook <- read_column_synonyms(codebook_path)
 ### Data extraction
 df_raw <- reading_a4d_tracker(tracker_data_file = example_tracker_path, codebook = codebook)
 View(df_raw)
-
+filename_output = df_raw[[2]]
+df_raw_data = df_raw[[1]]
 
 ### Data cleanse
-df_cleaned <- cleaning_a4d_tracker(data = df_raw)
-# View(df_cleaned)
+df_cleaned <- cleaning_a4d_tracker(data = df_raw_data)
+View(df_cleaned)
 
 
 
