@@ -128,10 +128,10 @@ extract_patient_data <- function(tracker_data, country_code, clinic_code){
   
 }
 
-# @Description: Imports the patient df, cleanse it and match it against 
+# @Description: Imports the patient or product df, cleanse it and match it against 
 #               column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
-harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
+harmonize_input_data_columns <- function(patient_df, columns_synonyms){
         patient_df_headers_org <- colnames(patient_df)
         patient_df_headers <- colnames(patient_df) %>%
                                 sanitize_column_name
@@ -151,9 +151,9 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
           # if header is empty, carry on the previous header name with a counter at the end
           if( is.na(this_headername)){
             print(c("found null column at index ", i))
-            this_headername <- paste(c(previous_headername, " col", i), collapse="") 
-            this_headername <- sanitize_column_name(this_headername)
-            patient_df_headers[i] <- this_headername
+            this_headername <- paste(c(previous_headername, " col", i), collapse="") %>%
+              sanitize_column_name()
+            product_df_headers[i] <- this_headername
           }
           
           # look for a matching headername in the synonyms table
@@ -292,7 +292,7 @@ reading_a4d_tracker <- function(tracker_data_file, codebook) {
 
                         patient_df = extract_patient_data(tracker_data, country_code)
                         print("patient df extracted")
-                        patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
+                        patient_df = harmonize_input_data_columns(patient_df, columns_synonyms)
                         print("finished harmonizing patient df")
                         
                         # fix dates (split dates in cells)
