@@ -129,5 +129,5 @@ extract_patient_data_in_products <- function(monthly_tracker_df){
   return(patient_df)
 }
 
-#### 2. Identify xlsx cutoff ####
+#### 2. Match Product data columns ####
 # ==============================================================================

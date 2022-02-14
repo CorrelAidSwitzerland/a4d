@@ -7,6 +7,12 @@
   # 1. "Units Received" sometimes means "Product_Units_Received" and sometimes
       # "Product_Balance". See Codebook. Make sure the difference is figured
       # out correctly by the extraction functions.
+  # 2. Similar issues: 'Extra Unis Kept in Clinic' sometimes 'product_units_returned'
+  #    and sometimes 'product_units_extra_keptinclinic'. Make sure to differ. Codebook up to date?
+  #    See espeically years 2017+2018 in old version '00_Preprocessing_MSD_V1.3.R"
+  # 3. In the real data sometimes there are product rows which are concatenated
+  #    multiple products in one cell. Make sure to treat this as an exception and
+  #    try to extract the products correctly anyway.
   
   
 # Think about:
@@ -16,13 +22,11 @@
   
   
   
-#### Clear working space and load libraries ####  
-# Clear working space #
-rm(list = ls())
-# Load libraries #
+# Packages
 lib_list <- c("tidyverse", "tidyxl", "readxl", "readxl", "stringr", "openxlsx")
 lapply(lib_list, library, character.only = TRUE)
 
+# Source functions
 source("3_Code/00_helper_product_data.R")
 source("3_Code/01_a4d_tracker_extract.R")
 
@@ -30,42 +34,23 @@ source("3_Code/01_a4d_tracker_extract.R")
 
 #### Input ####  
 
-# Information: Define everything in this section that is coloured and in quotes
-
-# Define month and year to which data refers
-# DELETE due to automating: year <- "2018" # Define number for year, e.g. "2021"
-# DELETE (to be defined in running script) path_import <- "/Volumes/Encrypted_SK/Datacross/A4D/Data/01_rawdata/" # Define path from which data is loaded into this script
-# DELETE (to be defined in running script) input_excel_name <- '02_2018 AN Clinic IX A4D Tracker.xlsx' # Define file name of data set that shall be read in. INCLUDE ENDING (e.g., .xlsx)
 path_output <- "/Volumes/Encrypted_SK/Datacross/A4D/Data/02_preprocdata/" # Define path where preprocessed data file shall be stored
-# DELETE due to automating: hospital <- "YA" # Define name (abbreviation) of hospital
-# DELETE due to automating: country <- "PB" # Define name of country
-
-
-
 
 #### Initialize data ####
 
-# Get excel tabs, and keep only those with the year number
-# DELETE: sheets <- excel_sheets(path = paste0(path_import, input_excel_name))
 # DELETE: list_excel_tabs <- str_subset(sheets[!grepl(" ", sheets)], "([1:100])")
 
 # Initalize empty feedback dataframe and empty final dataframe #
 setwd(path_output)
 wb = createWorkbook() # For feedback sheets
 
-# Extract country and hospital name if available # NEW, THIS WAS ADDED
-# DELETE due to automating:hospital_split <- strsplit(input_excel_name, "AN ")[[1]]
-# DELETE due to automating:hospital_split <- strsplit(hospital_split, " A4D")[[2]][1]
-# DELETE due to automating:hospital <- hospital_split
-# DELETE due to automating:testdf <- readxl::read_xlsx(paste0(path_import, input_excel_name), sheet = unique(list_excel_tabs)[1]) 
-# DELETE due to automating:country <- strsplit(na.omit(testdf$`CLINIC SUPPORT PROGRAMME`), "Country_")[[2]][2]
-# DELETE due to automating:rm(hospital_split,testdf)
 
-
+# @Description: Function to completely read and process product data from tracker
+# @tracker_data_file: Path to tracker
+# @codebook: Codebook with synonyms for product data columns
 reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
   
   # Initialization
-  
   columns_synonyms <- codebook
   
   # Set parameters
@@ -101,26 +86,17 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
 
     ### Extract raw data ####
     # Old msd_df = product_df
-    product_df <- extract_product_data(tracker_data)
+    product_df <- extract_product_data(tracker_data) %>%
+      harmonize_input_data_columns(columns_synonyms) # TODO: Add logic which correctly sets 
+                                               # units_received for different years (see first todo on top)
     patient_df <- extract_patient_data_in_products(tracker_data)
     
   #### Create splits and quality check #####
+    
     #### 2021 ####
     if(year == "2021"){
 
-      ##### Define medical supplies distribution (MSD) #####
-      product_df <- product_df %>% dplyr::select(    # Define columns to be kept
-        c("Product", "Entry Date", "Balance", "Units Received", "Received From", "Units Released", "Released To \r\n(Drop Down List)", "Units Returned", "Returned By")
-      )  %>%
-        dplyr::rename(Entry_Date = `Entry Date`,
-                      Units_Received = `Units Received`,
-                      Received_From = `Received From`,
-                      Released_To = `Released To \r\n(Drop Down List)`,
-                      Returned_By = `Returned By`,
-                      Units_Returned = `Units Returned`,
-                      Units_Released = `Units Released`
-        )
-      
+      ##### For medical supplies distribution (MSD) #####
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))  
       
@@ -171,34 +147,12 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
       
       
     }
+    
     #### 2020 ####
     if(year == "2020") {
       
       ##### For medical supplies distribution (MSD) #####
-      product_df <-
-        product_df %>% dplyr::select(
-          # Define columns to be kept
-          c(
-            "Product",
-            "Date",
-            "Units Received",
-            "Received From",
-            "Units Released",
-            "Released To (select from drop down list)",
-            "Units Returned",
-            "Returned By"
-          )
-        )  %>%
-        dplyr::rename(., 
-                      Entry_Date = `Date`,
-                      Units_Received = `Units Received`,
-                      Received_From = `Received From`,
-                      Released_To = `Released To (select from drop down list)`,
-                      Returned_By = `Returned By`,
-                      Units_Returned = `Units Returned`,
-                      Units_Released = `Units Released`
-        )
-      
+     
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
       
@@ -254,29 +208,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     if (year == "2019") {
       
       ##### For medical supplies distribution (MSD) #####
-      product_df <-
-        product_df %>% dplyr::select(
-          # Define columns to be kept
-          c(
-            "Product",
-            "Date",
-            "Units Received",
-            "Received From",
-            "Units Released",
-            "Released To (select from drop down list)",
-            "Units Returned",
-            "Returned By"
-          )
-        )  %>%
-        dplyr::rename(
-          Entry_Date = `Date`,
-          Units_Received = `Units Received`,
-          Received_From = `Received From`,
-          Released_To = `Released To (select from drop down list)`,
-          Returned_By = `Returned By`,
-          Units_Returned = `Units Returned`,
-          Units_Released = `Units Released`
-        )
+      
       
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
@@ -330,44 +262,13 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     #### 2018 ####
     if (year == "2018") {
       
+      # TODO: Account for this specific case for 2018 before
       ##### For medical supplies distribution (MSD) #####
-      # CHANGE WAS MADE HERE. Added for V1.3
-      # Account for fact that some tabs contain column "Units Returned" but not "Extra Unis Kept in Clinic" and vice versa
-      if(any(grepl("Extra Unis Kept in Clinic", colnames(product_df))) == FALSE){
-        product_df$`Extra Unis Kept in Clinic` <- NA
-      }
-      if(any(grepl("Units Returned", colnames(product_df))) == FALSE){
-        product_df$`Units Returned` <- NA
-      }
       if(any(grepl("Returned By", colnames(product_df))) == FALSE){
         product_df$`Returned By` <- NA
       }
       
-      
-      product_df <-
-        product_df %>% dplyr::select(
-          # Define columns to be kept
-          c(
-            "Description of Support", # CHANGE WAS MADE HERE, THIS WAS "Product" BEFOER
-            "Date",
-            "Units Received",
-            "Received From",
-            "Units Released",
-            "Released To",  # CHANGE WAS MADE HERE; THIS WAS "Released To (select from drop down list)" BEFORE
-            "Extra Unis Kept in Clinic", # CHANGE WAS MADED AFTERWARDS, THE COLUMN "Returned By" WAS REMOVED            
-            "Returned By"
-          )
-        )  %>%
-        dplyr::rename(
-          Product = `Description of Support`,
-          Entry_Date = `Date`,
-          Units_Received = `Units Received`,
-          Received_From = `Received From`,
-          Released_To = `Released To`, # CHANGE WAS MADE HERE; THIS WAS "Released To (select from drop down list)" BEFORE
-          Returned_By = `Returned By`,
-          Units_Returned = `Extra Unis Kept in Clinic`,
-          Units_Released = `Units Released`
-        )
+    
       
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
@@ -423,50 +324,19 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     #### 2017   |not09 CHANGE MADE HERE ####
     if (year == "2017" & !grepl("Sep", tab)) {
       
+      # TODO: Add this logic somewhere before to make sure to make less work?
       # If there is no section for MSD, jump to next monthly tab ; CHANGE WAS MADE HERE; THIS WAS ADDED DUE TO FEB17
       if(!any(grepl("Description of Support", df_alt1))){
         next 
       }
   
+      # TODO: Account for this specific case for 2018 + 2017 before 
       ##### For medical supplies distribution (MSD) #####
     # CHANGE WAS MADE HERE. Added for V1.3
-      # Account for fact that some tabs contain column "Units Returned" but not "Extra Unis Kept in Clinic" and vice versa
-      if(any(grepl("Extra Unis Kept in Clinic", colnames(product_df))) == FALSE){
-        product_df$`Extra Unis Kept in Clinic` <- NA
-      }
-      if(any(grepl("Units Returned", colnames(product_df))) == FALSE){
-        product_df$`Units Returned` <- NA
-      }
       if(any(grepl("Returned By", colnames(product_df))) == FALSE){
         product_df$`Returned By` <- NA
       }
       
-      product_df <-
-        product_df %>% dplyr::select(
-          # Define columns to be kept
-          c(
-            "Description of Support", # CHANGE WAS MADED HERE, THIS WAS "Product" BEFORE
-            "Date",
-            "Units Received",
-            "Received From",
-            "Units Released",
-            "Released To",
-            "Units Returned",
-            "Returned By",
-            "Extra Unis Kept in Clinic" # CHANGE WAS MADED AFTERWARDS, THE COLUMN "Returned By" WAS REMOVED
-          )
-        )  %>%
-        dplyr::rename(
-          Product = `Description of Support`,
-          Entry_Date = `Date`,
-          Units_Received = `Units Received`,
-          Received_From = `Received From`,
-          Released_To = `Released To`, # CHANGE WAS MADED HERE, THIS WAS "Released To (select from drop down list)" BEFORE
-          Returned_By = `Returned By`,
-          Units_Returned = `Units Returned`,
-          Units_Released = `Units Released`,
-          Units_Extra_KeptinClinic = `Extra Unis Kept in Clinic`
-        )
       
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
@@ -529,42 +399,9 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     
     if (year == "2017" & grepl("Sep", tab)) {
       
+      # TODO: Account for this specific case for 2018 + 2017 before 
       ##### For medical supplies distribution (MSD) #####
-      # CHANGE WAS MADE HERE. Added for V1.3
-      # Account for fact that some tabs contain column "Units Returned" but not "Extrar Unis Kept in Clinic" and vice versa
-      if(any(grepl("Extra Unis Kept in Clinic", colnames(product_df))) == FALSE){
-        product_df$`Extra Unis Kept in Clinic` <- NA
-      }
-      if(any(grepl("Units Returned", colnames(product_df))) == FALSE){
-        product_df$`Units Returned` <- NA
-      }
-      
-      
-      product_df <-
-        product_df %>% dplyr::select(
-          # Define columns to be kept
-          c(
-            "Description of Support",
-            "Date",
-            "Units Received", # CHANGE WAS MADE HERE; THIS WAS "Units Received \r\n(bottle/box)" BEFORE
-            "Received From",
-            "Units Released",  # CHANGE WAS MADE HERE; THIS WAS "Units Released\r\n(box)" BEFORE
-            "Units Returned", # CHANGE WAS MADE HERE, THIS WAS ADDED
-            "Released To",
-            "Extra Unis Kept in Clinic"
-          )
-        )  %>%
-        dplyr::rename(
-          Product = `Description of Support`, # CHANGE WAS MADED HERE, THIS WAS "Product" BEFORE
-          Units_Returned =`Units Returned`, # CHANGE QWAS MADE HERE; THIS LINE WAS MISSING BEFORE
-          Entry_Date = `Date`,
-          Units_Received = `Units Received`,
-          Received_From = `Received From`,
-          Released_To = `Released To`,
-          Units_Released = `Units Released`,
-          Units_Extra_KeptinClinic = `Extra Unis Kept in Clinic`
-        )
-      
+
       # Remove empty rows
       product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
       
@@ -1699,6 +1536,8 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     # Save preprocessed data file to final datafile
     product_df$Product_sheet_name <- tab
     #df_final <- rbind(df_final, product_df)
+    
+    # TODO: Replace list_excel_tabs here with month_list?
     if(tab == list_excel_tabs[1]){
       # df_final <- full_join(df_final, product_df)
       df_final <- product_df
