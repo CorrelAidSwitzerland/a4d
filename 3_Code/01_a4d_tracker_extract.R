@@ -182,9 +182,12 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms){
 
 # @Description: Imports the codebook, cleans, removes duplicates and transforms it
 #               into long df format
-read_column_synonyms <- function(codebook_data_file){
+# @codebook_data_file: Path to codebook
+# @sheet: Sheet either being "synonyms_PatientData" or "synonyms_ProductData"
+#         to receive the synonyms of the respective data 
+read_column_synonyms <- function(codebook_data_file, sheet){
   columns_synonyms <- codebook_data_file %>%
-          read_xlsx("synonyms_PatientData") %>%
+          read_xlsx(sheet) %>%
           as_tibble() %>%
           pivot_longer(cols = everything(),
                        names_to = "name_clean",
