@@ -15,10 +15,19 @@ codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
 source("3_Code/01_a4d_tracker_extract.R")
 source("3_Code/02_a4d_tracker_format.R")
 
-codebook <- read_column_synonyms(codebook_path)
+## Extract codebooks for each data form
+codebook_patient <- read_column_synonyms(
+  codebook_path, sheet = "synonyms_PatientData"
+)
+
+codebook_product <- read_column_synonyms(
+  codebook_path, sheet = "synonyms_ProductData"
+)
 
 ### Data extraction
-df_raw <- reading_a4d_tracker(tracker_data_file = example_tracker_path, codebook = codebook)
+df_raw <- reading_a4d_tracker(
+  tracker_data_file = example_tracker_path, 
+  codebook = codebook_patient)
 View(df_raw)
 filename_output = df_raw[[2]]
 df_raw_data = df_raw[[1]]
