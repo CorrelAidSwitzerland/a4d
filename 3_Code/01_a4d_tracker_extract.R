@@ -136,6 +136,8 @@ harmonize_input_data_columns <- function(patient_df, columns_synonyms){
         patient_df_headers <- colnames(patient_df) %>%
                                 sanitize_column_name
         # TODO: better tracking of erroneous entries -> export both i and unformatted colname?
+        # TODO: Merge this with the updated code from alexandra (AB ending). Make sure there won't 
+        #       be any conflicts.
         problematic_indices <- list()
         
         # iterate through the header names 
