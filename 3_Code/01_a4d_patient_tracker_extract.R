@@ -69,18 +69,18 @@ library(tidyr)
 library(dplyr)
 library(openxlsx)
 
-tracker_data_file <- "/Volumes/A4D_project/05_2021 AN Clinic IX A4D Tracker.xlsx" # WORKS! 2017 and 2018 03_2019 AN Clinic IX A4D Tracker.xlsx + 01_2019 AN Clinic_YA A4D Tracker.xlsx"
-codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx"
-a4d_functions <- "3_Code/00_a4d_extract_functionsAB.R"
-tracker_list <- list.files(path = "/Volumes/A4D_project/", pattern = ".xlsx", full.names = TRUE)
+# tracker_data_file <- "/Volumes/A4D_project/05_2021 AN Clinic IX A4D Tracker.xlsx" # WORKS! 2017 and 2018 03_2019 AN Clinic IX A4D Tracker.xlsx + 01_2019 AN Clinic_YA A4D Tracker.xlsx"
+# codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx"
+# a4d_functions <- "3_Code/00_a4d_extract_functionsAB.R"
+# tracker_list <- list.files(path = "/Volumes/A4D_project/", pattern = ".xlsx", full.names = TRUE)
 
 
 # get functions
-source(a4d_functions)
+# source(a4d_functions)
 
 
 # getting codebook
-columns_synonyms <- read_column_synonyms(codebook_data_file = codebook_data_file)
+# columns_synonyms <- read_column_synonyms(codebook_data_file = codebook_data_file)
 
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
@@ -422,17 +422,17 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
 
 # TESTING IT OUT ----------------------------------------------------------
 
-counter <- 1
-saving_clean_files <- list()
-
-for (CurrTracker in tracker_list) {
-  
-  saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
-                                                     columns_synonyms = columns_synonyms)
-  
- counter <- counter + 1
-}
-
-
-clean_files <- bind_rows(saving_clean_files)
+# counter <- 1
+# saving_clean_files <- list()
+# 
+# for (CurrTracker in tracker_list) {
+#   
+#   saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
+#                                                      columns_synonyms = columns_synonyms)
+#   
+#  counter <- counter + 1
+# }
+# 
+# 
+# clean_files <- bind_rows(saving_clean_files)
 # write_csv(clean_files, file = "/Volumes/A4D_project/clean_a4d_data.csv")

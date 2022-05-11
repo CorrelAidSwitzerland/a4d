@@ -8,7 +8,7 @@
 
 
 
-dat <- read.csv("/Volumes/A4D_project/clean_a4d_data.csv")
+# dat <- read.csv("/Volumes/A4D_project/clean_a4d_data.csv")
 
 # PACKAGES ----------------------------------------------------------------
 
@@ -993,11 +993,11 @@ cleaning_a4d_tracker <- function(data) {
 
 # TEST --------------------------------------------------------------------
 
- testing <- cleaning_a4d_tracker(data = dat)
+# testing <- cleaning_a4d_tracker(data = dat)
 
 # create a summary of the variables (helpful to do sanity checks!)
-library(summarytools)
-summarytools::view(dfSummary(testing), file = "a4doverview_test28022022.html")
+# library(summarytools)
+# summarytools::view(dfSummary(testing), file = "a4doverview_test28022022.html")
 
 
 # TODOs:
