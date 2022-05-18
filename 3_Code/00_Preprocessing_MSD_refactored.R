@@ -85,6 +85,16 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     print("country and clinic code extracted")
 
     ### Extract raw data ####
+    
+    # Jump to next tab sheet if there are no product data
+    if(!
+       any((grepl("Product", tracker_data[, ]) | grepl("Description of Support", tracker_data[, ])))
+       ){
+      # go to next month
+      print(paste0(CurrSheet, " is skipped!"))
+      next
+    }
+    
     # Old msd_df = product_df
     product_df <- extract_product_data(tracker_data) %>%
       harmonize_input_data_columns(columns_synonyms) # TODO: Add logic which correctly sets 
@@ -322,7 +332,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
       
     }
     #### 2017   |not09 CHANGE MADE HERE ####
-    if (year == "2017" & !grepl("Sep", tab)) {
+    if (year == "2017" & !grepl("Sep", CurrSheet)) {
       
       # TODO: Add this logic somewhere before to make sure to make less work?
       # If there is no section for MSD, jump to next monthly tab ; CHANGE WAS MADE HERE; THIS WAS ADDED DUE TO FEB17
