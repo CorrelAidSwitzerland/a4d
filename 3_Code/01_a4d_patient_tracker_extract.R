@@ -93,22 +93,25 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
   month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
   
   # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
-  patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
-  # print(patient_sheet)
-  
-  # AN PATIENT DATA DATA (merge/join at the end of the if year):
-  an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-  all_patient_ids <- an_patient_data$Patient.ID
+  if(any(grepl("AN Data", sheet_list))){
+    patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
+
+    # AN PATIENT DATA DATA (merge/join at the end of the if year):
+    an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
+    all_patient_ids <- an_patient_data$Patient.ID
+    
+    an_patient_data <- clean_anon_data(an_patient_data)
+    print("cleaned patient anon data")
+  } else {
+    warning("File has no AN DATA SHEET - Either fake data file or error")
+    an_patient_data <- NA
+  }
   print("patient AN Data extracted")
   
   # Extract year
   year <- 2000 + unique(parse_number(month_list))
   print(year)
   
-  
-  
-  an_patient_data <- clean_anon_data(an_patient_data)
-  print("cleaned patient anon data")
   
   
   
@@ -135,7 +138,7 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     
     if (year == 2017) {
       
-      patient_df = extract_patient_data(tracker_data,  country_code, clinic_code)
+      patient_df = extract_patient_data(tracker_data, country_code, clinic_code)
       print("patient df extracted")
       
       
