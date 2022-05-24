@@ -1,6 +1,6 @@
 ---------------- # Datacross - A4D Project: Phase 1 ------------- #
-  ---------------- # Preprocessing: Medical Supply Data (MSD) ----- #
-  ---------------- # Script version: 1.3 -------------------------- #   
+---------------- # Preprocessing: Medical Supply Data (MSD) ----- #
+---------------- # Script version: 1.3 -------------------------- #   
   
 #### Clear working space and load libraries ####  
 # Clear working space #
