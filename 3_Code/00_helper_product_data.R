@@ -49,9 +49,9 @@ helper_is_msd_end_row <- function(df, i){
     !includes_patient_name ~ FALSE,
     !includes_patient_recruitment ~ FALSE,
     !any(grepl("patient id", tolower(df[i+1, ]))) ~ FALSE,
-    !any(grepl("No", df_alt1[i + 1, ])) ~ FALSE,
-    !any(grepl("ID", df_alt1[i + 1,])) ~ FALSE,
-    TRUE
+    #!any(grepl("No", df[i + 1, ])) ~ FALSE,
+    !any(grepl("ID", df[i + 1,])) ~ FALSE,
+    TRUE ~ TRUE
     )
 
   return(condition)
@@ -89,8 +89,12 @@ extract_product_data <- function(monthly_tracker_df){
   print("Extract product data - Start")
   
   for(i in 1:nrow(monthly_tracker_df)){
+    if(is_empty(start_df_msd)){
     start_df_msd <- get_msd_start(monthly_tracker_df, i)
+    }
+    if(is_empty(end_df_msd)){
     end_df_msd <- get_msd_end(monthly_tracker_df, i)
+    }
   }
   product_data_df <- monthly_tracker_df[start_df_msd:end_df_msd, ]
   
@@ -131,3 +135,63 @@ extract_patient_data_in_products <- function(monthly_tracker_df){
 
 #### 2. Match Product data columns ####
 # ==============================================================================
+
+# @Description: Imports the patient df, cleans it and matches it against 
+#               column synonyms to unify column names
+# @columns_synonyms: Long format output of read_column_synonyms to match columns
+harmonize_product_data_columns <- function(product_df, columns_synonyms){
+  
+  product_df <- product_df %>% discard(~all(is.na(.) | . ==""))
+  product_df <- product_df[!is.na(names(product_df))]
+  
+  
+  
+  colnames(product_df) <- sanitize_column_name(colnames(product_df)) 
+  synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
+  
+  
+  
+  # replacing var codes
+  colnames_found <- match(colnames(product_df),synonym_headers , nomatch = 0)
+  colnames(product_df)[colnames(product_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
+  
+  
+  if (sum(colnames_found == 0) != 0) {"Non-matching column names found (see 0)"
+    view(colnames_found)}
+  else {return(product_df)}
+  
+  
+}
+# @Description: Imports the codebook, cleans, removes duplicates and transforms it
+#               into long df format
+read_column_synonyms <- function(codebook_data_file){
+  columns_synonyms <- codebook_data_file %>%
+    read_xlsx(sheet = "synonyms_ProductData") %>%
+    as_tibble() %>%
+    pivot_longer(cols = everything(),
+                 names_to = "name_clean",
+                 values_to = "name_to_be_matched") %>%
+    subset(!is.na(name_to_be_matched)) %>%
+    # lapply(sanitize_column_name) %>%
+    as_tibble() %>%
+    group_by(name_to_be_matched) %>%
+    slice(1) %>%
+    ungroup()
+  # view(columns_synonyms)
+  return(columns_synonyms)
+}
+
+sanitize_column_name <- function(column_name){
+  column_name <- column_name %>% 
+    str_to_lower() %>% 
+    str_replace_all(fixed(" "), "") %>% 
+    str_replace_all("[^[:alnum:]]", "")
+  
+  column_name_clean <- column_name 
+  
+  return(column_name_clean)
+}
+
+
+
+
