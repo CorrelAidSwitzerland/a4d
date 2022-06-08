@@ -13,6 +13,8 @@
   # 3. In the real data sometimes there are product rows which are concatenated
   #    multiple products in one cell. Make sure to treat this as an exception and
   #    try to extract the products correctly anyway.
+  # 4. Make sure final dataframe contains all columns as specified in the codebook, even if not present
+  #    in this specific version (due to accidental deletion or because not present in this year.)
   
   
 # Think about:
@@ -28,17 +30,19 @@ lapply(lib_list, library, character.only = TRUE)
 
 # Source functions
 source("3_Code/00_helper_product_data.R")
-source("3_Code/01_a4d_tracker_extract.R")
+source("3_Code/01_a4d_tracker_extract.R") # This has probably been changed to contain the name "patient"
+source("3_Code/01_a4d_patient_tracker_extract.R") # This seems to be the most recent file
+source("3_Code/00_a4d_patient_tracker_extract_helper.R") # Relevant for country_code extraction
 
 
 
 #### Input ####  
 
-path_output <- "/Volumes/Encrypted_SK/Datacross/A4D/Data/02_preprocdata/" # Define path where preprocessed data file shall be stored
+path_output <- "/Volumes/Datacross_A4D/Data/02_preprocdata" # Define path where preprocessed data file shall be stored
+codebook_data_file <- "/Users/skuhn/.ssh/a4d_analytics/4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
+
 
 #### Initialize data ####
-
-# DELETE: list_excel_tabs <- str_subset(sheets[!grepl(" ", sheets)], "([1:100])")
 
 # Initalize empty feedback dataframe and empty final dataframe #
 setwd(path_output)
@@ -51,7 +55,8 @@ wb = createWorkbook() # For feedback sheets
 reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
   
   # Initialization
-  columns_synonyms <- codebook
+  # columns_synonyms <- codebook
+  columns_synonyms <- read_column_synonyms_product(codebook_data_file)
   
   # Set parameters
   sheet_list <- excel_sheets(tracker_data_file)
@@ -99,7 +104,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     product_df <- extract_product_data(tracker_data) %>%
       harmonize_input_data_columns(columns_synonyms) # TODO: Add logic which correctly sets 
                                                # units_received for different years (see first todo on top)
-    patient_df <- extract_patient_data_in_products(tracker_data)
+    # patient_df <- extract_patient_data_in_products(tracker_data) # NOTE SK: IS THIS REALLY RELEVANT?
     
   #### Create splits and quality check #####
     
