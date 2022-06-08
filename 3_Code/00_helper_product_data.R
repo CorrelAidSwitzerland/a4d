@@ -59,15 +59,17 @@ helper_is_msd_end_row <- function(df, i){
 
 
 get_msd_start <- function(df, j) {
-  if(helper_is_msd_start_row(df, j)){
+  if(helper_is_msd_start_row(df, j)==TRUE){
       
       start_df_msd <- j+1
+      return(start_df_msd)
     }
 }
 
 get_msd_end <- function(df, j){
   if(helper_is_msd_end_row(df, j)){
     end_df_msd <- j-1
+    return(end_df_msd)
   }
 }
 
@@ -89,25 +91,28 @@ extract_product_data <- function(monthly_tracker_df){
   print("Extract product data - Start")
   
   for(i in 1:nrow(monthly_tracker_df)){
-    if(is_empty(start_df_msd)){
-    start_df_msd <- get_msd_start(monthly_tracker_df, i)
+    start <- get_msd_start(monthly_tracker_df, i)
+    end <- get_msd_end(monthly_tracker_df, i)
+    
+    if(!is_empty(start)){
+    start_df_msd <- start-1
     }
-    if(is_empty(end_df_msd)){
-    end_df_msd <- get_msd_end(monthly_tracker_df, i)
+    if(!is_empty(end)){
+    end_df_msd <- end
     }
   }
   product_data_df <- monthly_tracker_df[start_df_msd:end_df_msd, ]
   
   # Exception 2021: Remove row with "Medical Supplies Distribution" Title
   for(i in 1:nrow(monthly_tracker_df)){
-    if(any(grepl("MEDICAL", df_alt1[i, ]))){
+    if(any(grepl("MEDICAL", monthly_tracker_df[i, ]))){
       remove_row_index <- i
     }
   }
-  product_data_df <- product_data_df[-i,]
+  # product_data_df <- product_data_df[-i,] # TO DO: CHECK IF THIS IS NEEDED FOR EXCEPTION 2021
   
   # Clean empty remaining first row
-  product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df)
+  product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df) 
 
   print("Extract product data - End")
   
@@ -139,7 +144,7 @@ extract_patient_data_in_products <- function(monthly_tracker_df){
 # @Description: Imports the patient df, cleans it and matches it against 
 #               column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
-harmonize_product_data_columns <- function(product_df, columns_synonyms){
+harmonize_input_data_columns <- function(product_df, columns_synonyms){
   
   product_df <- product_df %>% discard(~all(is.na(.) | . ==""))
   product_df <- product_df[!is.na(names(product_df))]
@@ -164,7 +169,7 @@ harmonize_product_data_columns <- function(product_df, columns_synonyms){
 }
 # @Description: Imports the codebook, cleans, removes duplicates and transforms it
 #               into long df format
-read_column_synonyms <- function(codebook_data_file){
+read_column_synonyms_product <- function(codebook_data_file){
   columns_synonyms <- codebook_data_file %>%
     read_xlsx(sheet = "synonyms_ProductData") %>%
     as_tibble() %>%
