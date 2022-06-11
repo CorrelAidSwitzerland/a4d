@@ -263,7 +263,15 @@ fix_hba1c <- function(d) {
 # TODO Operationalization: Show where NA values exist
 
 
+# @TODO when loading real data:
+# Before running the code you need to assign the hospitals and countries
+# which use mmol or mg.
+# Go through the data and check the column headers of the respective columns.
+# Since we don't have all the real data yet, this needs to be configured.
+
+
 # Assign countries & hospitals to unit of fbg measurement
+# These info are done for the fake data only.
 mmol_countries <- c()
 mmol_hospitals <- c(
   "Clinic_LU", "Clinic_PE", "Clinic_YA", "Clinic_PU")
@@ -297,7 +305,7 @@ assign_fbg_unit_per_hospital <- function(
   )
   
   if(is.na(returned_unit)){
-    warning("FBG unit used by hospital could not be matched ~ Assumed to be mmol/L")
+    warning("FBG unit used by hospital could not be matched ~ Assumed to be mmol/L. Check if allocation of real hospitals to mg/mmol unit was performed within the code (See 02_a4d_patient_tracker_format.R fbg_mgdl.")
   }
   return(returned_unit)
 }
@@ -356,11 +364,12 @@ fbg_wrapper <- function(fbg_range, hid, cid){
   
   # Source for levels: https://www.cdc.gov/diabetes/basics/getting-tested.html
   fbg_range <- case_when(
-    grepl("high|bad", tolower(fbg_range)) ~ "200",
+    grepl("high|bad|hi", tolower(fbg_range)) ~ "200",
     grepl("med|medium", tolower(fbg_range)) ~ "140-199",
     grepl("low|good|okay", tolower(fbg_range)) ~ "140",
     TRUE ~ fbg_range
-  )
+  ) %>%
+    gsub(pattern="(DKA)", replacement="")
   
   
   lower_upper_fbg <- fbg_range %>% str_split("-") %>%
@@ -933,8 +942,12 @@ cleaning_a4d_tracker <- function(data) {
            updated_hba1c_date = fix_date_cols(updated_hba1c_date),
            updated_hba1c_prc = fix_hba1c(updated_hba1c_prc),
            updated_fbg_date = fix_date_cols(updated_fbg_date),
-           baseline_fbg_mgdl = baseline_fbg_mgdl, # NOT FIXING FOR NOW
-           updated_fbg_mgdl = updated_fbg_mgdl , # NOT FIXING FOR NOW
+           baseline_fbg_mgdl = fbg_fix(baseline_fbg_mgdl, 
+                                       country = unique(data$country_code),
+                                       hospital = unique(data$clinic_code)), # NOT FIXING FOR NOW
+           updated_fbg_mgdl = fbg_fix(updated_fbg_mgdl, 
+                                      country = unique(data$country_code),
+                                      hospital = unique(data$clinic_code)) , # NOT FIXING FOR NOW
            support_from_a4d = fix_additional_support(support_from_a4d),
            insulin_regimen = fix_insulin_reg(insulin_regimen),
            insulin_dosage = fix_insulin_dos(insulin_dosage),
@@ -943,17 +956,17 @@ cleaning_a4d_tracker <- function(data) {
            required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name),
            est_strips_pmoth = fix_est_strips_pmoth(est_strips_pmoth),
            status = fix_status(status),
-           patient_name = patient_name, # NOT FIXING FOR NOW
-           province = province, # NOT FIXING FOR NOW
-           dob = dob, # NOT FIXING FOR NOW
-           edu_occ = edu_occ, # NOT FIXING FOR NOW
-           sheet_name = sheet_name, # NOT FIXING FOR NOW
-           tracker_mo = tracker_mo, # NOT FIXING FOR NOW
-           tracker_year = tracker_year, # NOT FIXING FOR NOW
-           country_code = country_code, # NOT FIXING FOR NOW
-           clinic_code = clinic_code, # NOT FIXING FOR NOW
-           testing_fqr = NA, # NEED TO REMOVE
-           updated_fbg_sample = NA, # POTENTIALLY NEED TO CHECK AT EXTRACTION PHASE
+           patient_name = patient_name, 
+           province = province,
+           dob = dob,
+           edu_occ = edu_occ, 
+           sheet_name = sheet_name, 
+           tracker_mo = tracker_mo,
+           tracker_year = tracker_year, 
+           country_code = country_code,
+           clinic_code = clinic_code, 
+           testing_fqr = as.numeric(testing_fqr), # NEED TO REMOVE
+           updated_fbg_sample = fix_fbg_sample(updated_fbg_sample), # POTENTIALLY NEED TO CHECK AT EXTRACTION PHASE
            blood_pressure_sys_mmhg = fix_blood_pressure_sys(blood_pressure_sys_mmhg),
            blood_pressure_dias_mmhg = fix_blood_pressure_dias(blood_pressure_dias_mmhg),
            weight = fix_weight(weight),
@@ -978,8 +991,7 @@ cleaning_a4d_tracker <- function(data) {
            lost_date = fix_date_cols(lost_date),
            lost_age = fix_lost_age(lost_age),
            diag_date = fix_date_cols(diag_date),
-           dka_diag = fix_dka_diag(dka_diag),
-           updated_fbg = updated_fbg_mgdl #, # NOT FIXING FOR NOW
+           dka_diag = fix_dka_diag(dka_diag)
            # family_support_scale = family_support_scale  # NOT FIXING FOR NOW
            ) %>% 
     ungroup() 

@@ -16,7 +16,7 @@
 #                                    country = "DEF")
 #       
 #  FUNCTION OUTPUT: 
-#       tidydata: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
+#       df: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
 # [1] "no"                                
 # [2] "patient_name"                      
 # [3] "province"                          
@@ -207,8 +207,8 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     
     #### Save data ####
     # save data in a list
-    tidy_tracker_list[[sheet_num]] <- patient_df %>% 
-      mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
+    tidy_tracker_list[[sheet_num]] <- patient_df # %>% 
+    #   mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
     
     sheet_num <- sheet_num + 1        
     
@@ -224,7 +224,7 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     dob = character(),
     age = character(),
     age_diagnosis = character(),
-    recruitment_date = character(),
+    recruitment_date = date(),
     baseline_hba1c_prc = character(),
     updated_hba1c_prc = character(),
     updated_hba1c_date = character(),
@@ -272,16 +272,25 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     
   )
   
+  df <- bind_rows(tidy_tracker_list) 
+  if("testing_fqr_pday" %in% colnames(df)){
+    df$testing_fqr <- df$testing_fqr_pday
+    df <- df %>% select(-testing_fqr_pday)
+  }
   
-  tidydata <- bind_rows(tidy_tracker_list) %>%
-    bind_rows(standard_df)
+  # cols_in_df <- colnames(df) %in% colnames(standard_df)
+  # df <- df[cols_in_df] 
   
-  filename <- paste0("tracker_", unique(tidydata$country_code), "_", unique(tidydata$clinic_code), "_", unique(tidydata$tracker_year))
-   
-  tracker_info <- list(tidydata,filename)
+  # Add empty missing columns
+  cols_missing <- colnames(standard_df)[!colnames(standard_df) %in% colnames(df)]
+  df[cols_missing] <- NA
+  
+  filename <- paste0("tracker_", unique(df$country_code), "_", unique(df$clinic_code), 
+                     "_", unique(df$tracker_year))
+  tracker_info <- list(df, filename)
   
   
-  # tracker_info <- list(tidydata)
+  # tracker_info <- list(df)
   
   return(tracker_info)
   
