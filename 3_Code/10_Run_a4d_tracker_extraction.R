@@ -26,10 +26,13 @@ codebook_product <- read_column_synonyms(
   codebook_path, sheet = "synonyms_ProductData"
 )
 
+columns_synonyms = codebook_patient
+
 ### Data extraction
 df_raw <- reading_a4d_tracker(
   tracker_data_file = example_tracker_path, 
-  columns_synonyms = codebook_patient)
+  columns_synonyms = codebook_patient
+  )
 filename_output = df_raw[[2]]
 df_raw_data = df_raw[[1]]
 View(df_raw_data)

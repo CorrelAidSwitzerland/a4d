@@ -135,54 +135,98 @@ extract_date_from_measurement_column <- function(patient_df, colname){
   colname_date <- paste(c(colname_core,"_date"), collapse = "")
   patient_df <- separate_(data=patient_df, col=colname,
                           into=c(colname_value,colname_date),sep = "([(])") 
-  
+  patient_df[[colname_date]] <- gsub(")","",patient_df[[colname_date]])
   print(c("separated column: ", colname))
+  
   return(patient_df)
-  
-  
-  
-  
+}
+
+transform_MM_DD_to_YYYY_MM_DD_str <- function(column, year) {
+  for(i in 1:length(column)){
+    if(!is.na(column[i])){
+      arr <- str_split(column[i], "-") %>% unlist()
+      day <- arr[2]
+      month <- ifelse(day < 10, paste0("0", day), as.character(day))
+      month <- match(c(arr[1]), month.abb) 
+      month <- ifelse(month < 10, paste0("0", month), as.character(month))
+      
+      column[i] <- as.character(paste(year, month, day, sep = "/"))
+    }
+  }
+  return(as.character(column))
 }
 
 
 
 bmi_fix <- function(patient_df) {
-  patient_df <- patient_df %>%
-    mutate(bmi = if_else(is.na(height) | is.na(weight), NA_character_, bmi))
-  
-  
+  if("height" %in% colnames(patient_df) & "weight" %in% colnames(patient_df)){
+    patient_df <- patient_df %>%
+      mutate(bmi = if_else(is.na(height) | is.na(weight), NA_character_, bmi))
+  }
+  return(patient_df)
 }
 
 
 
-date_fix <- function(patient_df) { # used to be initial_clean_up_patient_df
+date_fix <- function(df, year) { # used to be initial_clean_up_patient_df
   
+  format <- "%Y/%m/%d"
   
-  patient_df <- patient_df %>%
-    mutate(recruitment_date = as.POSIXct(as.numeric(recruitment_date)* (60*60*24),
-                                         origin="1899-12-30",
-                                         tz="GMT"),
-           last_clinic_visit_date= as.POSIXct(as.numeric(last_clinic_visit_date)* (60*60*24),
-                                              origin="1899-12-30",
-                                              tz="GMT"),
-           bmi_date= as.POSIXct(as.numeric(bmi_date)* (60*60*24),
-                                origin="1899-12-30",
-                                tz="GMT"),
-           bmi_date= format(as.Date(bmi_date), "%Y-%m"),
-           updated_fbg_date= as.POSIXct(as.numeric(updated_fbg_date)* (60*60*24),
-                                        origin="1899-12-30",
-                                        tz="GMT"),
-           updated_hba1c_date= as.POSIXct(as.numeric(updated_hba1c_date)* (60*60*24),
+
+  if("recruitment_date" %in% colnames(df) & year > 2018){
+    df <- df %>%
+      mutate(recruitment_date = as.Date(as.numeric(recruitment_date)* (60*60*24),
+                                           origin="1899-12-30",
+                                           format=format,
+                                           tz="GMT"))
+  }
+  
+  if("last_clinic_visit_date" %in% colnames(df)){
+    df <- df %>%
+      mutate(last_clinic_visit_date= as.POSIXct(as.numeric(last_clinic_visit_date)* (60*60*24),
+                                                format=format,
+                                                origin="1899-12-30",
+                                                tz="GMT")
+      )
+  }
+  
+  if("bmi_date" %in% colnames(df)){
+    df <- df %>%
+      mutate(bmi_date= as.POSIXct(as.numeric(bmi_date)* (60*60*24),
+                                  format=format,
+                                  origin="1899-12-30",
+                                  tz="GMT"),
+             bmi_date= format(as.Date(bmi_date), "%Y-%m")
+      )
+  }
+  
+  if("updated_fbg_date" %in% colnames(df) & year > 2018){
+    df <- df %>%
+      mutate(updated_fbg_date= as.POSIXct(as.numeric(updated_fbg_date)* (60*60*24),
+                                          format=format,
                                           origin="1899-12-30",
                                           tz="GMT"),
-           updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date),
-           updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date))
+             updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date)
+      )
+  }
+  
+  if("updated_hba1c_date" %in% colnames(df) & year > 2018){
+    df <- df %>%
+      mutate(updated_hba1c_date= as.POSIXct(as.numeric(updated_hba1c_date)* (60*60*24),
+                                            format=format,
+                                             origin="1899-12-30",
+                                             tz="GMT"),
+             updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date)
+      )
+  }
+  
+  return(df)
 }
 
 
 
-bp_fix <- function(patient_df) {
-  patient_df <- patient_df %>% 
+bp_fix <- function(df) {
+  df <- df %>% 
     separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg","blood_pressure_dias_mmhg"), sep = "([/])")
   
 }

@@ -979,10 +979,11 @@ cleaning_a4d_tracker <- function(data) {
            lost_age = fix_lost_age(lost_age),
            diag_date = fix_date_cols(diag_date),
            dka_diag = fix_dka_diag(dka_diag),
-           updated_fbg = updated_fbg, # NOT FIXING FOR NOW
-           family_support_scale = family_support_scale)%>%   # NOT FIXING FOR NOW
-    ungroup() %>% 
-    select(id:family_support_scale)
+           updated_fbg = updated_fbg_mgdl #, # NOT FIXING FOR NOW
+           # family_support_scale = family_support_scale  # NOT FIXING FOR NOW
+           ) %>% 
+    ungroup() 
+  # %>% select(id:family_support_scale)
   
   data_c <- as.data.frame(data_c)
   
