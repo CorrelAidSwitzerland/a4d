@@ -28,7 +28,6 @@ lapply(lib_list, library, character.only = TRUE)
 
 # Source functions
 source("3_Code/00_helper_product_data.R")
-#source("3_Code/01_a4d_tracker_extract.R") # This has probably been changed to contain the name "patient"
 source("3_Code/01_a4d_patient_tracker_extract.R") # This seems to be the most recent file
 source("3_Code/00_a4d_patient_tracker_extract_helper.R") # Relevant for country_code extraction
 
