@@ -201,7 +201,7 @@ sanitize_column_name <- function(column_name){
 }
 
 
-#### 3. Change Product data Date format ####
+#### 3. Change Product data Date format and standardize columns ####
 
 # ==============================================================================
 # @Description: Reformates dates entered into excel in wrong format (e.g., 44042) to final date format (yyyy-mm-dd)
@@ -431,3 +431,6 @@ adjust_column_classes <- function(product_df){
 }
 
 
+
+#### 4. Extract concatenated product name information ####
+# 
