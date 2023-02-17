@@ -4,22 +4,22 @@
   
   
 # TODOs:
-  # 1. "Units Received" sometimes means "Product_Units_Received" and sometimes
+  # 1. DONE. "Units Received" sometimes means "Product_Units_Received" and sometimes
       # "Product_Balance". See Codebook. Make sure the difference is figured
-      # out correctly by the extraction functions.
-  # 2. Similar issues: 'Extra Unis Kept in Clinic' sometimes 'product_units_returned'
+      # out correctly by the extraction functions. Codebook adjusted, for raw columns "Units Received"
+      # and "Received from". 
+  # 2. DONE (Codebook. up to date). Similar issues: 'Extra Unis Kept in Clinic' sometimes 'product_units_returned'
   #    and sometimes 'product_units_extra_keptinclinic'. Make sure to differ. Codebook up to date?
-  #    See espeically years 2017+2018 in old version '00_Preprocessing_MSD_V1.3.R"
+  #    See especially years 2017+2018 in old version '00_Preprocessing_MSD_V1.3.R"
+  # 2.5 DONE. Test whether both helper functions in 00_helper_product_data.R work for all years 
+  #       and if word searches need to be done for years separately
   # 3. In the real data sometimes there are product rows which are concatenated
   #    multiple products in one cell. Make sure to treat this as an exception and
-  #    try to extract the products correctly anyway.
-  
-  
-# Think about:
-  # 1. Why do we extract patient data here? If we need to, then use alexandras
-  #    functions to make it easier here.
-  
-  
+  #    try to extract the products correctly anyway. #!see May17 and Jun17. Select by "); " or by ") and " . 
+  # 4. DONE. Make sure final dataframe contains all columns as specified in the codebook, even if not present
+  #    in this specific version (due to accidental deletion or because not present in this year.)
+  # 5. Test if box units can be extracted and put into one separate columns "product_name_units" (e.g. "2" or "2 boxes" or "50's").
+  #    For this, use everything in brackets after the product name. 
   
   
 # Packages
@@ -28,53 +28,47 @@ lapply(lib_list, library, character.only = TRUE)
 
 # Source functions
 source("3_Code/00_helper_product_data.R")
-source("3_Code/01_a4d_tracker_extract.R")
+source("3_Code/01_a4d_patient_tracker_extract.R") # This seems to be the most recent file
+source("3_Code/00_a4d_patient_tracker_extract_helper.R") # Relevant for country_code extraction
 
 
 
 #### Input ####  
 
-path_output <- "/Volumes/Encrypted_SK/Datacross/A4D/Data/02_preprocdata/" # Define path where preprocessed data file shall be stored
+path_output <- "/Volumes/Datacross_A4D/Data/02_preprocdata" # Define path where preprocessed data file shall be stored
+codebook_data_file <- "/Users/skuhn/.ssh/a4d_analytics/4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
+tracker_data_file <- "/Volumes/Datacross_A4D/A4D/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
 
-#### Initialize data ####
-
-# DELETE: list_excel_tabs <- str_subset(sheets[!grepl(" ", sheets)], "([1:100])")
-
-# Initalize empty feedback dataframe and empty final dataframe #
-setwd(path_output)
-wb = createWorkbook() # For feedback sheets
-
+#### Define product data function ####
 
 # @Description: Function to completely read and process product data from tracker
 # @tracker_data_file: Path to tracker
 # @codebook: Codebook with synonyms for product data columns
-reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
+reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_file) {
   
   # Initialization
-  columns_synonyms <- codebook
+  # columns_synonyms <- codebook
+  columns_synonyms <- read_column_synonyms_product(codebook_data_file)
   
   # Set parameters
   sheet_list <- excel_sheets(tracker_data_file)
   month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
   year <- 2000 + unique(parse_number(month_list))
   
-  # DELETE? Only important for patient data extraction?
-  # Identify all patients for the year based on anonymous data tab
-  # patient_sheet <- sheet_list[na.omit(grepl("AN Data", sheet_list))]
-  # an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-  # all_patient_ids <- an_patient_data$Patient.ID
-  # print("patient AN Data extracted")
-  
   # Extract year
   print(year)
   tidy_tracker_list <- NULL
   
+  # Remove CurrSheet
+  rm(CurrSheet) ; rm(df_final)
+  
   
   ## Loop ####
-  sheet_num <- 1
+
   for (CurrSheet in month_list) {
     
     print(CurrSheet)
+    rm(product_df)
     
     tracker_data <- data.frame(read_xlsx(tracker_data_file, CurrSheet))
     print("tracker read in")
@@ -84,384 +78,104 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook) {
     clinic_code <- cc_codes$clinic_code
     print("country and clinic code extracted")
 
-    ### Extract raw data ####
-    # Old msd_df = product_df
-    product_df <- extract_product_data(tracker_data) %>%
-      harmonize_input_data_columns(columns_synonyms) # TODO: Add logic which correctly sets 
-                                               # units_received for different years (see first todo on top)
-    patient_df <- extract_patient_data_in_products(tracker_data)
+  #### Extract raw data ####
     
-  #### Create splits and quality check #####
-    
-    #### 2021 ####
-    if(year == "2021"){
-
-      ##### For medical supplies distribution (MSD) #####
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))  
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)  
-      product_df[["Entry_Date"]] <- 
-        as.POSIXct( product_df[["Entry_Date"]] * (60*60*24)
-                    , origin="1899-12-30"
-                    , tz="GMT")
-      
-      
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Balance","Units_Received","Received_From","Units_Released","Released_To","Units_Returned","Returned_By")
-      expected_classes_char <- c("Product", "Received_From", "Released_To", "Returned_By")
-      expected_classes_num <- c("Balance", "Units_Received", "Units_Released", "Units_Returned")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      # Check3: OPEN  
-      
-      
+    # Jump to next tab sheet if there are no product data
+    if(!
+       any((grepl("Product", tracker_data[, ]) | grepl("Description of Support", tracker_data[, ])))
+       ){
+      # go to next month
+      print(paste0(CurrSheet, " is skipped!"))
+      next
     }
     
-    #### 2020 ####
-    if(year == "2020") {
-      
-      ##### For medical supplies distribution (MSD) #####
-     
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)
-      product_df[["Entry_Date"]] <-
-        as.POSIXct(product_df[["Entry_Date"]] * (60 * 60 * 24)
-                   , origin = "1899-12-30"
-                   , tz = "GMT")
-      
-
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Units_Received","Units_Released","Released_To","Units_Returned","Returned_By")
-      expected_classes_char <- c("Product", "Received_From", "Released_To", "Returned_By")
-      expected_classes_num <- c("Received_From",  "Units_Released", "Units_Returned")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      # Check3: OPEN  
-      
-      
-      
+    # Extract relevant data and renamn columns. If after extraction, dataframe is empty, this iteration is also skipped.
+    product_df <- extract_product_data(tracker_data) 
+    if(all(is.na(product_df) == TRUE)){
+      print(paste0(CurrSheet, " is skipped!"))
+      next
     }
-    #### 2019 ####
-    if (year == "2019") {
-      
-      ##### For medical supplies distribution (MSD) #####
-      
-      
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)
-      product_df[["Entry_Date"]] <-
-        as.POSIXct(product_df[["Entry_Date"]] * (60 * 60 * 24)
-                   , origin = "1899-12-30"
-                   , tz = "GMT")
-      
+    product_df <- product_df %>% harmonize_input_data_columns(columns_synonyms) 
 
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Units_Received","Received_From", "Units_Released","Released_To","Units_Returned","Returned_By")
-      expected_classes_char <- c("Product", "Units_Received",  "Released_To", "Returned_By")
-      expected_classes_num <- c("Received_From",  "Units_Released", "Units_Returned")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      
-      
-    }
-    #### 2018 ####
-    if (year == "2018") {
-      
-      # TODO: Account for this specific case for 2018 before
-      ##### For medical supplies distribution (MSD) #####
-      if(any(grepl("Returned By", colnames(product_df))) == FALSE){
-        product_df$`Returned By` <- NA
-      }
-      
+    # Remove empty rows
+    product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))  
     
-      
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)
-      product_df[["Entry_Date"]] <-
-        as.POSIXct(product_df[["Entry_Date"]] * (60 * 60 * 24)
-                   , origin = "1899-12-30"
-                   , tz = "GMT")
-      
- 
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Units_Received","Received_From","Units_Released","Released_To","Units_Returned","Returned_By")
-      expected_classes_char <- c("Product", "Units_Received", "Released_To", "Returned_By")
-      expected_classes_num <- c("Received_From", "Units_Released", "Units_Returned")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      # Check3: OPEN  
-      
-      
-      
-    }
-    #### 2017   |not09 CHANGE MADE HERE ####
-    if (year == "2017" & !grepl("Sep", tab)) {
-      
-      # TODO: Add this logic somewhere before to make sure to make less work?
-      # If there is no section for MSD, jump to next monthly tab ; CHANGE WAS MADE HERE; THIS WAS ADDED DUE TO FEB17
-      if(!any(grepl("Description of Support", df_alt1))){
-        next 
-      }
-  
-      # TODO: Account for this specific case for 2018 + 2017 before 
-      ##### For medical supplies distribution (MSD) #####
-    # CHANGE WAS MADE HERE. Added for V1.3
-      if(any(grepl("Returned By", colnames(product_df))) == FALSE){
-        product_df$`Returned By` <- NA
-      }
-      
-      
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
-      
-      # If there are no data, jump to next month ; CHANGE WAS MADE HERE, THIS WAS ADDED
-      if(nrow(product_df) == 0){
-        next
-      }
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)
-      product_df[["Entry_Date"]] <-
-        as.POSIXct(product_df[["Entry_Date"]] * (60 * 60 * 24)
-                   , origin = "1899-12-30"
-                   , tz = "GMT")
-      
-
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Units_Received","Received_From", "Units_Released","Released_To","Units_Returned","Returned_By")
-      expected_classes_char <- c("Product", "Received_From", "Released_To", "Returned_By")
-      expected_classes_num <- c("Units_Received",  "Units_Released", "Units_Returned")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      # Check3: OPEN  
-      
-      
-      
-      
-    }
-    #### 2017|09 ####
+  #### Add final dataframe columns ####
+    # Add columns that should be in final dataframe but are still missing
     
-    if (year == "2017" & grepl("Sep", tab)) {
-      
-      # TODO: Account for this specific case for 2018 + 2017 before 
-      ##### For medical supplies distribution (MSD) #####
-
-      # Remove empty rows
-      product_df <- product_df %>% filter_all(any_vars(complete.cases(.)))
-      
-      
-      # Change column "Entry Date" to datetime object
-      product_df$Entry_Date <- as.numeric(product_df$Entry_Date)
-      product_df[["Entry_Date"]] <-
-        as.POSIXct(product_df[["Entry_Date"]] * (60 * 60 * 24)
-                   , origin = "1899-12-30"
-                   , tz = "GMT")
-      
-
-      #### Quality check ####
-      
-      # Define final feedback file which should contain all necessary input columns of this version
-      expected_colnames <- c("Product","Entry_Date","Units_Received","Received_From", "Units_Released","Released_To")
-      expected_classes_char <- c("Product", "Received_From", "Released_To")
-      expected_classes_num <- c("Units_Received",  "Units_Released")
-      num_rows <- nrow(product_df)
-      df_feedback <- data.frame(matrix(ncol = length(expected_colnames), nrow = num_rows, "CORRECT"))
-      colnames(df_feedback) <- expected_colnames
-      
-      
-      # Check1: Is any column name not present?
-      if(any(colnames(df_feedback) %notin% colnames(product_df))){
-        missing_cols <- which(colnames(df_feedback) %notin% colnames(product_df))
-        df_feedback[, missing_cols] <- "ISSUE"
-      }
-      
-      #Check2: Are all column classes expected?
-      # For character columns
-      if(any(sapply(product_df[, expected_classes_char], class) != "character")){
-        wrongclass_cols <- which(sapply(product_df[, expected_classes_char], class) != "character")
-        df_feedback[,wrongclass_cols] <- "ISSUE"
-      }
-      if(!any(grepl("POSIX", is(product_df$Entry_Date))) == TRUE){
-        df_feedback$Entry_Date <- "ISSUE"
-      }
-      # For actual numeric columns, if they contain a character value even after trying to trnasform to numeric
-      for(j in unique(expected_classes_num)){
-        if(any(is.na(as.numeric(na.omit(unlist(product_df[,j]))))==TRUE)){
-          row <- which(is.na(as.numeric(na.omit(unlist(product_df[,j])))))
-          df_feedback[row,j] <- "ISSUE"
-        }
-      }
-      
-      # Check3: OPEN  
-      
-      
-      
-      
-      
-    }
-    if(year %notin% c("2017", "2018", "2019", "2020", "2021")){
-      # If the month and year variables are not legit values, yield an error feedback
-      print(
-        'Error: The script could not be run. Please check if the month and/or year you have provided are between 2017 and 2021.'
-      )
-    }  
+    columns_missing <- codebook_data_file %>%
+      read_xlsx(sheet = "synonyms_ProductData") %>%
+      as_tibble() %>%
+      pivot_longer(cols = everything(),
+                   names_to = "name_clean",
+                   values_to = "name_to_be_matched") %>%
+      as_tibble() %>%
+      group_by(name_clean) %>% distinct(., name_clean) %>% unlist() %>% as.character()
     
+    
+    
+    missing_cols <- which(columns_missing %notin% colnames(product_df))
+    missing_cols_names <- unique(columns_missing[missing_cols])
+    product_df[missing_cols_names] <- NA
+    
+  #### Recode columns where necessary ####
+    
+    # Add row index
+    product_df$index <- seq(1,nrow(product_df),1)
+    
+    # Recode date
+    product_df <- format_date(product_df)
+    
+    # Extend product name and sort by product
+    product_df <- product_df %>% fill(product, product_entry_date) %>%
+      arrange(., product, product_entry_date)
+    
+    # Recode all NAs in unit columns to 0
+    product_df <- recode_unitcolumnstozero(product_df)
+    
+    # Clean columns "units received" and "received from" from unexpected character (units) vs. numeric (received from) valeus.
+    # In first function, received_from numeric information (Balance status at START BALANCE) is transferred to variable product_balance for later computation of this variable. 
+    product_df <- clean_receivedfrom(product_df)
+    product_df <- clean_unitsreceived(product_df)
+
+    # Compute balance
+      # Remove rows without changes in units release or without information on balance
+    product_df <- compute_balance_cleanrows(product_df)
+    
+      # Compute balance_status (start vs. end vs. change)
+    product_df <- compute_balance_status(product_df)
+    
+      # Compute balance
+    product_df <- compute_balance(product_df)
+    
+    # Add country, hospital, month, year, tabname
+    product_df <- product_df %>%
+      mutate(product_country = toupper(country_code),
+             product_hospital = toupper(clinic_code),
+             product_table_month = extract_month(CurrSheet),
+             product_table_year = year,
+             product_sheet_name = CurrSheet)
+    
+    # Adjust classes of variables
+    product_df <- adjust_column_classes(product_df)
+    product_df <- subset(product_df, select=-index)
+    
+    
+  #### Combine all month sheets and return final data ####
+    
+    cat("\014")
+    print(paste0('Preprocessing for month ', CurrSheet, ' was successful!'))
+    testit(3.7)
+    if(!exists("df_final")){
+      df_final <- product_df
+    } else{
+      df_final <- rbind(df_final, product_df)
+    }
+    
+  }
+}
+
+# ========= # SK: Everything from here on can be deleted # ==============================================================================
     
   #### Start preprocessing ####  
     #### 2021 ####

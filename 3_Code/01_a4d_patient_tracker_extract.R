@@ -16,7 +16,7 @@
 #                                    country = "DEF")
 #       
 #  FUNCTION OUTPUT: 
-#       tidydata: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
+#       df: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
 # [1] "no"                                
 # [2] "patient_name"                      
 # [3] "province"                          
@@ -69,18 +69,18 @@ library(tidyr)
 library(dplyr)
 library(openxlsx)
 
-tracker_data_file <- "/Volumes/A4D_project/05_2021 AN Clinic IX A4D Tracker.xlsx" # WORKS! 2017 and 2018 03_2019 AN Clinic IX A4D Tracker.xlsx + 01_2019 AN Clinic_YA A4D Tracker.xlsx"
-codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx"
-a4d_functions <- "3_Code/00_a4d_extract_functionsAB.R"
-tracker_list <- list.files(path = "/Volumes/A4D_project/", pattern = ".xlsx", full.names = TRUE)
+# tracker_data_file <- "/Volumes/A4D_project/05_2021 AN Clinic IX A4D Tracker.xlsx" # WORKS! 2017 and 2018 03_2019 AN Clinic IX A4D Tracker.xlsx + 01_2019 AN Clinic_YA A4D Tracker.xlsx"
+# codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx"
+# a4d_functions <- "3_Code/00_a4d_extract_functionsAB.R"
+# tracker_list <- list.files(path = "/Volumes/A4D_project/", pattern = ".xlsx", full.names = TRUE)
 
 
 # get functions
-source(a4d_functions)
+# source(a4d_functions)
 
 
 # getting codebook
-columns_synonyms <- read_column_synonyms(codebook_data_file = codebook_data_file)
+# columns_synonyms <- read_column_synonyms(codebook_data_file = codebook_data_file)
 
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
@@ -93,22 +93,25 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
   month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
   
   # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
-  patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
-  # print(patient_sheet)
-  
-  # AN PATIENT DATA DATA (merge/join at the end of the if year):
-  an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
-  all_patient_ids <- an_patient_data$Patient.ID
+  if(any(grepl("AN Data", sheet_list))){
+    patient_sheet <-sheet_list[na.omit(grepl("AN Data", sheet_list))]
+
+    # AN PATIENT DATA DATA (merge/join at the end of the if year):
+    an_patient_data <- data.frame(read_xlsx(tracker_data_file, patient_sheet))
+    all_patient_ids <- an_patient_data$Patient.ID
+    
+    an_patient_data <- clean_anon_data(an_patient_data)
+    print("cleaned patient anon data")
+  } else {
+    warning("File has no AN DATA SHEET - Either fake data file or error")
+    an_patient_data <- NA
+  }
   print("patient AN Data extracted")
   
   # Extract year
   year <- 2000 + unique(parse_number(month_list))
   print(year)
   
-  
-  
-  an_patient_data <- clean_anon_data(an_patient_data)
-  print("cleaned patient anon data")
   
   
   
@@ -129,219 +132,83 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     
     # view(tracker_data)
      
+ 
+    patient_df = extract_patient_data(tracker_data, country_code, clinic_code)
+    print("patient df extracted")
     
-    ####------------2017 PATIENT DATA ----------------------------###
-    #### 2017 ####
+    tracker_cols <- extract_tracker_cols(tracker_data, year)
+    print("tracker_col names extracted")
     
-    if (year == 2017) {
-      
-      patient_df = extract_patient_data(tracker_data,  country_code, clinic_code)
-      print("patient df extracted")
-      
-      
-      tracker_cols <- extract_tracker_cols(tracker_data, year)
-      print("tracker_col names extracted")
-      
-      colnames(patient_df) <- tracker_cols
-      print("tracker_col names added to patient df")
-      
-      
-      patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-      print("finished harmonizing patient df")
+    colnames(patient_df) <- tracker_cols
+    print("tracker_col names added to patient df")
+    
+    patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
+    print("finished harmonizing patient df")
+    
+    #### 2017 + 2018 ####
+    if (year == 2017 | year == 2018) {
+      format <- "%Y/%m/%d"
       
       # fix dates (split dates in cells)
       patient_df <- extract_date_from_measurement_column(patient_df, "updated_hba1c_prc")
+      patient_df$updated_hba1c_date <- transform_MM_DD_to_YYYY_MM_DD_str(
+        patient_df$updated_hba1c_date, year
+        )
+      patient_df$updated_hba1c_date <- as.Date(
+          patient_df$updated_hba1c_date,
+          format=format,
+          origin="1899-12-30",
+          tz="GMT"
+        )
+      
       patient_df <- extract_date_from_measurement_column(patient_df, "updated_fbg_mgdl")
+      patient_df$updated_fbg_date <- transform_MM_DD_to_YYYY_MM_DD_str(
+        patient_df$updated_fbg_date, year
+        )
+      patient_df$updated_fbg_date <- as.Date(
+        patient_df$updated_fbg_date,
+        format=format,
+        origin="1899-12-30",
+        tz="GMT"
+      )
       print("date extracted from compound cols")
       
-      
-      patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
-      print("added patient anon data")
-      
-      
-      patient_df <- patient_df %>%
-        mutate(sheet_name = CurrSheet,
-               tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-               tracker_year = year,
-               country_code = country_code,
-               clinic_code = clinic_code)
-      print("added tracker metadata")
-      
-      
-    } # 2017 tracker
+      if("recruitment_date" %in% colnames(patient_df)){
+        patient_df <- patient_df %>%
+          mutate(recruitment_date = as.Date(as.character(as.Date(as.numeric(
+            convertToDate(as.numeric(patient_df$recruitment_date))
+              )
+            )
+            ) %>% gsub(pattern="-", replacement="/"),
+            format=format
+          )
+          )
+      }
+    } 
+
+    patient_df <- bmi_fix(patient_df)
+    patient_df <- date_fix(patient_df, year)
+
+    if ("blood_pressure_mmhg" %in% colnames(patient_df))  {
+      patient_df <- bp_fix(patient_df)}
+    print("patient cleaning done")
     
-    ####------------ 2018 PATIENT DATA ----------------------------###
-    # 2018 ####
-    if (year == 2018) {
-      
-      
-      tracker_cols <- extract_tracker_cols(tracker_data, year)
-      print("tracker_col names extracted")
-      
-      patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-      print("patient df extracted")
-      
-      colnames(patient_df) <- tracker_cols
-      print("tracker_col names added to patient df")
-      
-      patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-      print("finished harmonizing patient df")
-      
-      
-      # fix dates (split dates in cells)
-      patient_df <- extract_date_from_measurement_column(patient_df, "updated_hba1c_prc")
-      patient_df <- extract_date_from_measurement_column(patient_df, "updated_fbg_mgdl")
-      print("date extracted from compound cols")
-      
-      
-      if (sum(colnames(patient_df) %in% "blood_pressure_mmhg") == 1)  {
-        patient_df <- bp_fix(patient_df)}
-      
-      print("patient cleaning done")
-      
-      patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
-      print("added patient anon data")
-      
-      
-      patient_df <- patient_df %>%
-        mutate(sheet_name = CurrSheet,
-               tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-               tracker_year = year,
-               country_code = country_code,
-               clinic_code = clinic_code)
-      print("added tracker metadata")
-      
-      
-    }  # 2018 tracker
-    
-    ####------------ 2019 PATIENT DATA ----------------------------###
-    #### 2019 ####
-    
-    if (year == 2019) {
-      
-      
-      tracker_cols <- extract_tracker_cols(tracker_data, year)
-      print("tracker_col names extracted")
-      
-      patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-      print("patient df extracted")
-      
-      colnames(patient_df) <- tracker_cols
-      print("tracker_col names added to patient df")
-      
-      patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-      print("finished harmonizing patient df")
-      
-      patient_df <- bmi_fix(patient_df)
-      patient_df <- date_fix(patient_df)
-      
-      if (sum(colnames(patient_df) %in% "blood_pressure_mmhg") == 1)  {
-        patient_df <- bp_fix(patient_df)}
-      
-      print("patient cleaning done")
-      
-      patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
-      print("added patient anon data")
-      
-      patient_df <- patient_df %>%
-        mutate(sheet_name = CurrSheet,
-               tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-               tracker_year = year,
-               country_code = country_code,
-               clinic_code = clinic_code)
-      print("added tracker metadata")
-      
-      
-    } # 2019 tracker
-    
-    ####------------ 2020 PATIENT DATA ----------------------------###
-    #### 2020 ####
-    
-    if (year == 2020) {
-      
-      patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-      print("patient df extracted")
-      
-      tracker_cols <- extract_tracker_cols(tracker_data, year)
-      print("tracker_col names extracted")
-      
-      
-      colnames(patient_df) <- tracker_cols
-      print("tracker_col names added to patient df")
-      
-      patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-      print("finished harmonizing patient df")
-      
-      patient_df <- bmi_fix(patient_df)
-      patient_df <- date_fix(patient_df)
-      
-      if (sum(colnames(patient_df) %in% "blood_pressure_mmhg") == 1)  {
-        patient_df <- bp_fix(patient_df)}
-      
-      print("patient cleaning done")
-      
-      patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
-      print("added patient anon data")
-      
-      
-      patient_df <- patient_df %>%
-        mutate(sheet_name = CurrSheet,
-               tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-               tracker_year = year,
-               country_code = country_code,
-               clinic_code = clinic_code)
-      print("added tracker metadata")
-      
-      
-    } # 2020 tracker
-    
-    ####------------ 2020 PATIENT DATA ----------------------------###
-    #### 2021 ####
+    patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
+    print("added patient anon data")
     
     
-    if (year == 2021) {
-      
-      patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-      print("patient df extracted")
-      
-      tracker_cols <- extract_tracker_cols(tracker_data, year)
-      print("tracker_col names extracted")
-      
-      
-      colnames(patient_df) <- tracker_cols
-      print("tracker_col names added to patient df")
-      
-      patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
-      print("finished harmonizing patient df")
-      
-      patient_df <- bmi_fix(patient_df)
-      patient_df <- date_fix(patient_df)
-      
-      if (sum(colnames(patient_df) %in% "blood_pressure_mmhg") == 1)  {
-        patient_df <- bp_fix(patient_df)}
-      
-      print("patient cleaning done")
-      
-      patient_df <- patient_df %>% left_join(an_patient_data, by = "id")
-      print("added patient anon data")
-      
-      
-      patient_df <- patient_df %>%
-        mutate(sheet_name = CurrSheet,
-               tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
-               tracker_year = year,
-               country_code = country_code,
-               clinic_code = clinic_code)
-      print("added tracker metadata")
-      
-      
-    } # 2021 tracker
-    
+    patient_df <- patient_df %>%
+      mutate(sheet_name = CurrSheet,
+             tracker_mo = match(substr(CurrSheet, 1, 3),month.abb),
+             tracker_year = year,
+             country_code = country_code,
+             clinic_code = clinic_code)
+    print("added tracker metadata")
     
     #### Save data ####
     # save data in a list
-    tidy_tracker_list[[sheet_num]] <- patient_df %>% 
-      mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
+    tidy_tracker_list[[sheet_num]] <- patient_df # %>% 
+    #   mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
     
     sheet_num <- sheet_num + 1        
     
@@ -357,7 +224,7 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     dob = character(),
     age = character(),
     age_diagnosis = character(),
-    recruitment_date = character(),
+    recruitment_date = date(),
     baseline_hba1c_prc = character(),
     updated_hba1c_prc = character(),
     updated_hba1c_date = character(),
@@ -405,16 +272,25 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
     
   )
   
+  df <- bind_rows(tidy_tracker_list) 
+  if("testing_fqr_pday" %in% colnames(df)){
+    df$testing_fqr <- df$testing_fqr_pday
+    df <- df %>% select(-testing_fqr_pday)
+  }
   
-  tidydata <- bind_rows(tidy_tracker_list) %>%
-    bind_rows(standard_df)
+  # cols_in_df <- colnames(df) %in% colnames(standard_df)
+  # df <- df[cols_in_df] 
   
-  # filename <- paste0("tracker_", unique(tidydata$country_code), "_", unique(tidydata$clinic_code), "_", unique(tidydata$tracker_year))
-  # 
-  # tracker_info <- list(tidydata,filename)
+  # Add empty missing columns
+  cols_missing <- colnames(standard_df)[!colnames(standard_df) %in% colnames(df)]
+  df[cols_missing] <- NA
+  
+  filename <- paste0("tracker_", unique(df$country_code), "_", unique(df$clinic_code), 
+                     "_", unique(df$tracker_year))
+  tracker_info <- list(df, filename)
   
   
-  tracker_info <- list(tidydata)
+  # tracker_info <- list(df)
   
   return(tracker_info)
   
@@ -422,17 +298,17 @@ reading_a4d_tracker <- function(tracker_data_file, columns_synonyms) {
 
 # TESTING IT OUT ----------------------------------------------------------
 
-counter <- 1
-saving_clean_files <- list()
-
-for (CurrTracker in tracker_list) {
-  
-  saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
-                                                     columns_synonyms = columns_synonyms)
-  
- counter <- counter + 1
-}
-
-
-clean_files <- bind_rows(saving_clean_files)
+# counter <- 1
+# saving_clean_files <- list()
+# 
+# for (CurrTracker in tracker_list) {
+#   
+#   saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
+#                                                      columns_synonyms = columns_synonyms)
+#   
+#  counter <- counter + 1
+# }
+# 
+# 
+# clean_files <- bind_rows(saving_clean_files)
 # write_csv(clean_files, file = "/Volumes/A4D_project/clean_a4d_data.csv")
