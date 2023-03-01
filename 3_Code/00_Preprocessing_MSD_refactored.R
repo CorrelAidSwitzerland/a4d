@@ -1,6 +1,6 @@
----------------- # Datacross - A4D Project: Phase 1 ------------- #
-  ---------------- # Preprocessing: Medical Supply Data (MSD) ----- #
-  ---------------- # Script version: 1.3 -------------------------- #   
+#---------------- # Datacross - A4D Project: Phase 1 ------------- #
+#  ---------------- # Preprocessing: Medical Supply Data (MSD) ----- #
+#  ---------------- # Script version: 1.3 -------------------------- #   
   
   
 # TODOs:
@@ -65,7 +65,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
   
   ## Loop ####
 
-  for (CurrSheet in month_list) {
+  for(CurrSheet in month_list){
     
     print(CurrSheet)
     rm(product_df)
@@ -101,13 +101,14 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     del_rows <- apply(product_df, MARGIN = 1, function(x) sum(!is.na(x))) # count per row how many cols are not NA. If only 0 or 1, there is not enough information and row is dropped.
     del_rows <- as.numeric(which(del_rows <= 1))
     
-    # For 2021, remove the last row of every product which serves as an "end-of-month" balance row.
-    if(year >= 2021){
-      product_df <- product_df %>% dplyr::group_by(product) %>% slice(-n())}
-    
     product_df <- product_df %>%
       dplyr::slice(., -del_rows) %>%
       filter_all(any_vars(complete.cases(.))) # Remove empty rows
+    
+    # For 2021, remove the last row of every product which serves as an "end-of-month" balance row.
+    if(year >= 2021){ # CHANGE WAS MADE HERE BY ADDING FILL FUNCTION AND PLACING IT AFTER DELETING EMPTY ROWS: 
+      product_df <- product_df %>% tidyr::fill(product, .direction = "down") %>% dplyr::group_by(product) %>% slice(-n())}
+    
     
     # Split product cells with various products and/or unit information
     product_df <- extract_product_multiple(product_df)
@@ -160,8 +161,8 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
       # Compute balance_status (start vs. end vs. change)
     product_df <- compute_balance_status(product_df)
     
-      # Compute balance
-    product_df <- compute_balance(product_df)
+      # Compute balance # CHANGE WAS MADE HERE BY ADDING PARAMETER year
+    product_df <- compute_balance(product_df, year)
     
     # Add country, hospital, month, year, tabname
     product_df <- product_df %>%
@@ -192,6 +193,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
   return(df_final)
 }
 
+a4d_out_2017 <- reading_a4d_products_from_tracker(tracker_data_file, codebook_data_file)
 
 #### End ####
 

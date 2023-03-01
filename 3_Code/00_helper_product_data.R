@@ -12,7 +12,7 @@ set_second_row_as_headers_and_remove_first_row <- function(df){
 #### 1. Identify xlsx cutoff ####
 # ==============================================================================
 
-# TODO: Test whether both helper functions work for all years 
+# Test whether both helper functions work for all years 
 #       and if word searches need to be done for years separately
 # Conditions to cut of at start msd data
 helper_is_msd_start_row <- function(df, i){
@@ -109,8 +109,7 @@ extract_product_data <- function(monthly_tracker_df){
       remove_row_index <- i
     }
   }
-  # product_data_df <- product_data_df[-i,] # TO DO: CHECK IF THIS IS NEEDED FOR EXCEPTION 2021
-  
+
   # Clean empty remaining first row
   product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df) 
 
@@ -120,28 +119,28 @@ extract_product_data <- function(monthly_tracker_df){
 }
 
 # @Description: Reads patient summary (? -> to be checked)
-extract_patient_data_in_products <- function(monthly_tracker_df){
-  print("Extract patient summary data - Start")
-  
-  for(i in 1:nrow(monthly_tracker_df)){
-    start_df_patient <- get_patient_start(monthly_tracker_df, i)
-    end_df_patient <- get_patient_end(monthly_tracker_df, i)
-  }
-  patient_df <- monthly_tracker_df[start_df_patient:end_df_patient, ]
-  
-  # Clean empty  first row
-  patient_df <- set_second_row_as_headers_and_remove_first_row(patient_df)
-  
-  
-  print("Extract patient summary data - End")
-  
-  return(patient_df)
-}
+#  extract_patient_data_in_products <- function(monthly_tracker_df){
+#   print("Extract patient summary data - Start")
+#   
+#   for(i in 1:nrow(monthly_tracker_df)){
+#     start_df_patient <- get_patient_start(monthly_tracker_df, i)
+#     end_df_patient <- get_patient_end(monthly_tracker_df, i)
+#   }
+#   patient_df <- monthly_tracker_df[start_df_patient:end_df_patient, ]
+#   
+#   # Clean empty  first row
+#   patient_df <- set_second_row_as_headers_and_remove_first_row(patient_df)
+#   
+#   
+#   print("Extract patient summary data - End")
+#   
+#   return(patient_df)
+# }
 
 #### 2. Match Product data columns ####
 # ==============================================================================
 
-# @Description: Imports the patient df, cleans it and matches it against 
+# @Description: Imports the product df, cleans it and matches it against 
 #               column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
 harmonize_input_data_columns <- function(product_df, columns_synonyms){
@@ -207,7 +206,7 @@ sanitize_column_name <- function(column_name){
 # @Description: Reformates dates entered into excel in wrong format (e.g., 44042) to final date format (yyyy-mm-dd)
 format_date_excelnum <- function(product_df){
   rel_rows <- which(!grepl("-", product_df$product_entry_date))
-  product_df[rel_rows, 'product_entry_date'] <- as.character(openxlsx::convertToDate(as.numeric(product_df[rel_rows, "product_entry_date"])))
+  product_df[rel_rows, 'product_entry_date'] <- as.character(openxlsx::convertToDate(as.numeric(unlist(product_df[rel_rows, "product_entry_date"]))))
   return(product_df)
 }
 
@@ -252,10 +251,10 @@ recode_unitcolumnstozero <- function(product_df){
   return(product_df)
 }
 
-# @Description: Clean column "product_units_received" from character values
+# @Description: Clean column "product_units_received" from character values and rows with values but no further information 
 clean_unitsreceived <- function(product_df){
   
-  # Clean column "product_units_received from"
+  # Clean column "product_units_received from" from character values
   drop_rows <- product_df %>%
     dplyr::filter(grepl('START|END|BALANCE', product_units_received)) %>%
     dplyr::select(index) %>%
@@ -265,6 +264,7 @@ clean_unitsreceived <- function(product_df){
     mutate(product_units_received = ifelse(index %in% drop_rows,
                                0,
                                as.numeric(product_units_received)))
+  
   return(product_df)
 }
 
@@ -336,7 +336,7 @@ compute_balance_status <- function(product_df){
 }
 
 # @Description: Computes balance based on start balance value, units released, units returned, units received.-
-compute_balance <- function(product_df){
+compute_balance <- function(product_df, year){
   
   # Change variable type
   product_df['product_balance'] <- as.numeric(unlist(product_df['product_balance']))
@@ -410,7 +410,7 @@ compute_balance <- function(product_df){
   
   return(product_df)
   
-}
+} # CHANGE WAS MADE HERE BY ADDING PARAMETER year
 
 # @Description: Adjust classes of dataframe names 
 adjust_column_classes <- function(product_df){
@@ -430,7 +430,72 @@ adjust_column_classes <- function(product_df){
   
 }
 
+# @Description: Wait for x seconds in script
+testit <- function(x){
+  p1 <- proc.time()
+  Sys.sleep(x)
+  proc.time() - p1 
+}
 
 
 #### 4. Extract concatenated product name information ####
+
+# @Description: Splits product name cells with multiple values into separate rows. Uses numeric product content in cell for columns units_received or units_released
+
+extract_product_multiple <- function(product_df){
+  
+  # Split multiple-product cell into several rows
+  df_product_test_x <- product_df %>%
+    tidyr::separate_rows(., product, convert = TRUE, sep = "\\; ") %>%
+    tidyr::separate_rows(., product, convert = TRUE, sep = " and ")
+  
+  
+  # Extract product unit information from product cell and add to release or received cell, depending on entries in the corresponding column
+  df_product_test_x$product_units_notes <- as.character(NA)
+  
+  # If units columns not present yet, add 
+  if("product_units_received" %notin% colnames(df_product_test_x)){
+    df_product_test_x$product_units_received <- as.numeric(NA)
+  } #else{
+    #df_product_test_x$product_units_received <- as.numeric(df_product_test_x$product_units_received)}
+  if("product_units_released" %notin% colnames(df_product_test_x)){
+    df_product_test_x$product_units_released <- as.numeric(NA)
+  } #else{
+    # df_product_test_x$product_units_released <- as.numeric(df_product_test_x$product_units_released)}
+    
+  # Create column "notes", containing input from brackets if word "box" or "unit" is present
+  df_product_test_x <- df_product_test_x %>%
+    rowwise() %>%
+    dplyr::mutate(
+      product_units_notes = case_when( # e.g., "1 box" or "1 unit". Other units (e.g., 2ml x5) are not extracted.
+        (grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product))) ~ as.character(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]])-1))[1], 
+        TRUE ~ product_units_notes
+      ))
+  
+  # Adjust columns units_receceived and units_released with box/unit content in brackets
+  for(row in 1:nrow(df_product_test_x)){
+    
+    product <- df_product_test_x[row, 'product'] 
+    if("product_received_from" %in% colnames(df_product_test_x)){
+    product_received_from <- df_product_test_x[row, 'product_received_from']} else{product_received_from <- NA} 
+    if("product_released_to" %in% colnames(df_product_test_x)){
+    product_released_to <- df_product_test_x[row, 'product_released_to'] } else{product_released_to <- NA}
+    
+    # recode product_units_received
+    if((grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product)) & is.na(product_received_from) == FALSE) & (!grepl("\\/", product))){
+      df_product_test_x[row, 'product_units_received'] <-  as.character(as.numeric(stringi::stri_extract_all_regex(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]])-1), "[1-9]+")[[1]][1]))
+    }
+    
+    # recode product_units_released
+    if((grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product)) & is.na(product_released_to) == FALSE) & (!grepl("\\/", product))){
+      df_product_test_x[row, 'product_units_released'] <-  as.numeric(stringi::stri_extract_all_regex(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]])-1), "[1-9]+")[[1]][1]) }
+
+  }
+  
+  
+  
+  return(df_product_test_x)
+  
+  }
+
 # 
