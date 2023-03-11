@@ -950,10 +950,10 @@ cleaning_a4d_tracker <- function(data) {
                                       hospital = unique(data$clinic_code)) , # NOT FIXING FOR NOW
            support_from_a4d = fix_additional_support(support_from_a4d),
            insulin_regimen = fix_insulin_reg(insulin_regimen),
-           insulin_dosage = fix_insulin_dos(insulin_dosage),
+           # insulin_dosage = fix_insulin_dos(insulin_dosage), # had to be commented out for script to work with 2021 tracker
            testing_fqr_pday = fix_testfqr(testing_fqr_pday),
-           required_insulin = fix_required_insulin(required_insulin),
-           required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name),
+           # required_insulin = fix_required_insulin(required_insulin),  # had to be commented out for script to work with 2021 tracker
+           # required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name), # had to be commented out for script to work with 2021 tracker
            est_strips_pmoth = fix_est_strips_pmoth(est_strips_pmoth),
            status = fix_status(status),
            patient_name = patient_name, 
