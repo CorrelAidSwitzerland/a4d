@@ -397,7 +397,7 @@ fbg_fix <- function(fbg, country, hospital) {
       fbg, cid = country, hid = hospital),
     silent = TRUE)
   if (class(d) == "try-error") {
-    d  <- 999999 }
+    d  <- "999999" }
   return(d)
 }
 
