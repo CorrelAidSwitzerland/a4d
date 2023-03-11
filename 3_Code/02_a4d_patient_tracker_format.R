@@ -344,7 +344,7 @@ fbg_mmol_upper_bound <- 136.5 # https://www.cleveland19.com/story/1425584/ohio-m
 sanity_check_fbg_mmol <- function(fbg_mmol, min_fbg = fbg_mmol_lower_bound,
                                   max_fbg = fbg_mmol_upper_bound) {
   fbg_result <- case_when(
-    fbg_mmol <= min_fbg & fbg_mmol >= max_fbg ~ fbg_mmol,
+    fbg_mmol >= min_fbg & fbg_mmol <= max_fbg ~ fbg_mmol,
     TRUE ~ NA_real_
   )
   
