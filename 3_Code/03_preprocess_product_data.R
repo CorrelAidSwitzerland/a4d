@@ -36,8 +36,8 @@ source("3_Code/00_a4d_patient_tracker_extract_helper.R") # Relevant for country_
 #### Input ####  
 
 path_output <- "/Volumes/Datacross_A4D/Data/02_preprocdata" # Define path where preprocessed data file shall be stored
-codebook_data_file <- "/Users/skuhn/.ssh/a4d_analytics/4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
-tracker_data_file <- "/Volumes/Datacross_A4D/A4D/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
+codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
+tracker_data_file <- "D:/a4d/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
 
 #### Define product data function ####
 
