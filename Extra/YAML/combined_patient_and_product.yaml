@@ -1,0 +1,188 @@
+product:
+  product:
+  - Product
+  - Description of Support
+  product_entry_date:
+  - Date
+  - Entry Date
+  product_units_received:
+  - Units Received  (bottle/box)
+  - Units Received
+  - Units Received \r\n(bottle/box)
+  product_balance: Balance
+  product_received_from:
+  - Received From
+  - Received From
+  product_units_released:
+  - Units Released (box)
+  - Units Released
+  - Units Released\r\n(box)
+  product_released_to:
+  - Released To
+  - Released To (select from drop down list)
+  - Released To \r\n(Drop Down List)
+  - releasedtodropdownlist
+  - releasedtoselectfromdropdownlist
+  product_units_returned:
+  - Units Returned
+  - Extra Unis Kept in Clinic
+  product_returned_by: Returned By
+  product_balance_status: []
+  product_country: []
+  product_hospital: []
+  product_table_month: []
+  product_table_year: []
+  product_sheet_name: []
+patient:
+  additional_support: []
+  age:
+  - Age
+  - Age*
+  age_diagnosis:
+  - Age at diagnosis of T1DM
+  - Age at Diagnosis
+  - ageofdiagnosis
+  baseline_fbg_mgdl:
+  - FBG (mg/dL) - BASELINE
+  - Baseline SMBG or CBG (mg/dL)
+  - Baseline FBG (mg/dL)
+  baseline_hba1c_prc:
+  - HbA1c (%) - BASELINE
+  - Baseline HbA1c (%)
+  blood_pressure_dias_mmhg: []
+  blood_pressure_sys_mmhg: []
+  bmi:
+  - BMI
+  - BMI*
+  bmi_date:
+  - Date of BMI (mmm-yy)
+  - Date of BMI (mm-yy)
+  clinic_code: []
+  country_code: []
+  dob:
+  - D.O.B.
+  - "D.O.B. \r\n(dd-mmm-yyyy)"
+  - d.o.b. (dd-mm-yyyy)
+  - DOB..ANON
+  edu_occ:
+  - "Education (School Grade)  \r\nOr Occupation"
+  - "Level of Education\r\nOr Occupation\r\n(Date if Applicable or NA)"
+  - Education (School Grade)
+  - Education...Ocupation
+  est_strips_pmoth: Estimated testing strips per month
+  gender: Gender
+  height: Height (Meters)
+  hospitalisation:
+  - Last hospitalisation due to diabetes emergency or glucose control
+  - "Hospitalisation due to diabetes emergency or glucose control\r\n(Date if Applicable
+    or NA)"
+  - "Hospitalisation due to diabetes emergency or glucose control\r\n(Include Date)"
+  - Hospitalisation due to diabetes emergency
+  - Hospitalisation due to diabetes emergency or glucose control(Insert Date or NA)
+  - hospitalisationduetodiabetesemergencyorglucosecontrolegdkaincludedate
+  id:
+  - ID
+  - Patient ID
+  insulin_dosage: insulin dosage
+  insulin_regimen:
+  - Insulin Regimen
+  - Insuline regime
+  - insulinregime
+  last_clinic_visit_date:
+  - Last Clinic Visit
+  - Last Clinic Visit (dd-mmm-yy)
+  latest_complication_screening_date: []
+  latest_complication_screening_type: []
+  'no': 'No'
+  patient_name:
+  - Patient Name
+  - Patient.Name..ANON
+  province: Province
+  recruitment_date:
+  - Date of recruitment
+  - Date of Recruitment
+  - Date of recruitment into A4D Programme
+  - date of recruitment into a4d programme (mmm-yy)
+  - Date of recruitment into A4D Programme
+  remarks:
+  - "Any opportunity or intervention that may require support from A4D e.g. complications
+    or family support\r\nRemarks (If Applicable)"
+  - Complications e.g. (1,3,4)
+  - remarks
+  sheet_name: NA
+  status: Status
+  support_from_a4d:
+  - Support received from A4D
+  - Level of Support
+  testing_fqr_pday:
+  - Testing Frequency  (per day)
+  - "Testing Frequency\r\n(per day)"
+  tracker_year: NA
+  updated_fbg_date: Updated FBG Date
+  updated_fbg_mgdl: updated mean fbg (mg/dl)
+  updated_fbg_sample: []
+  updated_hba1c_date:
+  - Updated  HbA1c Date
+  - Updated \r\nHbA1cDate
+  - '"Updated \r\nHbA1c%"'
+  updated_hba1c_prc:
+  - HbA1c (%) - UPDATED
+  - Updated HbA1c (%)
+  - Updated  HbA1c %
+  weight: Body Weight (Kg)
+  updated_fbg:
+  - FBG (mg/dL) - UPDATED
+  - "Updated \r\nSMBG or CBG\r\nmg/dL"
+  - Updated FBG (mg/dL)
+  - Updated SMBG or CBG (mg/dL) Date
+  - "Updated FBG \r\nml/dL"
+  blood_pressure_mmhg: Blood Pressure (mm HG)
+  latest_complication_screenning:
+  - "Complication Screening\r\n(starting from Q2 2021)"
+  - "Latest Complication Screening\r\n(select from list)"
+  - "Latest Complication Screening\r\n(dd-mmm-yy)"
+  qol_survey: "QoL Survey\r\n(Est. Q3 2021)"
+  required_insulin: estimated insulin required per year
+  required_insulin_product_name:
+  - estimated insulin required per year col18
+  - Estimated Insulin Required per year col18
+  - Estimated Insulin Required per year.1
+  family_support_scale: Family Support Scale
+  dm_complication_comment:
+  - Comments on \r\nother complications
+  - commentsonothercomplications
+  dm_complication_other:
+  - Others \r\n(Y/N)
+  - othersyn
+  dm_complication_kidney:
+  - Kidney \r\n(Y/N)
+  - kidneyyn
+  dm_complication_eye:
+  - Eye \r\n(Y/N)
+  - eyeyn
+  num_admin_hosp_total: total
+  num_admin_hosp_dka:
+  - Number \r\nDKA
+  - numberdka
+  num_admin_hosp_hypo:
+  - Number \r\nHypo
+  - numberhypo
+  num_admin_hosp_other_reason:
+  - Reason for \r\nOthers
+  - reasonforothers
+  num_admin_hosp_other:
+  - Number \r\nOthers
+  - numberothers
+  inactive_reason:
+  - Inactive\r\n Reason
+  - inactivereason
+  lost_date:
+  - Lost/ Deceased \r\n Date
+  - lostdeceaseddate
+  lost_age:
+  - Lost/ Deceased \r\n Age
+  - lostdeceasedage
+  diag_date:
+  - Date of\r\nDiagnosis
+  - dateofdiagnosis
+  dka_diag: dkaatdiagnosisyn

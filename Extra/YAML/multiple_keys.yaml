@@ -1,0 +1,111 @@
+|
+  updated_hba1c_date: "Updated \r\nHbA1c%"
+  age: Age
+  age_diagnosis: Age at Diagnosis
+  age_diagnosis: Age at diagnosis of T1DM
+  age: Age*
+  remarks: "Any opportunity or intervention that may require support from A4D e.g. complications
+    or family support\r\nRemarks (If Applicable)"
+  bmi: BMI
+  bmi: BMI*
+  baseline_fbg_mgdl: Baseline FBG (mg/dL)
+  baseline_hba1c_prc: Baseline HbA1c (%)
+  baseline_fbg_mgdl: Baseline SMBG or CBG (mg/dL)
+  blood_pressure_mmhg: Blood Pressure (mm HG)
+  weight: Body Weight (Kg)
+  dm_complication_comment: Comments on \r\nother complications
+  latest_complication_screenning: "Complication Screening\r\n(starting from Q2 2021)"
+  remarks: Complications e.g. (1,3,4)
+  dob: D.O.B.
+  dob: "D.O.B. \r\n(dd-mmm-yyyy)"
+  dob: DOB..ANON
+  bmi_date: Date of BMI (mm-yy)
+  bmi_date: Date of BMI (mmm-yy)
+  recruitment_date: Date of Recruitment
+  recruitment_date: Date of recruitment
+  recruitment_date: Date of recruitment into A4D Programme
+  diag_date: Date of\r\nDiagnosis
+  edu_occ: Education (School Grade)
+  edu_occ: "Education (School Grade)  \r\nOr Occupation"
+  edu_occ: Education...Ocupation
+  required_insulin_product_name: Estimated Insulin Required per year col18
+  required_insulin_product_name: Estimated Insulin Required per year.1
+  est_strips_pmoth: Estimated testing strips per month
+  dm_complication_eye: Eye \r\n(Y/N)
+  baseline_fbg_mgdl: FBG (mg/dL) - BASELINE
+  updated_fbg: FBG (mg/dL) - UPDATED
+  family_support_scale: Family Support Scale
+  gender: Gender
+  baseline_hba1c_prc: HbA1c (%) - BASELINE
+  updated_hba1c_prc: HbA1c (%) - UPDATED
+  height: Height (Meters)
+  hospitalisation: Hospitalisation due to diabetes emergency
+  hospitalisation: "Hospitalisation due to diabetes emergency or glucose control\r\n(Date
+    if Applicable or NA)"
+  hospitalisation: "Hospitalisation due to diabetes emergency or glucose control\r\n(Include
+    Date)"
+  hospitalisation: Hospitalisation due to diabetes emergency or glucose control(Insert
+    Date or NA)
+  id: ID
+  inactive_reason: Inactive\r\n Reason
+  insulin_regimen: Insulin Regimen
+  insulin_regimen: Insuline regime
+  dm_complication_kidney: Kidney \r\n(Y/N)
+  last_clinic_visit_date: Last Clinic Visit
+  last_clinic_visit_date: Last Clinic Visit (dd-mmm-yy)
+  hospitalisation: Last hospitalisation due to diabetes emergency or glucose control
+  latest_complication_screenning: "Latest Complication Screening\r\n(dd-mmm-yy)"
+  latest_complication_screenning: "Latest Complication Screening\r\n(select from list)"
+  edu_occ: "Level of Education\r\nOr Occupation\r\n(Date if Applicable or NA)"
+  support_from_a4d: Level of Support
+  lost_age: Lost/ Deceased \r\n Age
+  lost_date: Lost/ Deceased \r\n Date
+  sheet_name: NA
+  no: No
+  num_admin_hosp_dka: Number \r\nDKA
+  num_admin_hosp_hypo: Number \r\nHypo
+  num_admin_hosp_other: Number \r\nOthers
+  dm_complication_other: Others \r\n(Y/N)
+  id: Patient ID
+  patient_name: Patient Name
+  patient_name: Patient.Name..ANON
+  province: Province
+  qol_survey: "QoL Survey\r\n(Est. Q3 2021)"
+  num_admin_hosp_other_reason: Reason for \r\nOthers
+  status: Status
+  support_from_a4d: Support received from A4D
+  testing_fqr_pday: "Testing Frequency\r\n(per day)"
+  testing_fqr_pday: Testing Frequency  (per day)
+  updated_fbg: "Updated \r\nSMBG or CBG\r\nmg/dL"
+  updated_hba1c_prc: Updated  HbA1c %
+  updated_hba1c_date: Updated  HbA1c Date
+  updated_fbg: "Updated FBG \r\nml/dL"
+  updated_fbg: Updated FBG (mg/dL)
+  updated_fbg_date: Updated FBG Date
+  updated_hba1c_prc: Updated HbA1c (%)
+  updated_fbg: Updated SMBG or CBG (mg/dL) Date
+  updated_hba1c_date: Updated \r\nHbA1cDate
+  age_diagnosis: ageofdiagnosis
+  dm_complication_comment: commentsonothercomplications
+  dob: d.o.b. (dd-mm-yyyy)
+  recruitment_date: date of recruitment into a4d programme (mmm-yy)
+  diag_date: dateofdiagnosis
+  dka_diag: dkaatdiagnosisyn
+  required_insulin: estimated insulin required per year
+  required_insulin_product_name: estimated insulin required per year col18
+  dm_complication_eye: eyeyn
+  hospitalisation: hospitalisationduetodiabetesemergencyorglucosecontrolegdkaincludedate
+  inactive_reason: inactivereason
+  insulin_dosage: insulin dosage
+  insulin_regimen: insulinregime
+  dm_complication_kidney: kidneyyn
+  lost_age: lostdeceasedage
+  lost_date: lostdeceaseddate
+  num_admin_hosp_dka: numberdka
+  num_admin_hosp_hypo: numberhypo
+  num_admin_hosp_other: numberothers
+  dm_complication_other: othersyn
+  num_admin_hosp_other_reason: reasonforothers
+  remarks: remarks
+  num_admin_hosp_total: total
+  updated_fbg_mgdl: updated mean fbg (mg/dl)
