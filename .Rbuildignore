@@ -1,0 +1,4 @@
+^renv$
+^renv\.lock$
+^a4d\.Rproj$
+^\.Rproj\.user$
