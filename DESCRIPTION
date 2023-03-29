@@ -2,10 +2,23 @@ Package: a4d
 Title: Custom package for the DataCross A4D project
 Version: 0.0.0.9000
 Authors@R: 
-    person("Michael", "Aydinbas", , "michael.aydinbas@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Michael", "Aydinbas", , "michael.aydinbas@gmail.com", role = c("aut", "cre"))
 Description: This package offers functionality to process, clean and ingest tracker data (excel files).
-License: use_mit_license()
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+Depends: 
+    tidyverse
+Imports: 
+    data.table,
+    dplyr,
+    lubridate,
+    openxlsx,
+    readr,
+    readxl,
+    tidyr,
+    zoo
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
