@@ -1503,6 +1503,17 @@
       ],
       "Hash": "a84e2cc86d07289b3b6f5069df7a004c"
     },
+    "tictoc": {
+      "Package": "tictoc",
+      "Version": "1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "methods"
+      ],
+      "Hash": "e1a2cb41e4be769a941c90c11469db90"
+    },
     "tidyr": {
       "Package": "tidyr",
       "Version": "1.3.0",
