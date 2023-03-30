@@ -22,19 +22,9 @@
   #    For this, use everything in brackets after the product name.
 
 
-# Packages
-lib_list <- c("tidyverse", "tidyxl", "readxl", "readxl", "stringr", "openxlsx")
-lapply(lib_list, library, character.only = TRUE)
-
-# Source functions
-source("R/00_helper_product_data.R")
-source("R/01_a4d_patient_tracker_extract.R") # This seems to be the most recent file
-source("R/00_a4d_patient_tracker_extract_helper.R") # Relevant for country_code extraction
-
-
 #### Input ####
 codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
-tracker_data_file <- "2_Data/2021_Tracker.xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
+tracker_data_file <-  "/Volumes/CorrelAid/a4d/data/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
 
 #### Define product data function ####
 
@@ -48,7 +38,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
   columns_synonyms <- read_column_synonyms_product(codebook_data_file)
 
   # Set parameters
-  sheet_list <- excel_sheets(tracker_data_file)
+  sheet_list <- readxl::excel_sheets(tracker_data_file)
   month_list <-sheet_list[na.omit(pmatch(month.abb, sheet_list))]
   year <- 2000 + unique(parse_number(month_list))
 
@@ -67,7 +57,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     print(CurrSheet)
     rm(product_df)
 
-    tracker_data <- data.frame(read_xlsx(tracker_data_file, CurrSheet))
+    tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, CurrSheet))
     print("tracker read in")
 
     cc_codes <- extract_country_clinic_code(tracker_data)
@@ -114,7 +104,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     # Add columns that should be in final dataframe but are still missing
 
     columns_missing <- codebook_data_file %>%
-      read_xlsx(sheet = "synonyms_ProductData") %>%
+      readxl::read_xlsx(sheet = "synonyms_ProductData") %>%
       as_tibble() %>%
       pivot_longer(cols = everything(),
                    names_to = "name_clean",

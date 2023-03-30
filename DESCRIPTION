@@ -1,9 +1,9 @@
 Package: a4d
-Title: Custom package for the DataCross A4D project
+Title: Process tracker data for the DataCross A4D project
 Version: 0.0.0.9000
 Authors@R: 
     person("Michael", "Aydinbas", , "michael.aydinbas@gmail.com", role = c("aut", "cre"))
-Description: This package offers functionality to process, clean and ingest tracker data (excel files).
+Description: Functionality to process, clean and ingest tracker data (excel files).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
