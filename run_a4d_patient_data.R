@@ -6,16 +6,12 @@
 #setwd("D:/a4d_code/a4d_analytics")
 
 # Tracker path
-example_tracker_path <- "2_Data/2017_Tracker.xlsx"
+example_tracker_path <- "/Volumes/CorrelAid/a4d/data/01_2017 AN Clinic IX A4D Tracker (1).xlsx"
 # "d:/a4d_data/01_2017 AN Clinic IX A4D Tracker (1).xlsx"
 # example_tracker_path <- "2_Data/2017_Tracker.xlsx"
 
 codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
 
-# Setup
-source("3_Code/00_a4d_patient_tracker_extract_helper.R")
-source("3_Code/01_a4d_patient_tracker_extract.R")
-source("3_Code/02_a4d_patient_tracker_format.R")
 
 ## Extract codebooks for each data form
 codebook_patient <- read_column_synonyms(
