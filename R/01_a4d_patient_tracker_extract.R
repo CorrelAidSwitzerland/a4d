@@ -71,7 +71,7 @@
 
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
-reading_a4d_tracker <-
+reading_a4d_patient_data <-
     function(tracker_data_file, columns_synonyms) {
         # list the sheets in excel workbook & filter these
         sheet_list <- readxl::excel_sheets(tracker_data_file)

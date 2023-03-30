@@ -25,7 +25,7 @@ codebook_product <- read_column_synonyms(
 columns_synonyms = codebook_patient
 
 ### Data extraction
-df_raw <- reading_a4d_tracker(
+df_raw <- reading_a4d_patient_data(
   tracker_data_file = example_tracker_path,
   columns_synonyms = codebook_patient
   )
@@ -34,7 +34,7 @@ df_raw_data = df_raw[[1]]
 View(df_raw_data)
 
 ### Data cleanse
-df_cleaned <- cleaning_a4d_tracker(data = df_raw_data)
+df_cleaned <- clean_tracker_raw_patient_data(data = df_raw_data)
 View(df_cleaned)
 
 

@@ -16,7 +16,7 @@ check_numeric_borders <- function(vector,
                                   max,
                                   min){
   vector <- as.numeric(vector)
-  vector <- ifelse(vector >= max,
+  vector <- ifelse(vector > max,
                    NA,
                    vector)
   vector <- ifelse(vector < min,
@@ -920,7 +920,7 @@ fix_dka_diag <- function(d) {
 # Output 1: Cleaned data table
 # TODO Output 2: Table containing data checklist
 
-cleaning_a4d_tracker <- function(data) {
+clean_tracker_raw_patient_data <- function(data) {
 
 
   data_c <- data %>%
