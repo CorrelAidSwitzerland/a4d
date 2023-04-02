@@ -1,30 +1,37 @@
 
 extract_country_clinic_code <- function(tracker_data, year){
-  # extract country and clinic
+    # check table whether country name in one column existing
+    # if not check whether it's in the column name
+    # else put empty
+    country_column <- colnames(tracker_data)[grepl("country_", tracker_data, ignore.case = TRUE)]
+    if(!is_empty(country_column)){
+        country_row <- tracker_data %>% dplyr::filter(grepl('country',!!rlang::sym(country_column[1]), ignore.case = TRUE))
+        country_code <- sub('.*country_(\\w+).*','\\1',country_row[country_column[1]], ignore.case = TRUE)
+    }else if(any(grepl("country_", colnames(tracker_data), ignore.case = TRUE))){
+        country_column <- colnames(tracker_data)[grepl("country_", colnames(tracker_data), ignore.case = TRUE)][1]
+        country_code <- sub('.*country_(\\w+).*','\\1',country_column, ignore.case = TRUE)
+    }else{
+        country_code <- NA
+        print('could not extract country code')
+    }
 
+    # check table whether clinic name in one column existing
+    # if not check whether it's in the column name
+    # else put empty
+    clinic_column <- colnames(tracker_data)[grepl("clinic_", tracker_data, ignore.case = TRUE)]
+    if(!is_empty(clinic_column)){
+        clinic_row <- tracker_data %>% dplyr::filter(grepl('clinic_',!!rlang::sym(clinic_column[1]), ignore.case = TRUE))
+        clinic_code <- sub('.*clinic_(\\w+).*','\\1',clinic_row[clinic_column[1]], ignore.case = TRUE)
+    }else if(any(grepl("clinic_", colnames(tracker_data), ignore.case = TRUE))){
+        clinic_column <- colnames(tracker_data)[grepl("clinic_", colnames(tracker_data), ignore.case = TRUE)][1]
+        clinic_code <- sub('.*clinic_(\\w+).*','\\1',clinic_column, ignore.case = TRUE)
+    }else{
+        clinic_code <- NA
+        print('could not extract clinic code')
+    }
 
-
-  # extract country and clinic
-  country_code <- toupper(tracker_data[grepl("country",tolower(tracker_data[,2])),2])
-  clinic_code <- toupper(tracker_data[grepl("clinic",tolower(tracker_data[,2])),2])
-  country_code <- substr(country_code, 9, 10)
-  clinic_code <- substr(clinic_code, 8, 9)
-
-
-  if (is_empty(country_code)| is_empty(clinic_code)) {
-
-    tracker_data_sub <- tracker_data[2:nrow(tracker_data),2]
-    id_loc <- min(which(str_detect(tracker_data_sub, "_") == 1))
-    country_code <- substr(tracker_data_sub[id_loc], 1, 2)
-    clinic_code <-  substr(tracker_data_sub[id_loc], 4, 5)
-
-  }
-
-
-  output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
-  return(output_list)
-
-
+    output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
+    return(output_list)
 }
 
 

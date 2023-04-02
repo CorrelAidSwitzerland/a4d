@@ -24,7 +24,7 @@
 
 #### Input ####
 codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
-tracker_data_file <-  "/Volumes/CorrelAid/a4d/data/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
+tracker_data_file <-  "/Volumes/USBmischan/05_2021 AN Clinic IX A4D Tracker.xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
 
 #### Define product data function ####
 
@@ -63,7 +63,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     cc_codes <- extract_country_clinic_code(tracker_data)
     country_code <- cc_codes$country_code
     clinic_code <- cc_codes$clinic_code
-    print("country and clinic code extracted")
+    print(cc_codes)
 
   #### Extract raw data ####
 
