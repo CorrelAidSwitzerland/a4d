@@ -22,9 +22,10 @@
   #    For this, use everything in brackets after the product name.
 
 
+
 #### Input ####
 codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
-tracker_data_file <-  "/Volumes/CorrelAid/a4d/data/01_2017 AN Clinic IX A4D Tracker (1).xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
+tracker_data_file <-  rstudioapi::selectFile() # select tracker interactively
 
 #### Define product data function ####
 

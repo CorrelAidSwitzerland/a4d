@@ -6,9 +6,7 @@
 #setwd("D:/a4d_code/a4d_analytics")
 
 # Tracker path
-example_tracker_path <- "/Volumes/CorrelAid/a4d/data/01_2017 AN Clinic IX A4D Tracker (1).xlsx"
-# "d:/a4d_data/01_2017 AN Clinic IX A4D Tracker (1).xlsx"
-# example_tracker_path <- "2_Data/2017_Tracker.xlsx"
+example_tracker_path <- rstudioapi::selectFile() # select tracker interactively
 
 codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
 
