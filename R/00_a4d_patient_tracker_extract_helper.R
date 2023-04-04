@@ -1,36 +1,34 @@
 
-extract_country_clinic_code <- function(tracker_data, year){
-    # check table whether country name in one column existing
-    # if not check whether it's in the column name
-    # else put empty
-    country_column <- colnames(tracker_data)[grepl("country_", tracker_data, ignore.case = TRUE)]
-    if(!is_empty(country_column)){
-        country_row <- tracker_data %>% dplyr::filter(grepl('country',!!rlang::sym(country_column[1]), ignore.case = TRUE))
-        country_code <- sub('.*country_(\\w+).*','\\1',country_row[country_column[1]], ignore.case = TRUE)
-    }else if(any(grepl("country_", colnames(tracker_data), ignore.case = TRUE))){
-        country_column <- colnames(tracker_data)[grepl("country_", colnames(tracker_data), ignore.case = TRUE)][1]
-        country_code <- sub('.*country_(\\w+).*','\\1',country_column, ignore.case = TRUE)
-    }else{
-        country_code <- NA
-        print('could not extract country code')
+# helper function helping to extract country/clinic code based on regex; extracts code based on all word characters following a string_to_match
+# first checks whether string_to_match (e.g. country_) is found in any row and returns column name where it was found
+# if any column name returned, code is extracted from that column
+# if not column names are checked
+# otherwise put NA
+# e.g. country_PB would be replaced to PB
+extract_code_from_column <- function(string_to_match, tracker_data) {
+    column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)]
+
+    if (!is_empty(column_names)) {
+        column_row <- tracker_data %>% dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names[1]), ignore.case = TRUE))
+        code <- sub(paste0('.*', string_to_match, '_([a-zA-Z]+).*'), '\\1', column_row[column_names[1]], ignore.case = TRUE)
+    }else if(any(grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE))){
+        column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)][1]
+        code <- sub(paste0('.*', string_to_match, '_([a-zA-Z]+).*'),'\\1', column_name, ignore.case = TRUE)
+    } else {
+        code <- NA
+        print(paste('could not extract', string_to_match, 'code'))
     }
 
-    # check table whether clinic name in one column existing
-    # if not check whether it's in the column name
-    # else put empty
-    clinic_column <- colnames(tracker_data)[grepl("clinic_", tracker_data, ignore.case = TRUE)]
-    if(!is_empty(clinic_column)){
-        clinic_row <- tracker_data %>% dplyr::filter(grepl('clinic_',!!rlang::sym(clinic_column[1]), ignore.case = TRUE))
-        clinic_code <- sub('.*clinic_(\\w+).*','\\1',clinic_row[clinic_column[1]], ignore.case = TRUE)
-    }else if(any(grepl("clinic_", colnames(tracker_data), ignore.case = TRUE))){
-        clinic_column <- colnames(tracker_data)[grepl("clinic_", colnames(tracker_data), ignore.case = TRUE)][1]
-        clinic_code <- sub('.*clinic_(\\w+).*','\\1',clinic_column, ignore.case = TRUE)
-    }else{
-        clinic_code <- NA
-        print('could not extract clinic code')
-    }
+    return(code)
+}
 
-    output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
+# extracting country and clinic code based on all word characters folowing the string country_ and clinic_
+# expects that one sheet contains one country and one clinic code
+extract_country_clinic_code <- function(tracker_data) {
+    country_code <- extract_code_from_column("country", tracker_data)
+    clinic_code <- extract_code_from_column("clinic", tracker_data)
+
+    output_list <- list("country_code" = country_code, "clinic_code" = clinic_code)
     return(output_list)
 }
 
