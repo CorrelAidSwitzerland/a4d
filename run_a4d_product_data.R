@@ -25,7 +25,11 @@
 
 #### Input ####
 codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
+<<<<<<< HEAD
 tracker_data_file <-  rstudioapi::selectFile() # select tracker interactively
+=======
+tracker_data_file <-  "/Volumes/USBmischan/05_2021 AN Clinic IX A4D Tracker.xlsx" # TO DO: This line can be deleted and is just needed for testing of the function.
+>>>>>>> f3eae86 (rewritten extract_country_clinic_code function)
 
 #### Define product data function ####
 
@@ -64,6 +68,10 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     cc_codes <- extract_country_clinic_code(tracker_data)
     country_code <- cc_codes$country_code
     clinic_code <- cc_codes$clinic_code
+<<<<<<< HEAD
+=======
+    print(cc_codes)
+>>>>>>> f3eae86 (rewritten extract_country_clinic_code function)
 
   #### Extract raw data ####
 
