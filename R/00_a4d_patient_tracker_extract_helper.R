@@ -5,15 +5,16 @@
 # if not column names are checked
 # otherwise put NA
 # e.g. country_PB would be replaced to PB
-extract_code_from_column <- function(string_to_match, tracker_data) {
-    column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)]
+extract_code_from_df <- function(string_to_match, tracker_data) {
+    column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)][1]
 
-    if (!is_empty(column_names)) {
-        column_row <- tracker_data %>% dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names[1]), ignore.case = TRUE))
-        code <- sub(paste0('.*', string_to_match, '_([a-zA-Z]+).*'), '\\1', column_row[column_names[1]], ignore.case = TRUE)
-    }else if(any(grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE))){
-        column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)][1]
-        code <- sub(paste0('.*', string_to_match, '_([a-zA-Z]+).*'),'\\1', column_name, ignore.case = TRUE)
+    if (!is_empty(column_names) & !is.na(column_names)) {
+        column_row <- tracker_data %>%
+            dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names), ignore.case = TRUE))
+        code <- sub(paste0('.*', string_to_match, '([a-zA-Z]+).*'), '\\1', column_row[column_names], ignore.case = TRUE)
+    } else if (any(grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE))) {
+        column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)]
+        code <- sub(paste0('.*', string_to_match, '([a-zA-Z]+).*'),'\\1', column_name, ignore.case = TRUE)
     } else {
         code <- NA
         print(paste('could not extract', string_to_match, 'code'))
@@ -25,11 +26,10 @@ extract_code_from_column <- function(string_to_match, tracker_data) {
 # extracting country and clinic code based on all word characters folowing the string country_ and clinic_
 # expects that one sheet contains one country and one clinic code
 extract_country_clinic_code <- function(tracker_data) {
-    country_code <- extract_code_from_column("country", tracker_data)
-    clinic_code <- extract_code_from_column("clinic", tracker_data)
+    country_code <- extract_code_from_df("country_", tracker_data)
+    clinic_code <- extract_code_from_df("clinic_", tracker_data)
 
-    output_list <- list("country_code" = country_code, "clinic_code" = clinic_code)
-    return(output_list)
+    return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
 
