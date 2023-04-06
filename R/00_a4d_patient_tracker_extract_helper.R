@@ -1,30 +1,35 @@
 
-extract_country_clinic_code <- function(tracker_data, year){
-  # extract country and clinic
+# helper function helping to extract country/clinic code based on regex; extracts code based on all word characters following a string_to_match
+# first checks whether string_to_match (e.g. country_) is found in any row and returns column name where it was found
+# if any column name returned, code is extracted from that column
+# if not column names are checked
+# otherwise put NA
+# e.g. country_PB would be replaced to PB
+extract_code_from_df <- function(string_to_match, tracker_data) {
+    column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)][1]
 
+    if (!is_empty(column_names) & !is.na(column_names)) {
+        column_row <- tracker_data %>%
+            dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names), ignore.case = TRUE))
+        code <- sub(paste0('.*', string_to_match, '([a-zA-Z]+).*'), '\\1', column_row[column_names], ignore.case = TRUE)
+    } else if (any(grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE))) {
+        column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)]
+        code <- sub(paste0('.*', string_to_match, '([a-zA-Z]+).*'),'\\1', column_name, ignore.case = TRUE)
+    } else {
+        code <- NA
+        print(paste('could not extract', string_to_match, 'code'))
+    }
 
+    return(code)
+}
 
-  # extract country and clinic
-  country_code <- toupper(tracker_data[grepl("country",tolower(tracker_data[,2])),2])
-  clinic_code <- toupper(tracker_data[grepl("clinic",tolower(tracker_data[,2])),2])
-  country_code <- substr(country_code, 9, 10)
-  clinic_code <- substr(clinic_code, 8, 9)
+# extracting country and clinic code based on all word characters folowing the string country_ and clinic_
+# expects that one sheet contains one country and one clinic code
+extract_country_clinic_code <- function(tracker_data) {
+    country_code <- extract_code_from_df("country_", tracker_data)
+    clinic_code <- extract_code_from_df("clinic_", tracker_data)
 
-
-  if (is_empty(country_code)| is_empty(clinic_code)) {
-
-    tracker_data_sub <- tracker_data[2:nrow(tracker_data),2]
-    id_loc <- min(which(str_detect(tracker_data_sub, "_") == 1))
-    country_code <- substr(tracker_data_sub[id_loc], 1, 2)
-    clinic_code <-  substr(tracker_data_sub[id_loc], 4, 5)
-
-  }
-
-
-  output_list <- list("country_code"=country_code, "clinic_code"=clinic_code)
-  return(output_list)
-
-
+    return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
 
