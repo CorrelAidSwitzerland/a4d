@@ -64,7 +64,6 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     cc_codes <- extract_country_clinic_code(tracker_data)
     country_code <- cc_codes$country_code
     clinic_code <- cc_codes$clinic_code
-    print("country and clinic code extracted")
 
   #### Extract raw data ####
 
