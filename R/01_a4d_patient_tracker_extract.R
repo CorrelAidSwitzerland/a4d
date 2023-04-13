@@ -2,21 +2,21 @@
 
 # "reading_a4d_tracker" is a function that reads an excel workbook (.xlsx file) that contains a4d monthly trackers and creates a tidy dataframe with that data.
 # It takes into account all the sheets in the excel workbook that contain patient data, and binds these together. (e.g., if a workbook contains sheets Jan'18, Feb'18
-#  and Mar'18, patient data from each sheet will be combined into one data frame)
+# and Mar'18, patient data from each sheet will be combined into one data frame)
 #
 # INPUT ARGUMENTS: -
-#       tracker_data_file = full path of the excel workbook that contains a4d monthly trackers (format: string e.g., "users/Documents/file.xlsx")
-#       year = year of tracker data (format: numeric. e.g., 2018)
-#       country = country code (format: character string e.g., "xyz")
-#       clinic = clinic code (format: character string e.g., "xyz")
+# tracker_data_file = full path of the excel workbook that contains a4d monthly trackers (format: string e.g., "users/Documents/file.xlsx")
+# year = year of tracker data (format: numeric. e.g., 2018)
+# country = country code (format: character string e.g., "xyz")
+# clinic = clinic code (format: character string e.g., "xyz")
 #
-#      example: reading_a4d_tracker(tracker_data_file = "~/Desktop/2017 Tracker Template.xlsx",
-#                                    year = 2017,
-#                                    clinic = "ABC",
-#                                    country = "DEF")
+# example: reading_a4d_tracker(tracker_data_file = "~/Desktop/2017 Tracker Template.xlsx",
+# year = 2017,
+# clinic = "ABC",
+# country = "DEF")
 #
-#  FUNCTION OUTPUT:
-#       df: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
+# FUNCTION OUTPUT:
+# df: "tidy" dataframe with patient data with the following columns (format: character. This is to facilitate merging of dataframes)
 # [1] "no"
 # [2] "patient_name"
 # [3] "province"
@@ -129,7 +129,7 @@ reading_a4d_patient_data <-
             # view(tracker_data)
 
 
-            patient_df = extract_patient_data(tracker_data, country_code, clinic_code)
+            patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
             print("patient df extracted")
 
             tracker_cols <- extract_tracker_cols(tracker_data, year)
@@ -138,7 +138,7 @@ reading_a4d_patient_data <-
             colnames(patient_df) <- tracker_cols
             print("tracker_col names added to patient df")
 
-            patient_df = harmonize_patient_data_columns(patient_df, columns_synonyms)
+            patient_df <- harmonize_patient_data_columns(patient_df, columns_synonyms)
             print("finished harmonizing patient df")
 
             #### 2017 + 2018 ####
@@ -180,7 +180,7 @@ reading_a4d_patient_data <-
             patient_df <- bmi_fix(patient_df)
             patient_df <- date_fix(patient_df, year)
 
-            if ("blood_pressure_mmhg" %in% colnames(patient_df))  {
+            if ("blood_pressure_mmhg" %in% colnames(patient_df)) {
                 patient_df <- bp_fix(patient_df)
             }
             print("patient cleaning done")
@@ -203,11 +203,9 @@ reading_a4d_patient_data <-
             #### Save data ####
             # save data in a list
             tidy_tracker_list[[sheet_num]] <- patient_df # %>%
-            #   mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
+            # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
 
             sheet_num <- sheet_num + 1
-
-
         } # sheet for loop
 
 
@@ -256,15 +254,14 @@ reading_a4d_patient_data <-
             dm_complication_eye = character(),
             num_admin_hosp_total = character(),
             num_admin_hosp_dka = character(),
-            num_admin_hosp_hypo	=  character(),
-            num_admin_hosp_other_reason	=  character(),
+            num_admin_hosp_hypo = character(),
+            num_admin_hosp_other_reason = character(),
             num_admin_hosp_other = character(),
             inactive_reason = character(),
             lost_date = character(),
             lost_age = character(),
-            diag_date	= character(),
+            diag_date = character(),
             dka_diag = character()
-
         )
 
         df <- bind_rows(tidy_tracker_list)
@@ -296,7 +293,6 @@ reading_a4d_patient_data <-
         # tracker_info <- list(df)
 
         return(tracker_info)
-
     }
 
 # TESTING IT OUT ----------------------------------------------------------
@@ -306,10 +302,10 @@ reading_a4d_patient_data <-
 #
 # for (CurrTracker in tracker_list) {
 #
-#   saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
-#                                                      columns_synonyms = columns_synonyms)
+# saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
+# columns_synonyms = columns_synonyms)
 #
-#  counter <- counter + 1
+# counter <- counter + 1
 # }
 #
 #
