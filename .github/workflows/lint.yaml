@@ -34,6 +34,5 @@ jobs:
 
       - name: Lint
         run: |
-          lintr::use_lintr(type = "tidyverse")
           lintr::lint_package()
         shell: Rscript {0}
