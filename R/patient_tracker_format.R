@@ -238,7 +238,6 @@ assign_fbg_unit_per_hospital <- function(hospital_id,
 # @hospital_id: ID of the hospital where patient values were taken
 # @Output: FBG value in mmol/L or NA if not matched
 transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
-    fbg_num <- as.numeric(fbg)
     factor_mmol_in_mg <- 18.02
     measure_unit <-
         assign_fbg_unit_per_hospital(
@@ -248,9 +247,9 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
 
     # If not unit "mmol/L" is assumed
     fbg_mmol <- case_when(
-        measure_unit == "mg/dL" ~ fbg_num / factor_mmol_in_mg,
-        measure_unit == "mmol/L" ~ fbg_num,
-        is.na(measure_unit) ~ fbg_num,
+        measure_unit == "mg/dL" ~ fbg / factor_mmol_in_mg,
+        measure_unit == "mmol/L" ~ fbg,
+        is.na(measure_unit) ~ fbg,
         TRUE ~ NA_real_
     )
 
@@ -296,7 +295,7 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
         grepl("low|good|okay", tolower(fbg_range)) ~ "140",
         TRUE ~ fbg_range
     ) %>%
-        gsub(pattern = "(DKA)", replacement = "")
+        gsub(pattern = "(DKA)", replacement = "", fixed=T)
 
 
     lower_upper_fbg <- fbg_range %>%
