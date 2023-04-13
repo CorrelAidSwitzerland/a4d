@@ -4,10 +4,14 @@
 \alias{select_A4D_directory}
 \title{Selects path to A4D data and sets it as an environment variable}
 \usage{
-select_A4D_directory()
+select_A4D_directory(reset = FALSE)
+}
+\arguments{
+\item{reset}{A boolean. If set to TRUE, the directory containing the tracker
+data is changed.}
 }
 \value{
-Sets the env variable to A4D data folder
+Returns a character representing the path to the tracker data
 }
 \description{
 Selects path to A4D data and sets it as an environment variable
