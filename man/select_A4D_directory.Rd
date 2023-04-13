@@ -2,17 +2,17 @@
 % Please edit documentation in R/select_A4D_directory.R
 \name{select_A4D_directory}
 \alias{select_A4D_directory}
-\title{Selects path to A4D data and sets it as an environment variable}
+\title{Selects path to A4D data and sets it as an environment variable.}
 \usage{
 select_A4D_directory(reset = FALSE)
 }
 \arguments{
-\item{reset}{A boolean. If set to TRUE, the directory containing the tracker
+\item{reset}{A boolean. If set to TRUE, the directory containing the tracker.
 data is changed.}
 }
 \value{
-Returns a character representing the path to the tracker data
+Returns a character representing the path to the tracker data.
 }
 \description{
-Selects path to A4D data and sets it as an environment variable
+Selects path to A4D data and sets it as an environment variable.
 }

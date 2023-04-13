@@ -1,6 +1,6 @@
-#' Helper function that sets the env variable to the A4D tracker files
+#' Helper function that sets the env variable to the A4D tracker files.
 #'
-#' @return Returns a character representing the path to the tracker data
+#' @return Returns a character representing the path to the tracker data.
 #' @export
 #'
 set_a4d_data_root <- function() {
