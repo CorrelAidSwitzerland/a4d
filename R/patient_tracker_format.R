@@ -295,7 +295,7 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
         grepl("low|good|okay", tolower(fbg_range)) ~ "140",
         TRUE ~ fbg_range
     ) %>%
-        gsub(pattern = "(DKA)", replacement = "", fixed=T)
+        gsub(pattern = "(DKA)", replacement = "", fixed = T)
 
 
     lower_upper_fbg <- fbg_range %>%
