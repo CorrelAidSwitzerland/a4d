@@ -4,3 +4,6 @@ linters: linters_with_defaults( # see vignette("lintr")
   )
 encoding: "UTF-8"
 error_on_lint: FALSE
+exclusions: list(
+    "tests/testthat"
+  )
