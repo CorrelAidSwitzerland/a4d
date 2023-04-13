@@ -7,7 +7,7 @@
 
 # Tracker path
 tracker_root_path <- select_A4D_directory()
-selected_tracker_data_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
+tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
 
 codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
 
@@ -25,7 +25,7 @@ columns_synonyms = codebook_patient
 
 ### Data extraction
 df_raw <- reading_a4d_patient_data(
-  tracker_data_file = selected_tracker_data_file,
+  tracker_data_file = tracker_file,
   columns_synonyms = codebook_patient
   )
 filename_output = df_raw[[2]]
