@@ -1,6 +1,6 @@
 # DESCRIPTION -------------------------------------------------------------
 
-#This function cleans the output of the "tidy" function by reformatting certain columns.
+# This function cleans the output of the "tidy" function by reformatting certain columns.
 # Basic functions are created and then applied to each piece of data avaialbe in one row.
 
 
@@ -14,11 +14,13 @@ check_numeric_borders <- function(vector,
                                   min) {
     vector <- as.numeric(vector)
     vector <- ifelse(vector > max,
-                     NA,
-                     vector)
+        NA,
+        vector
+    )
     vector <- ifelse(vector < min,
-                     NA,
-                     vector)
+        NA,
+        vector
+    )
 }
 
 replace_empty_string_with_NA <- function(string_vector) {
@@ -37,15 +39,17 @@ par_synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
 replace_gender_synonyms <- function(d,
                                     synonyms_f = par_synonyms_lower_female,
                                     synonyms_m = par_synonyms_lower_male) {
-    y <- case_when(tolower(d) %in% synonyms_f ~ "F",
-                   tolower(d) %in% synonyms_m ~ "M",
-                   TRUE ~ "Other")
+    y <- case_when(
+        tolower(d) %in% synonyms_f ~ "F",
+        tolower(d) %in% synonyms_m ~ "M",
+        TRUE ~ "Other"
+    )
 }
 
 fix_gender <- function(d) {
     cleaned_gender <- try(replace_gender_synonyms(d), silent = TRUE)
     if (class(cleaned_gender) == "try-error") {
-        cleaned_gender  <- 999999
+        cleaned_gender <- 999999
     }
     return(cleaned_gender)
 }
@@ -89,7 +93,6 @@ extract_age_from_y_m <- function(age) {
         final_age <- years + (round(months / 12, 1))
     })
     return(final_age)
-
 }
 
 # @Description: Checks different possibilities for age of birth and transforms it into numeric age
@@ -113,7 +116,6 @@ fix_age_diagnosis <- function(d) {
         if (class(d) == "try-error") {
             d <- 99999
         }
-
     } else {
         d <- NA
     }
@@ -136,7 +138,7 @@ exclude_unrealistic_hba1c <- function(x,
                                       lower_hb1c,
                                       upper_hb1c) {
     # cases where there is a comma and not a dot
-    x <- str_replace(x , ",", ".")
+    x <- str_replace(x, ",", ".")
     # cases with signs
     x <- ifelse(grepl(c("<|>"), x), "999999", x)
     x <- as.numeric(x)
@@ -149,14 +151,12 @@ fix_hba1c <- function(d) {
     if (!is.na(d)) {
         d <-
             try(exclude_unrealistic_hba1c(d, par_lower_hb1c, par_upper_hb1c),
-                silent = TRUE)
+                silent = TRUE
+            )
         if (class(d) == "try-error") {
-            d  <- 999999
+            d <- 999999
         }
-
-    }
-
-    else {
+    } else {
         d <- NA
     }
 
@@ -241,8 +241,10 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
     fbg_num <- as.numeric(fbg)
     factor_mmol_in_mg <- 18.02
     measure_unit <-
-        assign_fbg_unit_per_hospital(country_id = country_id,
-                                     hospital_id = hospital_id)
+        assign_fbg_unit_per_hospital(
+            country_id = country_id,
+            hospital_id = hospital_id
+        )
 
     # If not unit "mmol/L" is assumed
     fbg_mmol <- case_when(
@@ -268,9 +270,11 @@ sanity_check_fbg_mmol <-
     function(fbg_mmol,
              min_fbg = fbg_mmol_lower_bound,
              max_fbg = fbg_mmol_upper_bound) {
-        fbg_result <- case_when(fbg_mmol >= min_fbg &
-                                    fbg_mmol <= max_fbg ~ fbg_mmol,
-                                TRUE ~ NA_real_)
+        fbg_result <- case_when(
+            fbg_mmol >= min_fbg &
+                fbg_mmol <= max_fbg ~ fbg_mmol,
+            TRUE ~ NA_real_
+        )
 
         if (is.na(fbg_result)) {
             stop("ERROR: FBG value outside realistic scale")
@@ -280,8 +284,8 @@ sanity_check_fbg_mmol <-
     }
 
 # @Description: FBG input is often a range (200-300) but functions only
-#               work with unique values. This wrapper hence loops the range through
-#               the functions.
+# work with unique values. This wrapper hence loops the range through
+# the functions.
 # @hid: Hospital ID
 # @cid: country ID
 fbg_wrapper <- function(fbg_range, hid, cid) {
@@ -295,7 +299,8 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
         gsub(pattern = "(DKA)", replacement = "")
 
 
-    lower_upper_fbg <- fbg_range %>% str_split("-") %>%
+    lower_upper_fbg <- fbg_range %>%
+        str_split("-") %>%
         unlist() %>%
         as.numeric()
 
@@ -308,21 +313,21 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
     }
 
     final <- paste(lower_upper_fbg, collapse = "-")
-
 }
 
 
 fbg_fix <- function(fbg, country, hospital) {
     d <- try(fbg_wrapper(fbg, cid = country, hid = hospital),
-             silent = TRUE)
+        silent = TRUE
+    )
     if (class(d) == "try-error") {
-        d  <- 999999
+        d <- 999999
     }
     return(d)
 }
 
 
-#  "support_from_a4d" ####
+# "support_from_a4d" ####
 # ______________________________________________
 #### SUPPORT A4D
 supporta4d_fix <- function(d) {
@@ -333,30 +338,33 @@ supporta4d_fix <- function(d) {
         "Full",
         "Insulin, SMBG, HbA1c & Transportation",
         "Insulin, SMBG & HbA1c",
-        "Sponsor A Child" ,
+        "Sponsor A Child",
         "Standard"
     )) {
-        d  <- "999999"
+        d <- "999999"
     }
     return(d)
 }
 
 
-#  "testing_fqr_pday" ####
+# "testing_fqr_pday" ####
 # ______________________________________________
 #### TESTING FQR
 
 # If ranges, take mean
 replace_testfqr_strings_mean <- function(x) {
-    y <- unlist(map(str_split(x, pattern = "-"),
-                    function(z)
-                        mean(as.numeric(z))))
+    y <- unlist(map(
+        str_split(x, pattern = "-"),
+        function(z) {
+            mean(as.numeric(z))
+        }
+    ))
 }
 
 fix_testfqr <- function(d) {
     d <- try(replace_testfqr_strings_mean(d), silent = TRUE)
     if (class(d) == "try-error") {
-        d  <- 999999
+        d <- 999999
     }
     return(d)
 }
@@ -369,13 +377,13 @@ fix_testfqr <- function(d) {
 fix_strips <- function(d) {
     d <- try(as.numeric(d), silent = TRUE)
     if (class(d) == "try-error") {
-        d  <- 999999
+        d <- 999999
     }
     return(d)
 }
 
 
-#  "status" ####
+# "status" ####
 # ______________________________________________
 #### STATUS
 fix_status <- function(d) {
@@ -390,9 +398,8 @@ fix_status <- function(d) {
             "Active - Remote",
             "Lost Follow Up"
         )) {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -407,11 +414,11 @@ fix_fbg_sample <- function(d) {
     if (!is.na(d)) {
         d <-
             try(replace_empty_string_with_NA(as.character(d)),
-                silent = TRUE)
+                silent = TRUE
+            )
         if (!d %in% c("SMBG", "CBG")) {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -440,16 +447,16 @@ fix_fbg_sample <- function(d) {
 # Currently uses fix_chr_without_NAs
 
 # parse_sheet_name <- function(x){
-#   y <- unlist(map(as.character(x), function(z)
-#     (format(readr::parse_date(z,"%b'%y"), format = "%Y-%m"))))
-#   # TODO: real trackers use format like "Feb18" not "Feb'18" -> remove the apostrophe upstream?
+# y <- unlist(map(as.character(x), function(z)
+# (format(readr::parse_date(z,"%b'%y"), format = "%Y-%m"))))
+# # TODO: real trackers use format like "Feb18" not "Feb'18" -> remove the apostrophe upstream?
 # }
 #
 # transform_sheet_name_to_tracker_month <- function(x) {
-#   x <- try(parse_sheet_name(x), silent = TRUE)
-#   if (class(x) == "try-error") {
-#     x <- "999999" }
-#   return(x)
+# x <- try(parse_sheet_name(x), silent = TRUE)
+# if (class(x) == "try-error") {
+# x <- "999999" }
+# return(x)
 # }
 #
 
@@ -471,9 +478,8 @@ fix_insulin_reg <- function(d) {
                 "Others"
             )
         )) {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -489,9 +495,8 @@ fix_insulin_dos <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
         if (class(d) == "try-error") {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -507,9 +512,8 @@ fix_required_insulin <- function(d) {
     if (!is.na(d)) {
         d <- try(as.numeric(d), silent = TRUE)
         if (class(d) == "try-error") {
-            d  <- 999999
+            d <- 999999
         }
-
     } else {
         d <- NA
     }
@@ -524,9 +528,8 @@ fix_required_insulin_name <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
         if (class(d) == "try-error") {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -541,9 +544,8 @@ fix_est_strips_pmoth <- function(d) {
     if (!is.na(d)) {
         d <- try(as.numeric(d), silent = TRUE)
         if (class(d) == "try-error") {
-            d  <- 999999
+            d <- 999999
         }
-
     } else {
         d <- NA
     }
@@ -558,15 +560,17 @@ par_lowest_blood_pressure_sys <- 20
 
 fix_blood_pressure_sys <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(d,
-                                       par_highest_blood_pressure_sys,
-                                       par_lowest_blood_pressure_sys),
-                 silent = TRUE)
+        d <- try(
+            check_numeric_borders(
+                d,
+                par_highest_blood_pressure_sys,
+                par_lowest_blood_pressure_sys
+            ),
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- "999999"
         }
-
-
     } else {
         d <- NA
     }
@@ -575,7 +579,7 @@ fix_blood_pressure_sys <- function(d) {
     return(d)
 }
 
-#"blood_pressure_dias_mmhg" ####
+# "blood_pressure_dias_mmhg" ####
 # ______________________________________________
 
 par_highest_blood_pressure_dias <- 220
@@ -583,15 +587,17 @@ par_lowest_blood_pressure_dias <- 20
 
 fix_blood_pressure_dias <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(d,
-                                       par_highest_blood_pressure_dias,
-                                       par_lowest_blood_pressure_dias),
-                 silent = TRUE)
+        d <- try(
+            check_numeric_borders(
+                d,
+                par_highest_blood_pressure_dias,
+                par_lowest_blood_pressure_dias
+            ),
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- "999999"
         }
-
-
     } else {
         d <- NA
     }
@@ -599,7 +605,7 @@ fix_blood_pressure_dias <- function(d) {
     return(d)
 }
 
-#  "weight" ####
+# "weight" ####
 # ______________________________________________
 par_max_weight_kg <- 200
 par_min_weight_kg <- 0
@@ -608,11 +614,11 @@ fix_weight <- function(d) {
     if (!is.na(d)) {
         d <-
             try(check_numeric_borders(d, par_max_weight_kg, par_min_weight_kg),
-                silent = TRUE)
+                silent = TRUE
+            )
         if (class(d) == "try-error") {
             d <- 999999
         }
-
     } else {
         d <- NA
     }
@@ -630,20 +636,23 @@ par_min_height <- 0
 transform_cm_to_m <- function(height) {
     height <- as.numeric(height)
     height <- ifelse(height > 50,
-                     height / 100,
-                     height)
+        height / 100,
+        height
+    )
 }
 
 fix_height <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(transform_cm_to_m(d),
-                                       par_max_height, par_min_height),
-                 silent = TRUE)
+        d <- try(
+            check_numeric_borders(
+                transform_cm_to_m(d),
+                par_max_height, par_min_height
+            ),
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- 999999
         }
-
-
     } else {
         d <- NA
     }
@@ -660,12 +669,11 @@ par_min_bmi <- 4
 fix_bmi <- function(d, par_max_bmi, par_min_bmi) {
     if (!is.na(d)) {
         d <- try(check_numeric_borders(d, par_max_bmi, par_min_bmi),
-                 silent = TRUE)
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- 999999
         }
-
-
     } else {
         d <- NA
     }
@@ -678,7 +686,7 @@ fix_bmi <- function(d, par_max_bmi, par_min_bmi) {
 # ______________________________________________
 
 # TODO need to check with valid codes from the AN sheet
-#  tyla could give us a list to check if all codes exist such that these can later be replaced
+# tyla could give us a list to check if all codes exist such that these can later be replaced
 fix_edu_occ <- function(d) {
     d <- d
     return(d)
@@ -693,12 +701,12 @@ fix_edu_occ <- function(d) {
 extract_hospitalisation_date <- function(hosp_str) {
     str_out <- hosp_str %>%
         replace(hosp_str == "NA", NA)
-
 }
 
 fix_hospitalisation <- function(d) {
     d <- try(extract_hospitalisation_date(d),
-             silent = TRUE)
+        silent = TRUE
+    )
     if (class(d) == "try-error") {
         d <- "999999"
     }
@@ -772,12 +780,13 @@ fix_complication <- function(d) {
         d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
 
         d <- as.data.frame(d)
-        d <- d %>%  mutate(d = case_when(d == "0" ~ "N",
-                                         d == "1" ~ "Y",
-                                         TRUE ~ "999999"))
+        d <- d %>% mutate(d = case_when(
+            d == "0" ~ "N",
+            d == "1" ~ "Y",
+            TRUE ~ "999999"
+        ))
 
         d <- d$d
-
     } else {
         d <- NA
     }
@@ -790,12 +799,11 @@ fix_complication <- function(d) {
 fix_num_hosp <- function(d) {
     if (!is.na(d)) {
         d <- try(as.numeric(d),
-                 silent = TRUE)
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- 999999
         }
-
-
     } else {
         d <- NA
     }
@@ -825,9 +833,8 @@ fix_inactive_reason <- function(d) {
             d <- 999999
         }
         if (!tolower(d) %in% tolower(c("Deceased", "Lost Follow Up"))) {
-            d  <- "999999"
+            d <- "999999"
         }
-
     } else {
         d <- NA
     }
@@ -836,18 +843,17 @@ fix_inactive_reason <- function(d) {
 }
 
 # "lost_date" ####
-#  SEE DATE FIX FUNCTION
+# SEE DATE FIX FUNCTION
 # "lost_age" ####
 # ______________________________________________
 fix_lost_age <- function(d) {
     if (!is.na(d)) {
         d <- try(as.numeric(d),
-                 silent = TRUE)
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- 999999
         }
-
-
     } else {
         d <- NA
     }
@@ -855,7 +861,7 @@ fix_lost_age <- function(d) {
     return(d)
 }
 # "diag_date" ####
-#  SEE DATE FIX FUNCTION
+# SEE DATE FIX FUNCTION
 # "dka_diag" ####
 # ______________________________________________
 fix_dka_diag <- function(d) {
@@ -863,12 +869,13 @@ fix_dka_diag <- function(d) {
         d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
 
         d <- as.data.frame(d)
-        d <- d %>%  mutate(d = case_when(d == "0" ~ "N",
-                                         d == "1" ~ "Y",
-                                         TRUE ~ "999999"))
+        d <- d %>% mutate(d = case_when(
+            d == "0" ~ "N",
+            d == "1" ~ "Y",
+            TRUE ~ "999999"
+        ))
 
         d <- d$d
-
     } else {
         d <- NA
     }
@@ -912,7 +919,7 @@ clean_tracker_raw_patient_data <- function(data) {
                 updated_fbg_mgdl,
                 country = unique(data$country_code),
                 hospital = unique(data$clinic_code)
-            ) ,
+            ),
             # NOT FIXING FOR NOW
             support_from_a4d = fix_additional_support(support_from_a4d),
             insulin_regimen = fix_insulin_reg(insulin_regimen),
@@ -969,7 +976,6 @@ clean_tracker_raw_patient_data <- function(data) {
 
 
     return(data_c)
-
 }
 
 # TEST --------------------------------------------------------------------
@@ -983,20 +989,20 @@ clean_tracker_raw_patient_data <- function(data) {
 
 # TODOs:
 ## 1. Variables until [16] testing_fqr are part of the final wrapper. EVerything afterwards
-#      (and buggy ones lige age_diagnosis) need to be finalized and added to the wrapper
-#  2. Dates are transformed as dates but only show raw date number (e.g. "123123")
-#      instead of actual date ("2020-02-02")
-#  3. Edu_Occ can't be matched by thai vocabulary. Functions should work but it seems
-#     that some R language encryption issues arise when saving thai strings.
-#  4. Columns that are not correctly extracted yet, input needed:
-#        latest_complication_screening_type, latest_complication_screening_date,
-#        remarks, additional_support, est_strips_pmonth
+# (and buggy ones lige age_diagnosis) need to be finalized and added to the wrapper
+# 2. Dates are transformed as dates but only show raw date number (e.g. "123123")
+# instead of actual date ("2020-02-02")
+# 3. Edu_Occ can't be matched by thai vocabulary. Functions should work but it seems
+# that some R language encryption issues arise when saving thai strings.
+# 4. Columns that are not correctly extracted yet, input needed:
+# latest_complication_screening_type, latest_complication_screening_date,
+# remarks, additional_support, est_strips_pmonth
 ## 4. Final check if all variables have been transformed correctly
 
 # testing on correct data:
 # 1. Currently the fbg ranges will be excluded due to values out of realistic range.
-#    This is on purpose since we only know the units for specific hospitals/countries.
-#    In the fake data the hospital and country codes are fake. We need to test the
-#    function on the original data to ensure that the functions correctly transform
-#    the unit of the fbg values (and hence include them) in the data.
-#    See [12, 13] fbg and make adjustments if needed
+# This is on purpose since we only know the units for specific hospitals/countries.
+# In the fake data the hospital and country codes are fake. We need to test the
+# function on the original data to ensure that the functions correctly transform
+# the unit of the fbg values (and hence include them) in the data.
+# See [12, 13] fbg and make adjustments if needed
