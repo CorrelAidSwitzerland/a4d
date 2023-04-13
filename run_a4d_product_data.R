@@ -25,7 +25,7 @@
 
 #### Input ####
 tracker_root_path <- select_A4D_directory()
-selected_tracker_data_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
+tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
 codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
 
 #### Define product data function ####
@@ -181,7 +181,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
   return(df_final)
 }
 
-a4d_out_2017 <- reading_a4d_products_from_tracker(selected_tracker_data_file, codebook_data_file)
+a4d_out_2017 <- reading_a4d_products_from_tracker(tracker_file, codebook_data_file)
 
 #### End ####
 
