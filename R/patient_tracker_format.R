@@ -320,7 +320,7 @@ fbg_fix <- function(fbg, country, hospital) {
         silent = TRUE
     )
     if (class(d) == "try-error") {
-        d <- 999999
+        d <- "999999"
     }
     return(d)
 }
