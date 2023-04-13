@@ -61,7 +61,10 @@ install.packages("devtools")
 It is also possible that this package was already downloaded because we have this code in the `.Rprofile` file that is executed automatically when RStudio is opened:
 
 ```r
-
+if (interactive()) {
+    require("devtools", quietly = TRUE)
+    # automatically attaches usethis
+}
 ```
 
 Now you have access to `devtools`, which is in fact a set of packages that are installed, like `usethis` and `roxygen2`.
@@ -80,4 +83,36 @@ You can now go ahead and run one of the two main scripts:
 
 ## Development workflow
 
-- tests 
+For a short overview, see [cheatsheets](https://devtools.r-lib.org/#cheatsheet).
+
+If you want to change any (code) file, add new files or delete existing files, please follow these steps:
+
+1. only once: `git clone` this repository
+2. switch to the develop branch: `git checkout develop` or `git switch develop`
+3. update develop: `git pull`
+4. create a new branch: `git checkout -b <issue-no>-<tilte>` (or create the branch in GitHub and just switch to it, no `-b` needed then)
+5. do your code changes, create new R files with `usethis::use_r()` and new test files with `usethis::use_test()`
+6. load and test/execute your code changes: `devtools::load_all()`
+7. run the tests: `devtools::test()`
+   a. Fix any problems until all tests are green and make sure your changes do not break other code
+8. check the package: `devtools::check()`
+   a. Fix any problems until all checks are green
+9. document your functions: use roxygen documentation by comments starting with `#'`
+10. update documentation: `devtools:document()`
+11. optional: add additional documentation to the README or create a RMarkdown file with examples
+12. get latest changes from develop: `git merge develop`
+   a. if there are any conflicts, solve them
+13. create a (final) commit with all your changes: `git add <files>` and `git commit -m"<message>"`
+14. push your changes: `git push`
+15. Check the GitHub workflows (cicd pipelines) for your branch and fix any problems
+16. Create a PR with develop as target
+17. Again, check the GitHub workflows for your PR and fix any problems
+
+In addition to this general workflow, there are some additional steps required if you made use of external packages not yet stored in `renv.lock`:
+
+1. install the package: Use `renv::install()` if you want to use this package only for development, or `usethis::use_package()` to add the package to the DESCRIPTION file
+   a. if you want to update a package, you can also use `renv::install()`, without arguments it will update all listed packages in the lock file
+2. use the package with the `package::fun()` syntax in your code
+3. use `renv::snapshot()` to update the `renv.lock`
+4. make sure to add the `renv.lock` file with your PR
+
