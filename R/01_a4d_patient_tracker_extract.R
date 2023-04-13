@@ -121,10 +121,9 @@ reading_a4d_patient_data <-
             print("tracker read in")
 
             cc_codes <-
-                extract_country_clinic_code(tracker_data, year)
+                extract_country_clinic_code(tracker_data)
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
-            print("country and clinic code extracted")
 
             # view(tracker_data)
 

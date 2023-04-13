@@ -8,6 +8,7 @@ extract_code_from_df <- function(string_to_match, tracker_data) {
     column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)][1]
 
     if (!is_empty(column_names) & !is.na(column_names)) {
+        tracker_data <- tracker_data[, !duplicated(colnames(tracker_data))] # remove duplicated column names, takes the first one which usually works, otherwise rlang error due to multiple columns with same name
         column_row <- tracker_data %>%
             dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names), ignore.case = TRUE))
         code <- sub(paste0(".*", string_to_match, "([a-zA-Z]+).*"), "\\1", column_row[column_names], ignore.case = TRUE)
@@ -25,8 +26,8 @@ extract_code_from_df <- function(string_to_match, tracker_data) {
 # extracting country and clinic code based on all word characters folowing the string country_ and clinic_
 # expects that one sheet contains one country and one clinic code
 extract_country_clinic_code <- function(tracker_data) {
-    country_code <- extract_code_from_df("country_", tracker_data)
-    clinic_code <- extract_code_from_df("clinic_", tracker_data)
+    country_code <- extract_code_from_df("country_", tracker_data)[1]
+    clinic_code <- extract_code_from_df("clinic_", tracker_data)[1]
 
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
