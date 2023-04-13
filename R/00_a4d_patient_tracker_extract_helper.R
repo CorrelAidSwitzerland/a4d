@@ -16,12 +16,12 @@ extract_code_from_df <- function(string_to_match, tracker_data) {
         column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)]
         code <- sub(paste0(".*", string_to_match, "([a-zA-Z]+).*"), "\\1", column_name, ignore.case = TRUE)
     } else {
-        tracker_data_sub <- tracker_data[2:nrow(tracker_data),2]
+        tracker_data_sub <- tracker_data[2:nrow(tracker_data), 2]
         id_loc <- min(which(str_detect(tracker_data_sub, "_") == 1))
 
-        if (string_to_match == 'country_'){
+        if (string_to_match == "country_") {
             code <- substr(tracker_data_sub[id_loc], 1, 2)
-        }else {
+        } else {
             code <- substr(tracker_data_sub[id_loc], 4, 5)
         }
     }
