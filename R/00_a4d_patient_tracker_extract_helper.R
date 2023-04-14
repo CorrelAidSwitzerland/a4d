@@ -2,12 +2,13 @@
 # first checks whether string_to_match (e.g. country_) is found in any row and returns column name where it was found
 # if any column name returned, code is extracted from that column
 # if not column names are checked
-# otherwise put NA
+# otherwise do as it was done before (take from first patient id), works with patient data not with product data code
 # e.g. country_PB would be replaced to PB
 extract_code_from_df <- function(string_to_match, tracker_data) {
     column_names <- colnames(tracker_data)[grepl(string_to_match, tracker_data, ignore.case = TRUE)][1]
 
     if (!is_empty(column_names) & !is.na(column_names)) {
+        tracker_data <- tracker_data[, !duplicated(colnames(tracker_data))] # remove duplicated column names, takes the first one which usually works, otherwise rlang error due to multiple columns with same name
         column_row <- tracker_data %>%
             dplyr::filter(grepl(string_to_match, !!rlang::sym(column_names), ignore.case = TRUE))
         code <- sub(paste0(".*", string_to_match, "([a-zA-Z]+).*"), "\\1", column_row[column_names], ignore.case = TRUE)
@@ -15,8 +16,14 @@ extract_code_from_df <- function(string_to_match, tracker_data) {
         column_name <- colnames(tracker_data)[grepl(string_to_match, colnames(tracker_data), ignore.case = TRUE)]
         code <- sub(paste0(".*", string_to_match, "([a-zA-Z]+).*"), "\\1", column_name, ignore.case = TRUE)
     } else {
-        code <- NA
-        print(paste("could not extract", string_to_match, "code"))
+        tracker_data_sub <- tracker_data[2:nrow(tracker_data), 2]
+        id_loc <- min(which(str_detect(tracker_data_sub, "_") == 1))
+
+        if (string_to_match == "country_") {
+            code <- substr(tracker_data_sub[id_loc], 1, 2)
+        } else {
+            code <- substr(tracker_data_sub[id_loc], 4, 5)
+        }
     }
 
     return(code)
@@ -25,8 +32,8 @@ extract_code_from_df <- function(string_to_match, tracker_data) {
 # extracting country and clinic code based on all word characters folowing the string country_ and clinic_
 # expects that one sheet contains one country and one clinic code
 extract_country_clinic_code <- function(tracker_data) {
-    country_code <- extract_code_from_df("country_", tracker_data)
-    clinic_code <- extract_code_from_df("clinic_", tracker_data)
+    country_code <- extract_code_from_df("country_", tracker_data)[1]
+    clinic_code <- extract_code_from_df("clinic_", tracker_data)[1]
 
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
