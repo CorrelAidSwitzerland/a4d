@@ -1,0 +1,121 @@
+---
+title: "Compare tracker data over branches"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stringr)
+root = select_A4D_directory()
+```
+
+## Tracker comparison for different branches
+
+This document can be used to compare different `.RData` files.
+
+Please knit this file with parameters and set `root` to the root directory containing the different `.RData` files. Currently, the value for the parameter `root` is `r params$root`.
+
+The following branches are available:
+
+```{r, echo=FALSE}
+branches <- as.list(list.dirs(file.path(root, "output"), recursive=FALSE))
+names(branches) <- basename(unlist(branches))
+names(branches)
+```
+
+## Within-branch comparison
+
+First, we check if the data has changed within the branch over different commits:
+
+```{r echo=FALSE}
+load_data <- function(path) {
+    df <- load(path)
+    get(df)
+}
+
+for (branch in branches) {
+    cat("\nComparing", basename(branch), "\n")
+    commits <- list.dirs(branch, recursive=FALSE)
+    files <- list.files(commits[1], pattern="*.RData")
+    
+    if (length(commits) == 1) {
+        print("Current branch has only one commit so cannot compare different commits.")
+        print("Proceeding with next branch.")
+        next
+    }
+    
+    for (file in files) {
+        cat("Comparing", file, "\n")
+        data_frames = lapply(commits, function (commit) load_data(file.path(commit, file)))
+        names(data_frames) <- basename(commits)
+        
+        for (i in 1:(length(data_frames)-1)) {
+            curr_df <- data_frames[[i]]
+            
+            for (j in (i+1):length(data_frames)) {
+                other_df <- data_frames[[j]]
+                if (isTRUE(all.equal(curr_df, other_df, check.attributes=FALSE))) {
+                    cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are identical", "\n")
+                } else {
+                    differences = all.equal(curr_df, other_df, check.attributes=FALSE)
+                    
+                    if (all(str_detect(differences, "target is .*, current is .*"))) {
+                        cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are identical", "\n")
+                    } else {
+                        cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are different:", "\n")
+                    print(all.equal(curr_df, other_df, check.attributes=FALSE))
+                    }
+                    
+                }
+            }
+        }
+    }
+}
+
+```
+
+## Between-branch comparison
+
+Now we compare different branches with each other.
+
+```{r echo=FALSE}
+load_data <- function(path) {
+    df <- load(path)
+    get(df)
+}
+
+source_branch = "develop"
+source_commit = "357b68cd"
+target_branch = "main"
+target_commit = "b785518"
+
+cat("\nComparing", source, "(", source_commit, ")", "with", target, "(", target_commit, ")", "\n")
+files <- list.files(file.path(branches[[source_branch]], source_commit), pattern="*.RData")
+    
+for (file in files) {
+    cat("Comparing", file, "\n")
+    data_frames = list(
+        load_data(file.path(branches[[source_branch]], source_commit, file)),
+        load_data(file.path(branches[[target_branch]], target_commit, file))
+    )
+    
+    names(data_frames) <- c(source_branch, target_branch)
+    
+    if (isTRUE(all.equal(data_frames[source_branch], data_frames[target_branch], check.attributes=FALSE))) {
+        cat("Branches", source_branch, "and", target_branch, "are identical", "\n")
+    } else {
+        differences = all.equal(data_frames[source_branch], data_frames[target_branch], check.attributes=FALSE)
+        
+        if (all(str_detect(differences, "target is .*, current is .*"))) {
+            cat("Branches", source_branch, "and", target_branch, "are identical", "\n")
+        } else {
+            cat("Branches", source_branch, "and", target_branch, "are different:", "\n")
+        print(all.equal(curr_df, other_df, check.attributes=FALSE))
+        }
+                
+    }
+}
+
+```
+
+
