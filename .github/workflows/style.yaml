@@ -23,7 +23,10 @@ jobs:
         with:
           r-version: 4.2.3
 
-      - uses: r-lib/actions/setup-renv@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::styler
 
       - name: Enable styler cache
         run: styler::cache_activate()
