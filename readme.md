@@ -64,6 +64,7 @@ It is also possible that this package was already downloaded because we have thi
 if (interactive()) {
     require("devtools", quietly = TRUE)
     # automatically attaches usethis
+    devtools::load_all()
 }
 ```
 
@@ -103,7 +104,7 @@ If you want to change any (code) file, add new files or delete existing files, p
 12. get latest changes from develop: `git merge develop`
    a. if there are any conflicts, solve them
 13. create a (final) commit with all your changes: `git add <files>` and `git commit -m"<message>"`
-14. push your changes: `git push`
+14. push your changes: `git push` (for a newly created local branch, you will need to set an up-stream first, just follow the instructions on the command line)
 15. Check the GitHub workflows (cicd pipelines) for your branch and fix any problems
 16. Create a PR with develop as target
 17. Again, check the GitHub workflows for your PR and fix any problems

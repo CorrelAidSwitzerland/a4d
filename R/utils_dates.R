@@ -26,6 +26,10 @@ fix_date_cols <- function(d) {
         d <- parse_date_string(d)
 
         if (is.na(d)) d <- as.Date("9999-01-01")
+    } else {
+        # without this, so with NA instead, dplyr::mutate is throwing an error:
+        # "must return compatible vectors across groups".
+        d <- NA_Date_
     }
 
     return(d)

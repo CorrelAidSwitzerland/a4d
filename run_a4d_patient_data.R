@@ -2,8 +2,9 @@
 
 # Tracker path
 tracker_root_path <- select_A4D_directory()
-#tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
+# tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
 tracker_files <- list.files(tracker_root_path, "*.xlsx")
+tracker_files <- tracker_files[!str_detect("~", tracker_files)]
 
 codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
 
@@ -30,6 +31,10 @@ if (!file.exists(output_root)) {
 }
 
 for (tracker_file_name in tracker_files) {
+    # if you have selected a single tracker file, this loop will skip all other files!
+    # so comment line 5 out if you want all files processed.
+    if (exists("tracker_file") && basename(tracker_file) != tracker_file_name) next
+
     tracker_file_path <- file.path(tracker_root_path, tracker_file_name)
 
     ### Data extraction

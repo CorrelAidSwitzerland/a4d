@@ -969,6 +969,16 @@ clean_tracker_raw_patient_data <- function(data) {
         ungroup()
     # %>% select(id:family_support_scale)
 
+    data_c %>% mutate(
+        across(recruitment_date, as.Date),
+        across(updated_hba1c_date, as.Date),
+        across(updated_fbg_date, as.Date),
+        across(bmi_date, as.Date),
+        across(last_clinic_visit_date, as.Date),
+        across(lost_date, as.Date),
+        across(diag_date, as.Date)
+    )
+
     data_c <- as.data.frame(data_c)
 
     return(data_c)
