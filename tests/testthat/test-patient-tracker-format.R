@@ -28,6 +28,7 @@ test_that("date_transform function works as expected", {
 
 test_that("fix_date_cols works correctly", {
     expect_equal(fix_date_cols(NA), NA_Date_)
+    expect_true(is.na(fix_date_cols(NA)))
     expect_equal(fix_date_cols("14(Nov-17)"), lubridate::ymd("2017-11-01"))
     expect_equal(fix_date_cols("13.0  (Jun-17)"), lubridate::ymd("2017-06-01"))
 })
