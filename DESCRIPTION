@@ -20,5 +20,7 @@ Imports:
     tidyr,
     zoo
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    lintr,
+    styler
 Config/testthat/edition: 3
