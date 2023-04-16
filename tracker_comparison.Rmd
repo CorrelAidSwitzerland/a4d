@@ -5,15 +5,20 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+devtools::load_all()
 library(stringr)
-root = select_A4D_directory()
+# root should point to the root data directory
+# on your encrypted drive holding the tracker excel files
+# the main script creates an "output" folder
+# and stores .RData for raw and cleaned data.frames
+root = select_A4D_directory(reset=T)
 ```
 
 ## Tracker comparison for different branches
 
 This document can be used to compare different `.RData` files.
 
-Please knit this file with parameters and set `root` to the root directory containing the different `.RData` files. Currently, the value for the parameter `root` is `r params$root`.
+Please knit this file with parameters and set `root` to the root directory containing the different `.RData` files. Currently, the value for the parameter `root` is `r root`.
 
 The following branches are available:
 
@@ -76,7 +81,7 @@ for (branch in branches) {
 
 ## Between-branch comparison
 
-Now we compare different branches with each other.
+Now we compare different branches with each other. Please change the `source` and `target` variables according to the two commits you want to compare!
 
 ```{r echo=FALSE}
 load_data <- function(path) {
@@ -84,36 +89,76 @@ load_data <- function(path) {
     get(df)
 }
 
-source_branch = "develop"
-source_commit = "357b68cd"
-target_branch = "main"
-target_commit = "b785518"
+# change these variables to your needs!
+source_branch = "22-writing-a-test-suite"
+source_commit = "d6480d50"
+target_branch = "develop"
+target_commit = "357b68cd"
 
-cat("\nComparing", source, "(", source_commit, ")", "with", target, "(", target_commit, ")", "\n")
-files <- list.files(file.path(branches[[source_branch]], source_commit), pattern="*.RData")
-    
+cat(
+    "\nComparing",
+    source_branch,
+    "(",
+    source_commit,
+    ")",
+    "with",
+    target_branch,
+    "(",
+    target_commit,
+    ")",
+    "\n\n"
+)
+files <-
+    list.files(file.path(branches[[source_branch]], source_commit), pattern =
+                   "*.RData")
+
 for (file in files) {
     cat("Comparing", file, "\n")
-    data_frames = list(
-        load_data(file.path(branches[[source_branch]], source_commit, file)),
-        load_data(file.path(branches[[target_branch]], target_commit, file))
-    )
+    df1 <- load_data(file.path(branches[[source_branch]], source_commit, file))
+    df2 <- load_data(file.path(branches[[target_branch]], target_commit, file))
     
-    names(data_frames) <- c(source_branch, target_branch)
-    
-    if (isTRUE(all.equal(data_frames[source_branch], data_frames[target_branch], check.attributes=FALSE))) {
-        cat("Branches", source_branch, "and", target_branch, "are identical", "\n")
+    if (identical(df1, df2)) {
+        cat("Branches",
+            source_branch,
+            "and",
+            target_branch,
+            "are identical",
+            "\n")
     } else {
-        differences = all.equal(data_frames[source_branch], data_frames[target_branch], check.attributes=FALSE)
+        cat(
+            "Branches",
+            source_branch,
+            "and",
+            target_branch,
+            "are **not** identical",
+            "\n"
+        )
+        cat("Output of all.equal:\n")
+        print(all.equal(df2, df1, check.attributes=FALSE))
+
+        # Find the rows and columns that are different
+        rows <- which(df1 != df2, arr.ind = TRUE)[, 1]
+        cols <- which(df1 != df2, arr.ind = TRUE)[, 2]
         
-        if (all(str_detect(differences, "target is .*, current is .*"))) {
-            cat("Branches", source_branch, "and", target_branch, "are identical", "\n")
+        # Print the differences
+        if (any(rows) || any(cols)) {
+            for (i in 1:length(rows)) {
+                cat("Row",
+                    rows[i],
+                    "Column",
+                    cols[i],
+                    "differs: ",
+                    df1[rows[i], cols[i]],
+                    "vs.",
+                    df2[rows[i], cols[i]],
+                    "\n")
+            }
         } else {
-            cat("Branches", source_branch, "and", target_branch, "are different:", "\n")
-        print(all.equal(curr_df, other_df, check.attributes=FALSE))
+            cat("All values are identical (df1 == df2)\n")
         }
-                
+        
     }
+    cat("\n")
 }
 
 ```
