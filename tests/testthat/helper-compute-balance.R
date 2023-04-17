@@ -1,3 +1,4 @@
+# dummy data frame how it can look like after the function compute_balance_status is run in the product date script
 df_balance_product <- data.frame(product= rep("Accu-Chek Performa Test Strips (100s/box)", 10),
                                  product_entry_date= c("2020-12-31", "2020-01-01", "2020-01-11", "2020-01-12", "2020-01-18",
                                                        "2020-01-22", "2020-01-24", "2020-01-28", "2020-01-29", "2020-01-31"),
@@ -8,9 +9,9 @@ df_balance_product <- data.frame(product= rep("Accu-Chek Performa Test Strips (1
                                  product_balance_status= c('start', rep('change',8), 'end'))
 
 
-# final balance for each product is the starting balance PLUS all products received MINUS all products releaseds PLUS all products returned
-helper_compute_exit_balance <- function(df, year){
-    exit_balance <-  df$product_balance[1] + sum(df$product_units_received) - sum(df$product_units_released) + sum(df$product_units_returned)
+# final balance for each product is the starting balance PLUS all products received MINUS all products released
+helper_compute_correct_exit_balance <- function(df){
+    exit_balance <-  df$product_balance[1] + sum(df$product_units_received) - sum(df$product_units_released)
 
     return(exit_balance)
 }
