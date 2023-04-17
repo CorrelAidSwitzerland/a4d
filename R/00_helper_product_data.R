@@ -337,7 +337,7 @@ compute_balance_status <- function(product_df) {
 }
 
 # @Description: Computes balance based on start balance value, units released, units returned, units received.-
-compute_balance <- function(product_df, year) {
+compute_balance <- function(product_df) {
     # Change variable type
     product_df["product_balance"] <- as.numeric(unlist(product_df["product_balance"]))
     product_df["product_units_released"] <- as.numeric(unlist(product_df["product_units_released"]))
@@ -373,7 +373,7 @@ compute_balance <- function(product_df, year) {
     }
 
     return(product_df)
-} # CHANGE WAS MADE HERE BY ADDING PARAMETER year
+}
 
 # @Description: Adjust classes of dataframe names
 adjust_column_classes <- function(product_df) {
