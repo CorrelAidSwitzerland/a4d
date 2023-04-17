@@ -353,52 +353,22 @@ compute_balance <- function(product_df, year) {
             )
         )
 
-
-    # For year 2021, a balance value is present in same-named column
-    if (year < 2021) {
-        # Calculate change and end of balance values: take last balance + received - release
-        for (i in 1:nrow(product_df)) {
-            if (product_df$product_balance_status[i] %in% c("change", "end")) {
-                release <- NA
-                reception <- NA
-                if (is.na(as.numeric(product_df[i, "product_units_released"])) == TRUE) {
-                    release <- as.numeric(0)
-                } else {
-                    release <- as.numeric(product_df[i, "product_units_released"])
-                }
-                if (is.na(as.numeric(product_df[i, "product_units_received"])) == TRUE) {
-                    reception <- as.numeric(0)
-                } else {
-                    reception <- as.numeric(product_df[i, "product_units_received"])
-                }
-                product_df[i, "product_balance"] <- as.numeric(product_df[i - 1, "product_balance"]) - release + reception
+    # Calculate change and end of balance values: take last balance + received - release
+    for (i in 1:nrow(product_df)) {
+        if (product_df$product_balance_status[i] %in% c("change", "end")) {
+            release <- NA
+            reception <- NA
+            if (is.na(as.numeric(product_df[i, "product_units_released"])) == TRUE) {
+                release <- as.numeric(0)
+            } else {
+                release <- as.numeric(product_df[i, "product_units_released"])
             }
-        }
-    }
-
-    # For year 2021, last row ("end") does not convey new information but rather summarizes the status quo balance and the cumulative changes in units columns.
-    if (year >= 2021) {
-        # Calculate change and end of balance values: take last balance + received - release
-        for (i in 1:nrow(product_df)) {
-            if (product_df$product_balance_status[i] == "change") {
-                release <- NA
-                reception <- NA
-                if (is.na(as.numeric(product_df[i, "product_units_released"])) == TRUE) {
-                    release <- as.numeric(0)
-                } else {
-                    release <- as.numeric(product_df[i, "product_units_released"])
-                }
-                if (is.na(as.numeric(product_df[i, "product_units_received"])) == TRUE) {
-                    reception <- as.numeric(0)
-                } else {
-                    reception <- as.numeric(product_df[i, "product_units_received"])
-                }
-                product_df[i, "product_balance"] <- as.numeric(product_df[i - 1, "product_balance"]) - release + reception
+            if (is.na(as.numeric(product_df[i, "product_units_received"])) == TRUE) {
+                reception <- as.numeric(0)
+            } else {
+                reception <- as.numeric(product_df[i, "product_units_received"])
             }
-            if (product_df$product_balance_status[i] == "end") {
-                # Only balance is a status quo value, the "units columns" are cumulative values and hence meaningless to dataframe logic. Will be replaced with 0.
-                product_df[i, c("product_units_received", "product_units_released", "product_units_returned")] <- as.numeric(0)
-            }
+            product_df[i, "product_balance"] <- as.numeric(product_df[i - 1, "product_balance"]) - release + reception
         }
     }
 
