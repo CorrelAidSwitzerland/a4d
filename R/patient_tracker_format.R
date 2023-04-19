@@ -971,14 +971,17 @@ clean_tracker_raw_patient_data <- function(data) {
 
     data_c %>% mutate(
         across(
-            c(recruitment_date,
-              updated_hba1c_date,
-              updated_fbg_date,
-              bmi_date,
-              lastdevtoo_clinic_visit_date,
-              lost_date,
-              diag_date),
-            as.Date)
+            c(
+                recruitment_date,
+                updated_hba1c_date,
+                updated_fbg_date,
+                bmi_date,
+                lastdevtoo_clinic_visit_date,
+                lost_date,
+                diag_date
+            ),
+            as.Date
+        )
     )
 
     data_c <- as.data.frame(data_c)
