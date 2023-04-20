@@ -103,37 +103,6 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
         return(patient_df)
     }
 }
-# @Description: Imports the codebook, cleans, removes duplicates and transforms it
-# into long df format
-read_column_synonyms <- function(codebook_data_file, sheet) {
-    columns_synonyms <- codebook_data_file %>%
-        readxl::read_xlsx(sheet = sheet) %>%
-        as_tibble() %>%
-        pivot_longer(
-            cols = everything(),
-            names_to = "name_clean",
-            values_to = "name_to_be_matched"
-        ) %>%
-        subset(!is.na(name_to_be_matched)) %>%
-        # lapply(sanitize_column_name) %>%
-        as_tibble() %>%
-        group_by(name_to_be_matched) %>%
-        slice(1) %>%
-        ungroup()
-    # view(columns_synonyms)
-    return(columns_synonyms)
-}
-
-sanitize_column_name <- function(column_name) {
-    column_name <- column_name %>%
-        str_to_lower() %>%
-        str_replace_all(fixed(" "), "") %>%
-        str_replace_all("[^[:alnum:]]", "")
-
-    column_name_clean <- column_name
-
-    return(column_name_clean)
-}
 
 
 extract_date_from_measurement_column <- function(patient_df, colname) {
@@ -245,34 +214,4 @@ date_fix <- function(df, year) { # used to be initial_clean_up_patient_df
 bp_fix <- function(df) {
     df <- df %>%
         separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"), sep = "([/])")
-}
-
-
-clean_anon_data <- function(an_patient_data) {
-    if (ncol(an_patient_data) == 5) {
-        # an_patient_data <- an_patient_data %>% discard(~all(is.na(.) | . ==""))
-        an_patient_data <- an_patient_data[!is.na(names(an_patient_data))]
-    }
-
-    if (ncol(an_patient_data) != 5) {
-        colnames(an_patient_data) <- an_patient_data[1, ]
-        an_patient_data <- an_patient_data[-1, ]
-
-        an_patient_data <- an_patient_data[!names(an_patient_data) %in% "NA"]
-    }
-
-    colnames(an_patient_data) <- sanitize_column_name(colnames(an_patient_data))
-    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
-
-    # replacing var codes
-    colnames_found <- match(colnames(an_patient_data), synonym_headers, nomatch = 0)
-    colnames(an_patient_data)[colnames(an_patient_data) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
-
-
-    if (sum(colnames_found == 0) != 0) {
-        print("Non-matching column names found (see 0)")
-        view(colnames_found)
-    } else {
-        return(an_patient_data)
-    }
 }
