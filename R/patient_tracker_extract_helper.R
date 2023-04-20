@@ -56,7 +56,7 @@ extract_tracker_cols <- function(tracker_data, year) {
     tracker_cols <- as.vector(t(tracker_data[i:j, ]))
 
 
-    if (year %in% c(2019, 2020, 2021)) {
+    if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         i <- i + 1
         j <- j + 1
