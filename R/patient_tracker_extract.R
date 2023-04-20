@@ -1,4 +1,3 @@
-
 # "reading_a4d_tracker" is a function that reads an excel workbook (.xlsx file) that contains a4d monthly trackers and creates a tidy dataframe with that data.
 # It takes into account all the sheets in the excel workbook that contain patient data, and binds these together. (e.g., if a workbook contains sheets Jan'18, Feb'18
 # and Mar'18, patient data from each sheet will be combined into one data frame)
