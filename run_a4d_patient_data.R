@@ -6,18 +6,12 @@ tracker_root_path <- select_A4D_directory()
 tracker_files <- list.files(tracker_root_path, "*.xlsx")
 tracker_files <- tracker_files[!str_detect("~", tracker_files)]
 
-codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
+codebook_path <- "master_tracker_variables.xlsx"
 
 ## Extract codebooks for each data form
-codebook_patient <- read_column_synonyms(
-    codebook_path, sheet = "synonyms_PatientData"
+columns_synonyms <- read_column_synonyms(
+    codebook_path, sheet <- "synonyms_PatientData"
 )
-
-codebook_product <- read_column_synonyms(
-    codebook_path, sheet = "synonyms_ProductData"
-)
-
-columns_synonyms = codebook_patient
 
 output_root = file.path(
     tracker_root_path,
@@ -38,7 +32,7 @@ for (tracker_file_name in tracker_files) {
     tracker_file_path <- file.path(tracker_root_path, tracker_file_name)
 
     ### Data extraction
-    df_raw <- reading_a4d_patient_data(
+    df_raw <- reading_patient_data(
       tracker_data_file = tracker_file_path,
       columns_synonyms = codebook_patient
       )
