@@ -1,4 +1,3 @@
-
 #' @title Get patient data from "Patient AN Data" sheet
 #'
 #' @description
@@ -38,7 +37,7 @@ read_patient_an_data <- function(tracker_data_file, sheet_list, columns_synonyms
 clean_anon_data <- function(an_patient_data) {
     # Beginning with 2021, the patient an data has a different header
     # going over two rows, so here we check for the new format
-    if (is.na(an_patient_data[1,1]) || str_to_lower(an_patient_data[1,1]) != "patient id") {
+    if (is.na(an_patient_data[1, 1]) || str_to_lower(an_patient_data[1, 1]) != "patient id") {
         colnames(an_patient_data) <- an_patient_data[1, ]
         an_patient_data <- an_patient_data[-1, ]
 
