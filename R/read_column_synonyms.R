@@ -1,5 +1,3 @@
-# @Description: Imports the codebook, cleans, removes duplicates and transforms it
-# into long df format
 #' @title Get all synonyms for all variable names
 #'
 #' @description
