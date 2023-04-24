@@ -7,9 +7,9 @@
 #' replaced with their standard variable name.
 #'
 #'
-#' @param tracker_data_file description
-#' @param sheet_list description
-#' @param columns_synonyms description
+#' @param tracker_data_file The excel file containing the data.
+#' @param sheet_list A list with sheet names.
+#' @param columns_synonyms A data.frame with two columns, variable_name and tracker_name.
 #'
 #' @return description
 #' @export
@@ -23,7 +23,7 @@ read_patient_an_data <- function(tracker_data_file, sheet_list, columns_synonyms
             data.frame(readxl::read_xlsx(tracker_data_file, patient_sheet))
         all_patient_ids <- an_patient_data$Patient.ID
 
-        an_patient_data <- clean_anon_data(an_patient_data)
+        an_patient_data <- clean_anon_data(an_patient_data, columns_synonyms)
         print("cleaned patient anon data")
     } else {
         warning("File has no AN DATA SHEET - Either fake data file or error")
@@ -34,10 +34,10 @@ read_patient_an_data <- function(tracker_data_file, sheet_list, columns_synonyms
 }
 
 
-clean_anon_data <- function(an_patient_data) {
+clean_anon_data <- function(an_patient_data, columns_synonyms) {
     # Beginning with 2021, the patient an data has a different header
     # going over two rows, so here we check for the new format
-    if (is.na(an_patient_data[1, 1]) || str_to_lower(an_patient_data[1, 1]) != "patient id") {
+    if (str_to_lower(names(an_patient_data)[1]) != "patient.id") {
         colnames(an_patient_data) <- an_patient_data[1, ]
         an_patient_data <- an_patient_data[-1, ]
 
