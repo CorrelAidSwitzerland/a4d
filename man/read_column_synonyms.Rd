@@ -19,6 +19,7 @@ This function reads a specific sheet from an excel file
 and generates a tibble containing unique column names and their synonyms.
 }
 \examples{
-read_column_synonyms(system.file("master_tracker_variables.xlsx", package="a4d"), "synonyms_PatientData")
-
+\dontrun{
+read_column_synonyms("master_tracker_variables.xlsx", "synonyms_PatientData")
+}
 }
