@@ -29,12 +29,12 @@ for (tracker_file_name in tracker_files) {
     # so comment line 5 out if you want all files processed.
     if (exists("tracker_file") && basename(tracker_file) != tracker_file_name) next
 
-    tracker_file_path <- file.path(tracker_root_path, tracker_file_name)
+    tracker_data_file <- file.path(tracker_root_path, tracker_file_name)
 
     ### Data extraction
-    df_raw <- reading_patient_data(
-      tracker_data_file = tracker_file_path,
-      columns_synonyms = codebook_patient
+    df_raw <- read_patient_data(
+      tracker_data_file,
+      columns_synonyms
       )
     filename_output = df_raw[[2]]
     df_raw_data = df_raw[[1]]
