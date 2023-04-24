@@ -56,7 +56,7 @@
 
 
 # FUNCTION TO READ THE A4D MONTHLY TRACKER --> PATIENT DATA --------------------------------------------------------
-reading_patient_data <-
+read_patient_data <-
     function(tracker_data_file, columns_synonyms) {
         sheet_list <- readxl::excel_sheets(tracker_data_file)
 
@@ -70,9 +70,6 @@ reading_patient_data <-
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
         print(year)
-
-
-
 
         tidy_tracker_list <- NULL
 
@@ -94,9 +91,6 @@ reading_patient_data <-
                 extract_country_clinic_code(tracker_data)
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
-
-            # view(tracker_data)
-
 
             patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
             print("patient df extracted")

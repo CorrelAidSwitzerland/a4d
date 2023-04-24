@@ -55,7 +55,6 @@ extract_tracker_cols <- function(tracker_data, year) {
     j <- min(which(tracker_data[, 2] %like% "ID"))
     tracker_cols <- as.vector(t(tracker_data[i:j, ]))
 
-
     if (year %in% c(2019, 2020, 2021)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         i <- i + 1
@@ -63,8 +62,6 @@ extract_tracker_cols <- function(tracker_data, year) {
         tracker_cols_date <- as.vector(t(tracker_data[i:j, ]))
 
         diff_colnames <- which(tracker_cols_date != tracker_cols)
-
-
 
         tracker_cols[diff_colnames] <- paste0(tracker_cols[diff_colnames], tracker_cols_date[diff_colnames])
     }
@@ -74,9 +71,6 @@ extract_tracker_cols <- function(tracker_data, year) {
 }
 
 
-
-
-
 # @Description: Imports the patient df, cleans it and matches it against
 # column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
@@ -84,17 +78,12 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
     patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
     patient_df <- patient_df[!is.na(names(patient_df))]
 
-
-
     colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
-    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
-
-
+    synonym_headers <- sanitize_column_name(columns_synonyms$tracker_name)
 
     # replacing var codes
     colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
-    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
-
+    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
 
     if (sum(colnames_found == 0) != 0) {
         "Non-matching column names found (see 0)"
