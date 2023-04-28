@@ -27,81 +27,11 @@ replace_empty_string_with_NA <- function(string_vector) {
     output <- ifelse(string_vector == "", NA, string_vector)
 }
 
-
-
-mm_yyyy_transform <- function(d) {
-    yr <- as.numeric(gsub(".*-([0-9]+).*", "\\1", d))
-
-
-    if (yr < 100) {
-        yr <- yr + 2000
-    }
-
-    yr <- as.character(yr)
-
-    month <- sub("^([[:alpha:]]*).*", "\\1", d)
-
-    m <- match(month, month.abb)
-
-    d <- try(as.Date(paste(yr, m, "01", sep = "-"), format = "%Y-%m-%d"), silent = TRUE)
-    if (class(d) == "try-error") {
-        d <- as.Date("9999", "-", "99", "-", "99")
-    }
-
-    return(d)
-}
-
-
-date_transform <- function(d) {
-    da <- try(as.Date(d), silent = TRUE)
-    if (class(da) == "try-error") {
-        da <- try(as.Date(as.numeric(d), origin = "1899-12-30"), silent = TRUE)
-        if (class(da) == "try-error") {
-            da <- as.Date("9999", "-", "99", "-", "99")
-
-            if (lubridate::year(da) < 17) {
-                lubridate::year(da) <- lubridate::year(da) + 2000
-            }
-        }
-    }
-
-    return(da)
-}
-
-
-
-# FUNCTIONS TO FIX DATA ---------------------------------------------------
-
-
-# dates -------------------------------------------------------------------
-
-
-fix_date_cols <- function(d) {
-    if (!is.na(d)) {
-        d <- gsub(".*[(]|[)].*", "", d)
-
-        categ <- any(str_detect(d, c(letters, LETTERS)))
-
-
-
-        if (categ == T) {
-            d <- mm_yyyy_transform(d)
-        } else {
-            d <- date_transform(d)
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-
-
 # gender ####
 
 ## Synonyms for gender
-par_synonyms_lower_female <- c("female", "girl", "woman", "fem", "feminine", "f")
+par_synonyms_lower_female <-
+    c("female", "girl", "woman", "fem", "feminine", "f")
 par_synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
 
 replace_gender_synonyms <- function(d,
@@ -145,38 +75,35 @@ fix_age <- function(d) {
 # Description: Transforms "1 y 6m" to "1.5" age, if not possible return NA
 extract_age_from_y_m <- function(age) {
     final_age <- NA_real_
-    suppressWarnings(
-        if (is.na(as.numeric(age))) {
-            age_str <- str_split(age, " |y|m") %>%
-                unlist()
-            age_str <- subset(age_str, age_str != "")
+    suppressWarnings(if (is.na(as.numeric(age))) {
+        age_str <- str_split(age, " |y|m") %>%
+            unlist()
+        age_str <- subset(age_str, age_str != "")
 
-            if (length(age_str) > 1) {
-                years <- as.numeric(age_str[1])
-                months <- mean(as.numeric(age_str[-1]))
-            } else {
-                years <- age_str
-                months <- 0
-            }
-
-            final_age <- years + (round(months / 12, 1))
+        if (length(age_str) > 1) {
+            years <- as.numeric(age_str[1])
+            months <- mean(as.numeric(age_str[-1]))
+        } else {
+            years <- age_str
+            months <- 0
         }
-    )
+
+        final_age <- years + (round(months / 12, 1))
+    })
     return(final_age)
 }
 
 # @Description: Checks different possibilities for age of birth and transforms it into numeric age
 handle_age_diagnosis <- function(age_x) {
-    suppressWarnings(
-        age_corrected <- ifelse(
-            grepl("birth|born", tolower(age_x)),
-            0,
-            ifelse(!is.na(as.numeric(age_x)),
-                as.numeric(age_x),
-                extract_age_from_y_m(age_x)
-            )
+    suppressWarnings(age_corrected <- ifelse(
+        grepl("birth|born", tolower(age_x)),
+        0,
+        ifelse(
+            !is.na(as.numeric(age_x)),
+            as.numeric(age_x),
+            extract_age_from_y_m(age_x)
         )
-    )
+    ))
     return(age_corrected)
 }
 
@@ -220,9 +147,10 @@ exclude_unrealistic_hba1c <- function(x,
 
 fix_hba1c <- function(d) {
     if (!is.na(d)) {
-        d <- try(exclude_unrealistic_hba1c(d, par_lower_hb1c, par_upper_hb1c),
-            silent = TRUE
-        )
+        d <-
+            try(exclude_unrealistic_hba1c(d, par_lower_hb1c, par_upper_hb1c),
+                silent = TRUE
+            )
         if (class(d) == "try-error") {
             d <- 999999
         }
@@ -252,29 +180,39 @@ fix_hba1c <- function(d) {
 # Assign countries & hospitals to unit of fbg measurement
 # These info are done for the fake data only.
 mmol_countries <- c()
-mmol_hospitals <- c(
-    "Clinic_LU", "Clinic_PE", "Clinic_YA", "Clinic_PU"
-)
-mg_countries <- c(
-    "Country_1", "Country_2", "Country_3"
-)
+mmol_hospitals <-
+    c("Clinic_LU", "Clinic_PE", "Clinic_YA", "Clinic_PU")
+mg_countries <- c("Country_1", "Country_2", "Country_3")
 mg_hospitals <- c(
-    "Clinic_DW", "Clinic_TN", "Clinic_EO", "Clinic_VF", "Clinic_BR",
-    "Clinic_KH", "Clinic_XD", "Clinic_QG", "Clinic_YB", "Clinic_FY",
-    "Clinic_CJ", "Clinic_VW", "Clinic_IX", "Clinic_YA", "Clinic_ZB",
-    "Clinic_EU", "Clinic_IH"
+    "Clinic_DW",
+    "Clinic_TN",
+    "Clinic_EO",
+    "Clinic_VF",
+    "Clinic_BR",
+    "Clinic_KH",
+    "Clinic_XD",
+    "Clinic_QG",
+    "Clinic_YB",
+    "Clinic_FY",
+    "Clinic_CJ",
+    "Clinic_VW",
+    "Clinic_IX",
+    "Clinic_YA",
+    "Clinic_ZB",
+    "Clinic_EU",
+    "Clinic_IH"
 )
 
 # @Description: For a given country/hospital the fbg unit is returned
 # @country_id: ID of the country where patient values were taken
 # @hospital_id: ID of the hospital where patient values were taken
 # @Output: String with fbg unit "mg/dL", "mmol/L" or NA
-assign_fbg_unit_per_hospital <- function(
-    hospital_id, country_id,
-    mmol_ct = mmol_countries,
-    mmol_hos = mmol_hospitals,
-    mg_ct = mg_countries,
-    mg_hos = mg_hospitals) {
+assign_fbg_unit_per_hospital <- function(hospital_id,
+                                         country_id,
+                                         mmol_ct = mmol_countries,
+                                         mmol_hos = mmol_hospitals,
+                                         mg_ct = mg_countries,
+                                         mg_hos = mg_hospitals) {
     returned_unit <- case_when(
         is.na(hospital_id) & is.na(country_id) ~ NA_character_,
         hospital_id %in% mg_hos ~ "mg/dL",
@@ -285,7 +223,9 @@ assign_fbg_unit_per_hospital <- function(
     )
 
     if (is.na(returned_unit)) {
-        warning("FBG unit used by hospital could not be matched ~ Assumed to be mmol/L. Check if allocation of real hospitals to mg/mmol unit was performed within the code (See 02_a4d_patient_tracker_format.R fbg_mgdl.")
+        warning(
+            "FBG unit used by hospital could not be matched ~ Assumed to be mmol/L. Check if allocation of real hospitals to mg/mmol unit was performed within the code (See 02_a4d_patient_tracker_format.R fbg_mgdl."
+        )
     }
     return(returned_unit)
 }
@@ -296,18 +236,18 @@ assign_fbg_unit_per_hospital <- function(
 # @hospital_id: ID of the hospital where patient values were taken
 # @Output: FBG value in mmol/L or NA if not matched
 transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
-    fbg_num <- as.numeric(fbg)
     factor_mmol_in_mg <- 18.02
-    measure_unit <- assign_fbg_unit_per_hospital(
-        country_id = country_id,
-        hospital_id = hospital_id
-    )
+    measure_unit <-
+        assign_fbg_unit_per_hospital(
+            country_id = country_id,
+            hospital_id = hospital_id
+        )
 
     # If not unit "mmol/L" is assumed
     fbg_mmol <- case_when(
-        measure_unit == "mg/dL" ~ fbg_num / factor_mmol_in_mg,
-        measure_unit == "mmol/L" ~ fbg_num,
-        is.na(measure_unit) ~ fbg_num,
+        measure_unit == "mg/dL" ~ fbg / factor_mmol_in_mg,
+        measure_unit == "mmol/L" ~ fbg,
+        is.na(measure_unit) ~ fbg,
         TRUE ~ NA_real_
     )
 
@@ -316,25 +256,29 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
 
 
 fbg_mmol_lower_bound <- 0
-fbg_mmol_upper_bound <- 136.5 # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
+fbg_mmol_upper_bound <-
+    136.5 # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
 
 # @Description: Check if FBG value is realistic
 # @fbg_mmol: FBG value in mmol/L
 # @fbg_min, fbg_max: Lower and upper bound of realistic fbg values
 # @Output: FBG mmol value if no error. Otherwise raised error & NA
-sanity_check_fbg_mmol <- function(fbg_mmol, min_fbg = fbg_mmol_lower_bound,
-                                  max_fbg = fbg_mmol_upper_bound) {
-    fbg_result <- case_when(
-        fbg_mmol >= min_fbg & fbg_mmol <= max_fbg ~ fbg_mmol,
-        TRUE ~ NA_real_
-    )
+sanity_check_fbg_mmol <-
+    function(fbg_mmol,
+             min_fbg = fbg_mmol_lower_bound,
+             max_fbg = fbg_mmol_upper_bound) {
+        fbg_result <- case_when(
+            fbg_mmol >= min_fbg &
+                fbg_mmol <= max_fbg ~ fbg_mmol,
+            TRUE ~ NA_real_
+        )
 
-    if (is.na(fbg_result)) {
-        stop("ERROR: FBG value outside realistic scale")
+        if (is.na(fbg_result)) {
+            stop("ERROR: FBG value outside realistic scale")
+        }
+
+        return(fbg_result)
     }
-
-    return(fbg_result)
-}
 
 # @Description: FBG input is often a range (200-300) but functions only
 # work with unique values. This wrapper hence loops the range through
@@ -349,7 +293,7 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
         grepl("low|good|okay", tolower(fbg_range)) ~ "140",
         TRUE ~ fbg_range
     ) %>%
-        gsub(pattern = "(DKA)", replacement = "")
+        gsub(pattern = "(DKA)", replacement = "", fixed = T)
 
 
     lower_upper_fbg <- fbg_range %>%
@@ -358,13 +302,11 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
         as.numeric()
 
     for (i in 1:length(lower_upper_fbg)) {
-        lower_upper_fbg[i] <- sanity_check_fbg_mmol(
-            transform_fbg_in_mmol(
-                lower_upper_fbg[i],
-                country_id = cid,
-                hospital_id = hid
-            )
-        )
+        lower_upper_fbg[i] <- sanity_check_fbg_mmol(transform_fbg_in_mmol(
+            lower_upper_fbg[i],
+            country_id = cid,
+            hospital_id = hid
+        ))
     }
 
     final <- paste(lower_upper_fbg, collapse = "-")
@@ -372,15 +314,11 @@ fbg_wrapper <- function(fbg_range, hid, cid) {
 
 
 fbg_fix <- function(fbg, country, hospital) {
-    d <- try(
-        fbg_wrapper(
-            fbg,
-            cid = country, hid = hospital
-        ),
+    d <- try(fbg_wrapper(fbg, cid = country, hid = hospital),
         silent = TRUE
     )
     if (class(d) == "try-error") {
-        d <- 999999
+        d <- "999999"
     }
     return(d)
 }
@@ -392,9 +330,13 @@ fbg_fix <- function(fbg, country, hospital) {
 supporta4d_fix <- function(d) {
     d <- try(as.character(d), silent = TRUE)
     if (!d %in% c(
-        "Partial", "SAC", "Full",
+        "Partial",
+        "SAC",
+        "Full",
         "Insulin, SMBG, HbA1c & Transportation",
-        "Insulin, SMBG & HbA1c", "Sponsor A Child", "Standard"
+        "Insulin, SMBG & HbA1c",
+        "Sponsor A Child",
+        "Standard"
     )) {
         d <- "999999"
     }
@@ -410,7 +352,9 @@ supporta4d_fix <- function(d) {
 replace_testfqr_strings_mean <- function(x) {
     y <- unlist(map(
         str_split(x, pattern = "-"),
-        function(z) mean(as.numeric(z))
+        function(z) {
+            mean(as.numeric(z))
+        }
     ))
 }
 
@@ -443,8 +387,12 @@ fix_status <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
         if (!d %in% c(
-            "Active", "Deceased", "Discontinued",
-            "Inactive", "Query", "Active - Remote",
+            "Active",
+            "Deceased",
+            "Discontinued",
+            "Inactive",
+            "Query",
+            "Active - Remote",
             "Lost Follow Up"
         )) {
             d <- "999999"
@@ -461,7 +409,10 @@ fix_status <- function(d) {
 #### UPDATED FBG SAMPLE
 fix_fbg_sample <- function(d) {
     if (!is.na(d)) {
-        d <- try(replace_empty_string_with_NA(as.character(d)), silent = TRUE)
+        d <-
+            try(replace_empty_string_with_NA(as.character(d)),
+                silent = TRUE
+            )
         if (!d %in% c("SMBG", "CBG")) {
             d <- "999999"
         }
@@ -512,11 +463,18 @@ fix_fbg_sample <- function(d) {
 fix_insulin_reg <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
-        if (!tolower(d) %in% tolower(c(
-            "basal-bolus", "premixed 30/70 bd", "insulin pump", "Premixed BD",
-            "Premixed 30/70 BD", "Modified conventional TID", "NPH ",
-            "Others"
-        ))) {
+        if (!tolower(d) %in% tolower(
+            c(
+                "basal-bolus",
+                "premixed 30/70 bd",
+                "insulin pump",
+                "Premixed BD",
+                "Premixed 30/70 BD",
+                "Modified conventional TID",
+                "NPH ",
+                "Others"
+            )
+        )) {
             d <- "999999"
         }
     } else {
@@ -599,11 +557,14 @@ par_lowest_blood_pressure_sys <- 20
 
 fix_blood_pressure_sys <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(
-            d,
-            par_highest_blood_pressure_sys,
-            par_lowest_blood_pressure_sys
-        ), silent = TRUE)
+        d <- try(
+            check_numeric_borders(
+                d,
+                par_highest_blood_pressure_sys,
+                par_lowest_blood_pressure_sys
+            ),
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- "999999"
         }
@@ -623,11 +584,14 @@ par_lowest_blood_pressure_dias <- 20
 
 fix_blood_pressure_dias <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(
-            d,
-            par_highest_blood_pressure_dias,
-            par_lowest_blood_pressure_dias
-        ), silent = TRUE)
+        d <- try(
+            check_numeric_borders(
+                d,
+                par_highest_blood_pressure_dias,
+                par_lowest_blood_pressure_dias
+            ),
+            silent = TRUE
+        )
         if (class(d) == "try-error") {
             d <- "999999"
         }
@@ -645,9 +609,10 @@ par_min_weight_kg <- 0
 
 fix_weight <- function(d) {
     if (!is.na(d)) {
-        d <- try(check_numeric_borders(d, par_max_weight_kg, par_min_weight_kg),
-            silent = TRUE
-        )
+        d <-
+            try(check_numeric_borders(d, par_max_weight_kg, par_min_weight_kg),
+                silent = TRUE
+            )
         if (class(d) == "try-error") {
             d <- 999999
         }
@@ -941,20 +906,24 @@ clean_tracker_raw_patient_data <- function(data) {
             updated_hba1c_date = fix_date_cols(updated_hba1c_date),
             updated_hba1c_prc = fix_hba1c(updated_hba1c_prc),
             updated_fbg_date = fix_date_cols(updated_fbg_date),
-            baseline_fbg_mgdl = fbg_fix(baseline_fbg_mgdl,
+            baseline_fbg_mgdl = fbg_fix(
+                baseline_fbg_mgdl,
                 country = unique(data$country_code),
                 hospital = unique(data$clinic_code)
-            ), # NOT FIXING FOR NOW
-            updated_fbg_mgdl = fbg_fix(updated_fbg_mgdl,
+            ),
+            # NOT FIXING FOR NOW
+            updated_fbg_mgdl = fbg_fix(
+                updated_fbg_mgdl,
                 country = unique(data$country_code),
                 hospital = unique(data$clinic_code)
-            ), # NOT FIXING FOR NOW
+            ),
+            # NOT FIXING FOR NOW
             support_from_a4d = fix_additional_support(support_from_a4d),
             insulin_regimen = fix_insulin_reg(insulin_regimen),
-            insulin_dosage = fix_insulin_dos(insulin_dosage),
+            # insulin_dosage = fix_insulin_dos(insulin_dosage),
             testing_fqr_pday = fix_testfqr(testing_fqr_pday),
-            required_insulin = fix_required_insulin(required_insulin),
-            required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name),
+            # required_insulin = fix_required_insulin(required_insulin),
+            # required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name),
             est_strips_pmoth = fix_est_strips_pmoth(est_strips_pmoth),
             status = fix_status(status),
             patient_name = patient_name,
@@ -966,8 +935,10 @@ clean_tracker_raw_patient_data <- function(data) {
             tracker_year = tracker_year,
             country_code = country_code,
             clinic_code = clinic_code,
-            testing_fqr = as.numeric(testing_fqr), # NEED TO REMOVE
-            updated_fbg_sample = fix_fbg_sample(updated_fbg_sample), # POTENTIALLY NEED TO CHECK AT EXTRACTION PHASE
+            testing_fqr = as.numeric(testing_fqr),
+            # NEED TO REMOVE
+            updated_fbg_sample = fix_fbg_sample(updated_fbg_sample),
+            # POTENTIALLY NEED TO CHECK AT EXTRACTION PHASE
             blood_pressure_sys_mmhg = fix_blood_pressure_sys(blood_pressure_sys_mmhg),
             blood_pressure_dias_mmhg = fix_blood_pressure_dias(blood_pressure_dias_mmhg),
             weight = fix_weight(weight),
@@ -998,8 +969,22 @@ clean_tracker_raw_patient_data <- function(data) {
         ungroup()
     # %>% select(id:family_support_scale)
 
-    data_c <- as.data.frame(data_c)
+    data_c %>% mutate(
+        across(
+            c(
+                recruitment_date,
+                updated_hba1c_date,
+                updated_fbg_date,
+                bmi_date,
+                last_clinic_visit_date,
+                lost_date,
+                diag_date
+            ),
+            as.Date
+        )
+    )
 
+    data_c <- as.data.frame(data_c)
 
     return(data_c)
 }
