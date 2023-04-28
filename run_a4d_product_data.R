@@ -149,8 +149,8 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
       # Compute balance_status (start vs. end vs. change)
     product_df <- compute_balance_status(product_df)
 
-      # Compute balance # CHANGE WAS MADE HERE BY ADDING PARAMETER year
-    product_df <- compute_balance(product_df, year)
+      # Compute balance
+    product_df <- compute_balance(product_df)
 
     # Add country, hospital, month, year, tabname
     product_df <- product_df %>%
