@@ -141,7 +141,7 @@ extract_date_from_measurement_column <- function(patient_df, colname) {
     colname_value <- paste(c(colname, ""), collapse = "")
     colname_core <- sub("[_][^_]+$", "", colname) # remove last element after "_"
     colname_date <- paste(c(colname_core, "_date"), collapse = "")
-    patient_df <- separate_(
+    patient_df <- separate(
         data = patient_df, col = colname,
         into = c(colname_value, colname_date), sep = "([(])"
     )
