@@ -2,12 +2,12 @@
 
 Below is a description of the folders and the files we find in these
 
-- **2_Data**: Files containing dummy data to start setting up the scripts
-- **3_Code**: Contains the scripts to extract, and preprocess the patient and the product data.
-      - *patient_tracker_extract_helper* : Helper functions to extract the data for the patients (needed to run the *01_a4d_patient_tracker_extract* script)
+- **data**: Files containing dummy data to start setting up the scripts
+- **R**: Contains the scripts to extract, and preprocess the patient and the product data.
+      - *patient_tracker_extract_helper* : Helper functions to extract the data for the patients (needed to run the *patient_tracker_extract* script)
       - *helper_product_data*: Helper functions to extract the data for the products
-      - *patient_tracker_extract*: Script that reads in the different raw (Excel) trackers for each clinic and year and extracts the data into an machine readble table.
-      - *patient_tracker_format*: Script that reads in the output of *01_a4d_patient_tracker_extract* and reformats columns according to the codebook indications, performs checks and removes duplicates (i.e., patients whose information is copied across months but remains unchanged). Returns a dataframe that  is ready to input in the database and another dataframe indicating the locations of errors or non-readable data.
+      - *patient_tracker_extract*: Script that reads in the different raw (Excel) trackers for each clinic and year and extracts the data into an machine readable table.
+      - *patient_tracker_format*: Script that reads in the output of *patient_tracker_extract* and reformats columns according to the codebook indications, performs checks and removes duplicates (i.e., patients whose information is copied across months but remains unchanged). Returns a dataframe that  is ready to input in the database and another dataframe indicating the locations of errors or non-readable data.
 - **4ADMonthlyTrackerCodebook**: Codebook containing the information on the variables that we are extracting from the trackers (patient and product data). Also contains tabs listing the different labels that one variable may have together with its standardized formulation.
 
 ## Setup
