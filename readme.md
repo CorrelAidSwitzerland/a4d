@@ -4,10 +4,10 @@ Below is a description of the folders and the files we find in these
 
 - **data**: Files containing dummy data to start setting up the scripts
 - **R**: Contains the scripts to extract, and preprocess the patient and the product data.
-      - *patient_tracker_extract_helper* : Helper functions to extract the data for the patients (needed to run the *patient_tracker_extract* script)
-      - *helper_product_data*: Helper functions to extract the data for the products
-      - *patient_tracker_extract*: Script that reads in the different raw (Excel) trackers for each clinic and year and extracts the data into an machine readable table.
-      - *patient_tracker_format*: Script that reads in the output of *patient_tracker_extract* and reformats columns according to the codebook indications, performs checks and removes duplicates (i.e., patients whose information is copied across months but remains unchanged). Returns a dataframe that  is ready to input in the database and another dataframe indicating the locations of errors or non-readable data.
+    - *patient_tracker_extract_helper* : Helper functions to extract the data for the patients (needed to run the *patient_tracker_extract* script)
+    - *helper_product_data*: Helper functions to extract the data for the products
+    - *patient_tracker_extract*: Script that reads in the different raw (Excel) trackers for each clinic and year and extracts the data into an machine readable table.
+    - *patient_tracker_format*: Script that reads in the output of *patient_tracker_extract* and reformats columns according to the codebook indications, performs checks and removes duplicates (i.e., patients whose information is copied across months but remains unchanged). Returns a dataframe that  is ready to input in the database and another dataframe indicating the locations of errors or non-readable data.
 - **4ADMonthlyTrackerCodebook**: Codebook containing the information on the variables that we are extracting from the trackers (patient and product data). Also contains tabs listing the different labels that one variable may have together with its standardized formulation.
 
 ## Setup
@@ -33,7 +33,7 @@ and `renv` will install all packages with the version as stated in the `renv.loc
 
 ### Updating the Lockfile
 
-See (collaborating)[https://rstudio.github.io/renv/articles/collaborating.html] for the full details.
+See [collaborating](https://rstudio.github.io/renv/articles/collaborating.html) for the full details.
 
 While working on a project, you or your collaborators may need to update or install new packages in your project. When this occurs, you’ll also want to ensure your collaborators are then using the same newly-installed packages. In general, the process looks like this:
 
