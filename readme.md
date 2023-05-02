@@ -82,6 +82,20 @@ You can now go ahead and run one of the two main scripts:
 - `run_a4d_patient_data.R`
 - `run_a4d_product_data.R`
 
+### Loading the data
+
+We will all have the encrypted data stored on different folders within our computers.
+To account for the different file paths for every user and to speed the selection of the tracker files (where the data is stored), there is the following solution:
+
+- Run `usethis::edit_r_environ()`
+    - This should open the following file: `.Renviron`
+- Add the following line:
+    - `A4D_DATA_ROOT = "your_path"`
+    - Replace `"your_path"` with the path to your A4D tracker files
+        - E.g. `A4D_DATA_ROOT = "D:/A4D"`
+- Save the `.Renviron` file
+- You are good to go and will not need to re-select the folder containing the tracker files when running `select_A4D_directory()`.  This function will now get the correct path from the `.Renviron` file.
+
 ## Development workflow
 
 For a short overview, see [cheatsheets](https://devtools.r-lib.org/#cheatsheet).
