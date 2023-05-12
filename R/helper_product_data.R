@@ -337,11 +337,18 @@ compute_balance_status <- function(product_df) {
 }
 
 # @Description: Computes balance based on start balance value, units released, units returned, units received.-
-compute_balance <- function(product_df) {
+compute_balance <- function(product_df, year) {
     # Change variable type
     product_df["product_balance"] <- as.numeric(unlist(product_df["product_balance"]))
     product_df["product_units_released"] <- as.numeric(unlist(product_df["product_units_released"]))
     product_df["product_units_returned"] <- as.numeric(unlist(product_df["product_units_returned"]))
+
+    # Need to put units received and released to 0 since here only summarising end of month
+    if(year >= 2021){
+        product_df <- product_df %>%
+            mutate(product_units_received= if_else(product_balance_status == 'end', 0, product_units_received)) %>%
+            mutate(product_units_released= if_else(product_balance_status == 'end', 0, product_units_released))
+    }
 
     # Calculate start balance: take units_received value if there is no balance value present
     product_df <- product_df %>%

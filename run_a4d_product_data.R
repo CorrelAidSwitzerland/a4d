@@ -93,11 +93,6 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
       dplyr::slice(., -del_rows) %>%
       filter_all(any_vars(complete.cases(.))) # Remove empty rows
 
-    # For 2021, remove the last row of every product which serves as an "end-of-month" balance row.
-    if(year >= 2021){ # CHANGE WAS MADE HERE BY ADDING FILL FUNCTION AND PLACING IT AFTER DELETING EMPTY ROWS:
-      product_df <- product_df %>% tidyr::fill(product, .direction = "down") %>% dplyr::group_by(product) %>% slice(-n())}
-
-
     # Split product cells with various products and/or unit information
     product_df <- extract_product_multiple(product_df)
 
@@ -128,13 +123,19 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     product_df <- format_date(product_df)
 
     # Extend product name and sort by product
+    # Keep first row and last row and order the rest by date
     product_df <- product_df %>% ungroup() %>% tidyr::fill(c(product, product_entry_date), .direction = "down") %>%
-      arrange(., product, product_entry_date)
+        group_by(product) %>%
+        mutate(rank = ifelse(row_number() == 1, 1,
+                             if_else(row_number() == n(), n()+2, dense_rank(product_entry_date)+1))) %>%
+        arrange(product, rank) %>%
+        ungroup() %>%
+        select(-rank)
 
     # Recode all NAs in unit columns to 0
     product_df <- recode_unitcolumnstozero(product_df)
 
-    # Clean columns "units received" and "received from" from unexpected character (units) vs. numeric (received from) valeus.
+    # Clean columns "units received" and "received from" from unexpected character (units) vs. numeric (received from) values.
     # In first function, received_from numeric information (Balance status at START BALANCE) is transferred to variable product_balance for later computation of this variable.
     product_df <- clean_receivedfrom(product_df)
     product_df <- clean_unitsreceived(product_df)
@@ -150,7 +151,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
     product_df <- compute_balance_status(product_df)
 
       # Compute balance
-    product_df <- compute_balance(product_df)
+    product_df <- compute_balance(product_df, year)
 
     # Add country, hospital, month, year, tabname
     product_df <- product_df %>%
