@@ -61,6 +61,7 @@ extract_patient_data <- function(tracker_data, country_code, clinic_code) {
 
 
 
+
 #' Extract patient data header names from the month sheet of a tracker file.
 #'
 #' @description
@@ -78,7 +79,6 @@ extract_patient_data_header <- function(tracker_data, year) {
     col_ind <- min(which(tracker_data %like% "Patient ID"))
     row_ind <- min(which(tracker_data[, col_ind] %like% "Patient ID"))
     tracker_cols <- as.vector(t(tracker_data[row_ind, ]))
-
     if (year %in% c(2019, 2020, 2021)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         row_ind <- row_ind + 1
@@ -91,6 +91,7 @@ extract_patient_data_header <- function(tracker_data, year) {
 
     return(tracker_cols)
 }
+
 
 
 #' Harmonize patient data column names.

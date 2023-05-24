@@ -7,11 +7,11 @@
 read_patient_an_data(tracker_data_file, sheet_list, columns_synonyms)
 }
 \arguments{
-\item{tracker_data_file}{description}
+\item{tracker_data_file}{The excel file containing the data.}
 
-\item{sheet_list}{description}
+\item{sheet_list}{A list with sheet names.}
 
-\item{columns_synonyms}{description}
+\item{columns_synonyms}{A data.frame with two columns, variable_name and tracker_name.}
 }
 \value{
 description
