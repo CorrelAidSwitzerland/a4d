@@ -39,41 +39,71 @@ extract_country_clinic_code <- function(tracker_data) {
 }
 
 
+#' Extract the patient data from a month sheet of a tracker file.
+#'
+#' @description
+#' Searches for first and last row that starts with country and clinic code
+#' and extracts the data from this range as data.frame
+#'
+#'
+#' @param tracker_data data.frame holding the data from a month sheet.
+#' @param country_code country code for this tracker.
+#' @param clinic_code clinic code for this tracker.
+#'
+#' @return data.frame with the patient data
+#' @export
 extract_patient_data <- function(tracker_data, country_code, clinic_code) {
-    i <- min(which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code)))
-    j <- max(which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code)))
-    patient_df <- data.frame(tracker_data[i:j, ])
-
-    # view(patient_df)
-    return(patient_df)
+    patient_data_range <- which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code))
+    row_min <- min(patient_data_range)
+    row_max <- max(patient_data_range)
+    patient_df <- data.frame(tracker_data[row_min:row_max, ])
 }
 
 
-# function to extract the columns names in the tracker
-extract_tracker_cols <- function(tracker_data, year) {
-    i <- min(which(tracker_data[, 2] %like% "ID"))
-    j <- min(which(tracker_data[, 2] %like% "ID"))
-    tracker_cols <- as.vector(t(tracker_data[i:j, ]))
+
+#' Extract patient data header names from the month sheet of a tracker file.
+#'
+#' @description
+#' Search for the cell with "Patient ID" and extract that row as header.
+#' For trackers from 2019 and newer the header spans two columns,
+#' so date is added to the column name.
+#'
+#'
+#' @param tracker_data data.frame holding the data from a month sheet.
+#' @param year year of this tracker.
+#'
+#' @return vector with column names.
+#' @export
+extract_patient_data_header <- function(tracker_data, year) {
+    col_ind <- min(which(tracker_data %like% "Patient ID"))
+    row_ind <- min(which(tracker_data[, col_ind] %like% "Patient ID"))
+    tracker_cols <- as.vector(t(tracker_data[row_ind, ]))
 
     if (year %in% c(2019, 2020, 2021)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        i <- i + 1
-        j <- j + 1
-        tracker_cols_date <- as.vector(t(tracker_data[i:j, ]))
+        row_ind <- row_ind + 1
+        tracker_cols_date <- as.vector(t(tracker_data[row_ind, ]))
 
         diff_colnames <- which(tracker_cols_date != tracker_cols)
 
         tracker_cols[diff_colnames] <- paste0(tracker_cols[diff_colnames], tracker_cols_date[diff_colnames])
     }
 
-    # view(patient_df)
     return(tracker_cols)
 }
 
 
-# @Description: Imports the patient df, cleans it and matches it against
-# column synonyms to unify column names
-# @columns_synonyms: Long format output of read_column_synonyms to match columns
+#' Harmonize patient data column names.
+#'
+#' @description
+#' Imports the patient df, cleans it and matches it against
+#' column synonyms to unify column names
+#'
+#' @param patient_df data.frame holding the patient data of the month sheet of a tracker.
+#' @param columns_synonyms data.frame with synonyms for tracker variables.
+#'
+#' @return data.frame with harmonized column names.
+#' @export
 harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
     patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
     patient_df <- patient_df[!is.na(names(patient_df))]

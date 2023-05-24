@@ -73,7 +73,6 @@ read_patient_data <-
 
         tidy_tracker_list <- NULL
 
-        sheet_num <- 1
         for (CurrSheet in month_list) {
             print(CurrSheet)
 
@@ -93,16 +92,10 @@ read_patient_data <-
             clinic_code <- cc_codes$clinic_code
 
             patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-            print("patient df extracted")
-
-            tracker_cols <- extract_tracker_cols(tracker_data, year)
-            print("tracker_col names extracted")
-
+            tracker_cols <- extract_patient_data_header(tracker_data, year)
             colnames(patient_df) <- tracker_cols
-            print("tracker_col names added to patient df")
-
             patient_df <- harmonize_patient_data_columns(patient_df, columns_synonyms)
-            print("finished harmonizing patient df")
+            print("patient df extracted")
 
             #### 2017 + 2018 ####
             if (year == 2017 | year == 2018) {
@@ -165,10 +158,9 @@ read_patient_data <-
 
             #### Save data ####
             # save data in a list
-            tidy_tracker_list[[sheet_num]] <- patient_df # %>%
+            tidy_tracker_list[[CurrSheet]] <- patient_df # %>%
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
 
-            sheet_num <- sheet_num + 1
         } # sheet for loop
 
 
@@ -257,20 +249,3 @@ read_patient_data <-
 
         return(tracker_info)
     }
-
-# TESTING IT OUT ----------------------------------------------------------
-
-# counter <- 1
-# saving_clean_files <- list()
-#
-# for (CurrTracker in tracker_list) {
-#
-# saving_clean_files[counter] <- reading_a4d_tracker(tracker_data_file = CurrTracker,
-# columns_synonyms = columns_synonyms)
-#
-# counter <- counter + 1
-# }
-#
-#
-# clean_files <- bind_rows(saving_clean_files)
-# write_csv(clean_files, file = "/Volumes/A4D_project/clean_a4d_data.csv")
