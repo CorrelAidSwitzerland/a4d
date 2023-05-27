@@ -160,7 +160,6 @@ read_patient_data <-
             # save data in a list
             tidy_tracker_list[[CurrSheet]] <- patient_df # %>%
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
-
         } # sheet for loop
 
 
