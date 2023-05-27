@@ -20,7 +20,7 @@ and then returns the sanitized column name.
 }
 \examples{
 sanitize_column_name("John Doe's Column") # should return "johndoescolumn"
-sanitize_column_name("Date 2022")         # should return "date2022"
+sanitize_column_name("Date 2022") # should return "date2022"
 sanitize_column_name("My Awesome 1st Column!!") # should return "myawesome1stcolumn"
 
 }
