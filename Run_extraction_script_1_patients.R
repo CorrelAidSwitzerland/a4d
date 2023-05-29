@@ -23,8 +23,9 @@ columns_synonyms = codebook_patient
 
 # adjust new harmonize function ---------------------------------------------------------
 # adjusted harmonize function that has the same name as the original function
+# function is based on harmonize_patient_data_columns() but shortened
 # Might need a better solution
-harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
+harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     # Uncommented because we want to retain columns with only NAs
     # patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
     patient_df <- patient_df[!is.na(names(patient_df))]
@@ -106,7 +107,7 @@ reading_a4d_patient_data_2 <-
             colnames(patient_df) <- tracker_cols
             print("tracker_col names added to patient df")
 
-            patient_df <- harmonize_patient_data_columns(patient_df, columns_synonyms)
+            patient_df <- harmonize_patient_data_columns_2(patient_df, columns_synonyms)
             print("finished harmonizing patient df")
 
             # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
