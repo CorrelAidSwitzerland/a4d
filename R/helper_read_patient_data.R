@@ -1,7 +1,7 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    patient_ids <- patient_df["id"] %>%
+    patient_ids <- patient_data["id"] %>%
         drop_na() %>%
         rowwise() %>%
         mutate(country = str_split(id, "_", n = 2, simplify = T)[1], clinic = substr(str_split(id, "_", n = 2, simplify = T)[2], 0, 2))
