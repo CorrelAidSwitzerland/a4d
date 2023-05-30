@@ -1,32 +1,32 @@
 #' @title Get all synonyms for all variable names
 #'
 #' @description
-#' This function reads a specific sheet from an excel file
+#' This function reads the synonyms from a YAML file
 #' and generates a tibble containing unique column names and their synonyms.
 #'
-#' @param master_tracker_file An excel file containing the synonyms.
-#' @param sheet The name of the sheet to read from the excel file.
+#' @param synonym_file A YAML file containing the synonyms
 #'
 #' @return A tibble containing unique column names and their synonyms.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' read_column_synonyms("master_tracker_variables.xlsx", "synonyms_PatientData")
+#' read_column_synonyms(synonym_file = "synonyms_patient.yaml")
+#' read_column_synonyms(synonym_file = "synonyms_product.yaml")
 #' }
-read_column_synonyms <- function(master_tracker_file, sheet) {
-    columns_synonyms <- master_tracker_file %>%
-        readxl::read_xlsx(sheet = sheet) %>%
-        as_tibble() %>%
-        pivot_longer(
-            cols = everything(),
-            names_to = "variable_name",
-            values_to = "tracker_name"
-        ) %>%
-        subset(!is.na(tracker_name)) %>%
-        # lapply(sanitize_column_name) %>%
-        as_tibble() %>%
-        group_by(tracker_name) %>%
-        slice(1) %>%
-        ungroup()
+read_column_synonyms <- function(synonym_file) {
+    columns_synonyms <-
+        yaml::read_yaml(here::here("synonyms/", synonym_file)) %>%
+        unlist %>%
+        as.data.frame() %>%
+        rownames_to_column() %>%
+        # remove digits that were created when converting to data frame
+        mutate(
+            rowname = str_replace(rowname, pattern = "[:digit:]$", "")
+        )  %>%
+        rename(
+            "variable_name" = "rowname",
+            "tracker_name" =  "."
+        ) %>% as_tibble()
+
 }
