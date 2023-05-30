@@ -39,10 +39,8 @@ helper_is_msd_start_row <- function(df, i) {
 # Conditions to cut of at start patient data
 helper_is_msd_end_row <- function(df, i) {
     includes_patient_name <- any(grepl("Patient Name", df[i + 1, ]))
-    includes_patient_recruitment <- any(grepl(
-        "patient recruitment",
-        tolower(df[i, ])
-    ))
+    includes_patient_recruitment <- any(grepl("patient recruitment",tolower(df[i, ])) |
+                                            grepl("patient data summary",tolower(df[i-1, ])) ) # second check for 2022 data onwards
 
     condition <- case_when(
         !includes_patient_name ~ FALSE,
@@ -86,15 +84,17 @@ get_patient_end <- function(df, j) {
 # @Description: Reads product data from a monthly file based on extraction logic
 extract_product_data <- function(monthly_tracker_df) {
     print("Extract product data - Start")
+    start_df_msd <- NULL
+    end_df_msd <- NULL
 
     for (i in 1:nrow(monthly_tracker_df)) {
         start <- get_msd_start(monthly_tracker_df, i)
         end <- get_msd_end(monthly_tracker_df, i)
 
-        if (!is_empty(start)) {
+        if (!is_empty(start) & is_empty(start_df_msd)) {
             start_df_msd <- start - 1
         }
-        if (!is_empty(end)) {
+        if (!is_empty(end) & is_empty(end_df_msd)) {
             end_df_msd <- end
         }
     }
