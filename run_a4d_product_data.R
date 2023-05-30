@@ -37,7 +37,7 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
 
   # Initialization
   # columns_synonyms <- codebook
-  columns_synonyms <- read_column_synonyms(synonym_file = "synonyms_product.yaml")
+  columns_synonyms <- read_column_synonyms_product(codebook_data_file)
 
   # Set parameters
   sheet_list <- readxl::excel_sheets(tracker_data_file)

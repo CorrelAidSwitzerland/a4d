@@ -167,25 +167,24 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms) {
 }
 # @Description: Imports the codebook, cleans, removes duplicates and transforms it
 # into long df format
-# 30/05/2023 commented since now using read_column_synonyms() and YAML
-# read_column_synonyms_product <- function(codebook_data_file) {
-#     columns_synonyms <- codebook_data_file %>%
-#         readxl::read_xlsx(sheet = "synonyms_ProductData") %>%
-#         as_tibble() %>%
-#         pivot_longer(
-#             cols = everything(),
-#             names_to = "name_clean",
-#             values_to = "name_to_be_matched"
-#         ) %>%
-#         # subset(!is.na(name_to_be_matched)) %>% # commented out by SK, as this should also include final column names
-#         # lapply(sanitize_column_name) %>%
-#         as_tibble() %>%
-#         group_by(name_to_be_matched) %>%
-#         slice(1) %>%
-#         ungroup()
-#     # view(columns_synonyms)
-#     return(columns_synonyms)
-# }
+read_column_synonyms_product <- function(codebook_data_file) {
+    columns_synonyms <- codebook_data_file %>%
+        readxl::read_xlsx(sheet = "synonyms_ProductData") %>%
+        as_tibble() %>%
+        pivot_longer(
+            cols = everything(),
+            names_to = "name_clean",
+            values_to = "name_to_be_matched"
+        ) %>%
+        # subset(!is.na(name_to_be_matched)) %>% # commented out by SK, as this should also include final column names
+        # lapply(sanitize_column_name) %>%
+        as_tibble() %>%
+        group_by(name_to_be_matched) %>%
+        slice(1) %>%
+        ungroup()
+    # view(columns_synonyms)
+    return(columns_synonyms)
+}
 
 sanitize_column_name <- function(column_name) {
     column_name <- column_name %>%
