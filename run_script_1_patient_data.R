@@ -10,14 +10,17 @@ tracker_files <- list.files(tracker_root_path, "*.xlsx")
 tracker_files <-
     tracker_files[str_detect(tracker_files, "~", negate = T)]
 
-codebook_path <- "master_tracker_variables.xlsx"
+# codebook_path <- "master_tracker_variables.xlsx"# not needed anymore
+
 
 ## Extract codebooks for each data form
 codebook_patient <-
-    read_column_synonyms(codebook_path, sheet = "synonyms_PatientData")
+    read_column_synonyms(synonym_file = "synonyms_patient.yaml")
+
 
 codebook_product <-
-    read_column_synonyms(codebook_path, sheet = "synonyms_ProductData")
+    read_column_synonyms(synonym_file = "synonyms_product.yaml")
+
 
 columns_synonyms = codebook_patient
 
