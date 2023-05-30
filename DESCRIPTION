@@ -18,6 +18,7 @@ Imports:
     readr,
     readxl,
     tidyr,
+    yaml,
     zoo
 Suggests: 
     testthat (>= 3.0.0)
