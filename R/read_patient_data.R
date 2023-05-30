@@ -253,7 +253,6 @@ read_patient_data <-
 # note the different function name
 # function is based on reading_a4d_patient_data() but shortened
 reading_patient_data_2 <-
-
     function(tracker_data_file, columns_synonyms) {
         # list the sheets in excel workbook & filter these
         sheet_list <- readxl::excel_sheets(tracker_data_file)
@@ -314,24 +313,23 @@ reading_patient_data_2 <-
             {
                 # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
                 # if (any(grepl("Patient List", sheet_list))) {
-                #     patient_sheet <- sheet_list[na.omit(grepl("Patient List", sheet_list))]
+                # patient_sheet <- sheet_list[na.omit(grepl("Patient List", sheet_list))]
                 #
-                #     # AN PATIENT DATA DATA (merge/join at the end of the if year):
-                #     an_patient_data <-
-                #         data.frame(readxl::read_xlsx(tracker_data_file, patient_sheet))
-                #     all_patient_ids <- an_patient_data$Patient.ID
+                # # AN PATIENT DATA DATA (merge/join at the end of the if year):
+                # an_patient_data <-
+                # data.frame(readxl::read_xlsx(tracker_data_file, patient_sheet))
+                # all_patient_ids <- an_patient_data$Patient.ID
                 #
-                #     an_patient_data <- clean_anon_data(an_patient_data)
-                #     print("cleaned patient anon data")
+                # an_patient_data <- clean_anon_data(an_patient_data)
+                # print("cleaned patient anon data")
                 # } else {
-                #     warning("File has no Patient List - Either fake data file or error")
-                #     an_patient_data <- NA
+                # warning("File has no Patient List - Either fake data file or error")
+                # an_patient_data <- NA
                 # }
                 # print("patient AN Data extracted")
                 # patient_df <-
-                #     patient_df %>% left_join(an_patient_data, by = "id")
+                # patient_df %>% left_join(an_patient_data, by = "id")
                 # print("added patient anon data")
-
             }
 
 
@@ -349,7 +347,6 @@ reading_patient_data_2 <-
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
 
             sheet_num <- sheet_num + 1
-
         }
 
         df_raw <- bind_rows(tidy_tracker_list)
