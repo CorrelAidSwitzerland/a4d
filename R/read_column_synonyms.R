@@ -17,16 +17,16 @@
 read_column_synonyms <- function(synonym_file) {
     columns_synonyms <-
         yaml::read_yaml(here::here("synonyms", synonym_file)) %>%
-        unlist %>%
+        unlist() %>%
         as.data.frame() %>%
         rownames_to_column() %>%
         # remove digits that were created when converting to data frame
         mutate(
             rowname = str_replace(rowname, pattern = "[:digit:]$", "")
-        )  %>%
+        ) %>%
         rename(
             "variable_name" = "rowname",
-            "tracker_name" =  "."
-        ) %>% as_tibble()
-
+            "tracker_name" = "."
+        ) %>%
+        as_tibble()
 }

@@ -1,9 +1,12 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    patient_ids = patient_df["id"] %>% drop_na() %>% rowwise() %>% mutate(country = str_split(id, "_", n=2, simplify=T)[1], clinic = substr(str_split(id, "_", n=2, simplify=T)[2], 0, 2))
-    country_code <- names(sort(table(patient_ids$country), decreasing=T))[1]
-    clinic_code <- names(sort(table(patient_ids$clinic), decreasing=T))[1]
+    patient_ids <- patient_df["id"] %>%
+        drop_na() %>%
+        rowwise() %>%
+        mutate(country = str_split(id, "_", n = 2, simplify = T)[1], clinic = substr(str_split(id, "_", n = 2, simplify = T)[2], 0, 2))
+    country_code <- names(sort(table(patient_ids$country), decreasing = T))[1]
+    clinic_code <- names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
@@ -28,11 +31,11 @@ extract_patient_data <- function(tracker_data, year) {
     row_max <- max(patient_data_range)
 
     patient_df <- data.frame(tracker_data[row_min:row_max, ])
-    header_cols <- as.vector(t(tracker_data[row_min-1, ]))
+    header_cols <- as.vector(t(tracker_data[row_min - 1, ]))
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        header_cols_2 <- as.vector(t(tracker_data[row_min-2, ]))
+        header_cols_2 <- as.vector(t(tracker_data[row_min - 2, ]))
         diff_colnames <- which(header_cols != header_cols)
         header_cols[diff_colnames] <- paste0(header_cols[diff_colnames], header_cols_2[diff_colnames])
     }
