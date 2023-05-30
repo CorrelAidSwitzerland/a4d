@@ -1,8 +1,10 @@
 # Read in data and codebook -----------------------------------------------
 
 tracker_root_path <- select_A4D_directory()
+
+# Only for single files, for now, for easier testing
+# Loop will be implemented later
 tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
-# tracker_file <- "D:/A4D/from_tyla/added_AN_sheet-from_tyla_DUMMY 2022 Tracker Template.xlsx"
 
 
 codebook_path <- "4ADMonthlyTrackerCodebook.xlsx"
@@ -17,8 +19,6 @@ codebook_product <- read_column_synonyms(
 )
 
 columns_synonyms = codebook_patient
-
-
 
 
 # adjust new harmonize function ---------------------------------------------------------
@@ -45,7 +45,6 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
         return(patient_df)
     }
 }
-
 
 
 # check read patient data -------------------------------------------------
@@ -115,7 +114,6 @@ reading_a4d_patient_data_2 <-
             # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
 
 
-
 # INCOMPLETE Load "Patient List" data and later merge it ------------------------------------------------------------
 # The follownig section has to be improved from here on now to get patient info from Sheet "Patient List"
 {
@@ -169,6 +167,7 @@ df_raw <- reading_a4d_patient_data_2(
     columns_synonyms = codebook_patient
 )
 
+
 # Combine to a new data frame ---------------------------------------------
 df_raw_comb <- df_raw %>% bind_rows()
 df_raw_comb %>% dim # quickly check dimensions
@@ -176,7 +175,8 @@ df_raw_comb %>% dim # quickly check dimensions
 
 # INCOMPLETE - Set sensitive rows to NA -------------------------------------
 # level of education is in the patient list - we need to get data from there as well
-df_raw_comb %>%
+df_raw_comb <-
+    df_raw_comb %>%
     mutate(
         across(
             c(
@@ -186,11 +186,25 @@ df_raw_comb %>%
             # etc.
             ),
             ~NA
-        )) %>% View
-
+        ))
 
 
 # INCOMPLETE - Extract data frame ------------------------------------------------------
 
-# df_raw_comb <-
-#     write.csv2()
+extracted_root <-  file.path(
+    tracker_root_path,
+    "Extracted files"
+)
+
+if (!file.exists(extracted_root)) {
+    dir.create(extracted_root)
+}
+
+
+df_raw_comb %>%
+    write.csv(file =
+                  paste0(extracted_root,
+                         "/",
+                         basename(tracker_file),
+                         "_extracted.csv"),
+              row.names = F)
