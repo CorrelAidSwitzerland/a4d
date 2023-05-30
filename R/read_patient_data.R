@@ -93,7 +93,7 @@ read_patient_data <-
             clinic_code <- cc_codes$clinic_code
 
             patient_df <-
-                extract_patient_data(tracker_data, country_code, clinic_code)
+                extract_patient_data(tracker_data)
             tracker_cols <-
                 extract_patient_data_header(tracker_data, year)
             colnames(patient_df) <- tracker_cols
@@ -284,35 +284,25 @@ reading_patient_data_2 <-
                         sheet = curr_sheet
                     )
                 )
-
-
             print("tracker read in")
 
-            cc_codes <-
-                extract_country_clinic_code(tracker_data)
-            country_code <- cc_codes$country_code
-            clinic_code <- cc_codes$clinic_code
-
-            # view(tracker_data)
-
-
-            patient_df <-
-                extract_patient_data(tracker_data, country_code, clinic_code)
-            print("patient df extracted")
-
+            patient_df <- extract_patient_data(tracker_data)
             patient_data_header <-
                 extract_patient_data_header(tracker_data, year)
-
             colnames(patient_df) <- patient_data_header
+            print("patient df extracted")
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
-            print("finished harmonizing patient df")
+            print("patient df harmonized")
 
             # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
             patient_df <- patient_df %>% distinct()
             # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
 
+            cc_codes <- extract_country_clinic_code(patient_df)
+            country_code <- cc_codes$country_code
+            clinic_code <- cc_codes$clinic_code
 
             # INCOMPLETE Load "Patient List" data and later merge it ------------------------------------------------------------
             # The follownig section has to be improved from here on now to get patient info from Sheet "Patient List"
