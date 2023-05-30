@@ -133,11 +133,11 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     patient_df <- patient_df[!is.na(names(patient_df))]
 
     colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
-    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
+    synonym_headers <- sanitize_column_name(columns_synonyms$tracker_name)
 
     # replacing var codes
     colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
-    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
+    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
     # browser()
 
     if (sum(colnames_found == 0) != 0) {

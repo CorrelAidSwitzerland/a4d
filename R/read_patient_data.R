@@ -65,7 +65,8 @@ read_patient_data <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
 
         # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
-        an_patient_data <- read_patient_an_data(tracker_data_file, sheet_list, columns_synonyms)
+        an_patient_data <-
+            read_patient_an_data(tracker_data_file, sheet_list, columns_synonyms)
 
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
@@ -91,10 +92,13 @@ read_patient_data <-
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
 
-            patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
-            tracker_cols <- extract_patient_data_header(tracker_data, year)
+            patient_df <-
+                extract_patient_data(tracker_data, country_code, clinic_code)
+            tracker_cols <-
+                extract_patient_data_header(tracker_data, year)
             colnames(patient_df) <- tracker_cols
-            patient_df <- harmonize_patient_data_columns(patient_df, columns_synonyms)
+            patient_df <-
+                harmonize_patient_data_columns(patient_df, columns_synonyms)
             print("patient df extracted")
 
             #### 2017 + 2018 ####
@@ -269,7 +273,6 @@ reading_patient_data_2 <-
 
         tidy_tracker_list <- NULL
 
-        sheet_num <- 1
         for (curr_sheet in month_list) {
             print(curr_sheet)
 
@@ -293,14 +296,17 @@ reading_patient_data_2 <-
             # view(tracker_data)
 
 
-            patient_df <- extract_patient_data(tracker_data, country_code, clinic_code)
+            patient_df <-
+                extract_patient_data(tracker_data, country_code, clinic_code)
             print("patient df extracted")
 
-            patient_data_header <- extract_patient_data_header(tracker_data, year)
+            patient_data_header <-
+                extract_patient_data_header(tracker_data, year)
 
             colnames(patient_df) <- patient_data_header
 
-            patient_df <- harmonize_patient_data_columns_2(patient_df, columns_synonyms)
+            patient_df <-
+                harmonize_patient_data_columns_2(patient_df, columns_synonyms)
             print("finished harmonizing patient df")
 
             # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
@@ -343,10 +349,8 @@ reading_patient_data_2 <-
                 )
             print("added tracker metadata")
 
-            tidy_tracker_list[[sheet_num]] <- patient_df # %>%
+            tidy_tracker_list[[curr_sheet]] <- patient_df # %>%
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
-
-            sheet_num <- sheet_num + 1
         }
 
         df_raw <- bind_rows(tidy_tracker_list)
