@@ -4,22 +4,21 @@
 \alias{read_column_synonyms}
 \title{Get all synonyms for all variable names}
 \usage{
-read_column_synonyms(master_tracker_file, sheet)
+read_column_synonyms(synonym_file)
 }
 \arguments{
-\item{master_tracker_file}{An excel file containing the synonyms.}
-
-\item{sheet}{The name of the sheet to read from the excel file.}
+\item{synonym_file}{A YAML file containing the synonyms}
 }
 \value{
 A tibble containing unique column names and their synonyms.
 }
 \description{
-This function reads a specific sheet from an excel file
+This function reads the synonyms from a YAML file
 and generates a tibble containing unique column names and their synonyms.
 }
 \examples{
 \dontrun{
-read_column_synonyms("master_tracker_variables.xlsx", "synonyms_PatientData")
+read_column_synonyms(synonym_file = "synonyms_patient.yaml")
+read_column_synonyms(synonym_file = "synonyms_product.yaml")
 }
 }
