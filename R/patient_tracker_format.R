@@ -976,7 +976,7 @@ clean_tracker_raw_patient_data <- function(data) {
                 updated_hba1c_date,
                 updated_fbg_date,
                 bmi_date,
-                lastdevtoo_clinic_visit_date,
+                last_clinic_visit_date,
                 lost_date,
                 diag_date
             ),

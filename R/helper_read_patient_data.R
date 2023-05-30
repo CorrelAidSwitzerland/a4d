@@ -39,62 +39,80 @@ extract_country_clinic_code <- function(tracker_data) {
 }
 
 
+#' Extract the patient data from a month sheet of a tracker file.
+#'
+#' @description
+#' Searches for first and last row that starts with country and clinic code
+#' and extracts the data from this range as data.frame
+#'
+#'
+#' @param tracker_data data.frame holding the data from a month sheet.
+#' @param country_code country code for this tracker.
+#' @param clinic_code clinic code for this tracker.
+#'
+#' @return data.frame with the patient data
+#' @export
 extract_patient_data <- function(tracker_data, country_code, clinic_code) {
-    i <- min(which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code)))
-    j <- max(which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code)))
-    patient_df <- data.frame(tracker_data[i:j, ])
-
-    # view(patient_df)
-    return(patient_df)
+    patient_data_range <- which(tracker_data[, 2] %like% paste0(country_code, "_", clinic_code))
+    row_min <- min(patient_data_range)
+    row_max <- max(patient_data_range)
+    patient_df <- data.frame(tracker_data[row_min:row_max, ])
 }
 
 
-# function to extract the columns names in the tracker
-extract_tracker_cols <- function(tracker_data, year) {
-    i <- min(which(tracker_data[, 2] %like% "ID"))
-    j <- min(which(tracker_data[, 2] %like% "ID"))
-    tracker_cols <- as.vector(t(tracker_data[i:j, ]))
-
-
+#' Extract patient data header names from the month sheet of a tracker file.
+#'
+#' @description
+#' Search for the cell with "Patient ID" and extract that row as header.
+#' For trackers from 2019 and newer the header spans two columns,
+#' so date is added to the column name.
+#'
+#'
+#' @param tracker_data data.frame holding the data from a month sheet.
+#' @param year year of this tracker.
+#'
+#' @return vector with column names.
+#' @export
+extract_patient_data_header <- function(tracker_data, year) {
+    col_ind <- min(which(tracker_data %like% "Patient ID"))
+    row_ind <- min(which(tracker_data[, col_ind] %like% "Patient ID"))
+    tracker_cols <- as.vector(t(tracker_data[row_ind, ]))
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        i <- i + 1
-        j <- j + 1
-        tracker_cols_date <- as.vector(t(tracker_data[i:j, ]))
+        row_ind <- row_ind + 1
+        tracker_cols_date <- as.vector(t(tracker_data[row_ind, ]))
 
         diff_colnames <- which(tracker_cols_date != tracker_cols)
-
-
 
         tracker_cols[diff_colnames] <- paste0(tracker_cols[diff_colnames], tracker_cols_date[diff_colnames])
     }
 
-    # view(patient_df)
     return(tracker_cols)
 }
 
 
 
-
-
-# @Description: Imports the patient df, cleans it and matches it against
-# column synonyms to unify column names
-# @columns_synonyms: Long format output of read_column_synonyms to match columns
+#' Harmonize patient data column names.
+#'
+#' @description
+#' Imports the patient df, cleans it and matches it against
+#' column synonyms to unify column names
+#'
+#' @param patient_df data.frame holding the patient data of the month sheet of a tracker.
+#' @param columns_synonyms data.frame with synonyms for tracker variables.
+#'
+#' @return data.frame with harmonized column names.
+#' @export
 harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
     patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
     patient_df <- patient_df[!is.na(names(patient_df))]
 
-
-
     colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
-    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
-
-
+    synonym_headers <- sanitize_column_name(columns_synonyms$tracker_name)
 
     # replacing var codes
     colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
-    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
-
+    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
 
     if (sum(colnames_found == 0) != 0) {
         "Non-matching column names found (see 0)"
@@ -103,37 +121,6 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
         return(patient_df)
     }
 }
-# @Description: Imports the codebook, cleans, removes duplicates and transforms it
-# into long df format
-read_column_synonyms <- function(codebook_data_file, sheet) {
-    columns_synonyms <- codebook_data_file %>%
-        readxl::read_xlsx(sheet = sheet) %>%
-        as_tibble() %>%
-        pivot_longer(
-            cols = everything(),
-            names_to = "name_clean",
-            values_to = "name_to_be_matched"
-        ) %>%
-        subset(!is.na(name_to_be_matched)) %>%
-        # lapply(sanitize_column_name) %>%
-        as_tibble() %>%
-        group_by(name_to_be_matched) %>%
-        slice(1) %>%
-        ungroup()
-    # view(columns_synonyms)
-    return(columns_synonyms)
-}
-
-sanitize_column_name <- function(column_name) {
-    column_name <- column_name %>%
-        str_to_lower() %>%
-        str_replace_all(fixed(" "), "") %>%
-        str_replace_all("[^[:alnum:]]", "")
-
-    column_name_clean <- column_name
-
-    return(column_name_clean)
-}
 
 
 extract_date_from_measurement_column <- function(patient_df, colname) {
@@ -141,7 +128,7 @@ extract_date_from_measurement_column <- function(patient_df, colname) {
     colname_value <- paste(c(colname, ""), collapse = "")
     colname_core <- sub("[_][^_]+$", "", colname) # remove last element after "_"
     colname_date <- paste(c(colname_core, "_date"), collapse = "")
-    patient_df <- separate_(
+    patient_df <- separate(
         data = patient_df, col = colname,
         into = c(colname_value, colname_date), sep = "([(])"
     )
@@ -245,34 +232,4 @@ date_fix <- function(df, year) { # used to be initial_clean_up_patient_df
 bp_fix <- function(df) {
     df <- df %>%
         separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"), sep = "([/])")
-}
-
-
-clean_anon_data <- function(an_patient_data) {
-    if (ncol(an_patient_data) == 5) {
-        # an_patient_data <- an_patient_data %>% discard(~all(is.na(.) | . ==""))
-        an_patient_data <- an_patient_data[!is.na(names(an_patient_data))]
-    }
-
-    if (ncol(an_patient_data) != 5) {
-        colnames(an_patient_data) <- an_patient_data[1, ]
-        an_patient_data <- an_patient_data[-1, ]
-
-        an_patient_data <- an_patient_data[!names(an_patient_data) %in% "NA"]
-    }
-
-    colnames(an_patient_data) <- sanitize_column_name(colnames(an_patient_data))
-    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
-
-    # replacing var codes
-    colnames_found <- match(colnames(an_patient_data), synonym_headers, nomatch = 0)
-    colnames(an_patient_data)[colnames(an_patient_data) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
-
-
-    if (sum(colnames_found == 0) != 0) {
-        print("Non-matching column names found (see 0)")
-        view(colnames_found)
-    } else {
-        return(an_patient_data)
-    }
 }
