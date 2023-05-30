@@ -17,50 +17,31 @@ extract_country_clinic_code <- function(patient_data) {
 #'
 #'
 #' @param tracker_data data.frame holding the data from a month sheet.
-#' @param country_code country code for this tracker.
-#' @param clinic_code clinic code for this tracker.
+#' @param year year of this tracker.
 #'
 #' @return data.frame with the patient data
 #' @export
-extract_patient_data <- function(tracker_data) {
+extract_patient_data <- function(tracker_data, year) {
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
+
     patient_df <- data.frame(tracker_data[row_min:row_max, ])
-    rownames(patient_df) <- NULL
-    patient_df
-}
+    header_cols <- as.vector(t(tracker_data[row_min-1, ]))
 
-
-#' Extract patient data header names from the month sheet of a tracker file.
-#'
-#' @description
-#' Search for the cell with "Patient ID" and extract that row as header.
-#' For trackers from 2019 and newer the header spans two columns,
-#' so date is added to the column name.
-#'
-#'
-#' @param tracker_data data.frame holding the data from a month sheet.
-#' @param year year of this tracker.
-#'
-#' @return vector with column names.
-#' @export
-extract_patient_data_header <- function(tracker_data, year) {
-    col_ind <- min(which(tracker_data %like% "Patient ID"))
-    row_ind <- min(which(tracker_data[, col_ind] %like% "Patient ID"))
-    tracker_cols <- as.vector(t(tracker_data[row_ind, ]))
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        row_ind <- row_ind + 1
-        tracker_cols_date <- as.vector(t(tracker_data[row_ind, ]))
-
-        diff_colnames <- which(tracker_cols_date != tracker_cols)
-
-        tracker_cols[diff_colnames] <- paste0(tracker_cols[diff_colnames], tracker_cols_date[diff_colnames])
+        header_cols_2 <- as.vector(t(tracker_data[row_min-2, ]))
+        diff_colnames <- which(header_cols != header_cols)
+        header_cols[diff_colnames] <- paste0(header_cols[diff_colnames], header_cols_2[diff_colnames])
     }
 
-    return(tracker_cols)
+    colnames(patient_df) <- header_cols
+
+    # reset row index
+    rownames(patient_df) <- NULL
+    patient_df
 }
 
 
