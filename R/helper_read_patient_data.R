@@ -36,8 +36,8 @@ extract_patient_data <- function(tracker_data, year) {
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         header_cols_2 <- as.vector(t(tracker_data[row_min - 2, ]))
-        diff_colnames <- which(header_cols != header_cols)
-        header_cols[diff_colnames] <- paste0(header_cols[diff_colnames], header_cols_2[diff_colnames])
+        diff_colnames <- which(header_cols != header_cols_2)
+        header_cols[diff_colnames] <- paste0(header_cols_2[diff_colnames], header_cols[diff_colnames])
     }
 
     colnames(patient_df) <- header_cols
