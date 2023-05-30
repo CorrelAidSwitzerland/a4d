@@ -123,6 +123,32 @@ harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
 }
 
 
+# adjust new harmonize function ---------------------------------------------------------
+# adjusted harmonize function that has the same name as the original function
+# function is based on harmonize_patient_data_columns() but shortened
+# Might need a better solution
+harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
+    # Uncommented because we want to retain columns with only NAs
+    # patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
+    patient_df <- patient_df[!is.na(names(patient_df))]
+
+    colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
+    synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
+
+    # replacing var codes
+    colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
+    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
+    # browser()
+
+    if (sum(colnames_found == 0) != 0) {
+        "Non-matching column names found (see 0)"
+        view(colnames_found)
+    } else {
+        return(patient_df)
+    }
+}
+
+
 extract_date_from_measurement_column <- function(patient_df, colname) {
     # produces columns with names coherent with original naming before refactor
     colname_value <- paste(c(colname, ""), collapse = "")
