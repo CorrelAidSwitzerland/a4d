@@ -286,10 +286,7 @@ reading_patient_data_2 <-
                 )
             print("tracker read in")
 
-            patient_df <- extract_patient_data(tracker_data)
-            patient_data_header <-
-                extract_patient_data_header(tracker_data, year)
-            colnames(patient_df) <- patient_data_header
+            patient_df <- extract_patient_data(tracker_data, year)
             print("patient df extracted")
 
             patient_df <-
