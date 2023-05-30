@@ -39,8 +39,8 @@ helper_is_msd_start_row <- function(df, i) {
 # Conditions to cut of at start patient data
 helper_is_msd_end_row <- function(df, i) {
     includes_patient_name <- any(grepl("Patient Name", df[i + 1, ]))
-    includes_patient_recruitment <- any(grepl("patient recruitment",tolower(df[i, ])) |
-                                            grepl("patient data summary",tolower(df[i-1, ])) ) # second check for 2022 data onwards
+    includes_patient_recruitment <- any(grepl("patient recruitment", tolower(df[i, ])) |
+        grepl("patient data summary", tolower(df[i - 1, ]))) # second check for 2022 data onwards
 
     condition <- case_when(
         !includes_patient_name ~ FALSE,
