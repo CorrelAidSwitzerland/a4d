@@ -36,8 +36,11 @@ extract_patient_data <- function(tracker_data, year) {
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         header_cols_2 <- as.vector(t(tracker_data[row_min - 2, ]))
-        diff_colnames <- which(header_cols != header_cols_2)
+        diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <- paste0(header_cols_2[diff_colnames], header_cols[diff_colnames])
+
+        empty_colnames <- which(is.na(header_cols))
+        header_cols[empty_colnames] <- header_cols_2[empty_colnames]
     }
 
     colnames(patient_df) <- header_cols
@@ -89,8 +92,20 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     # patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
     patient_df <- patient_df[!is.na(names(patient_df))]
 
-    colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
-    synonym_headers <- sanitize_column_name(columns_synonyms$tracker_name)
+    fbg_baseline_col_idx = which(colnames(patient_df) %in% (columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg"))$tracker_name)
+    if (fbg_baseline_col_idx != 0) {
+        patient_df <- patient_df %>%
+            mutate(
+                baseline_fbg_unit = sanitize_str(
+                    str_match(
+                        colnames(patient_df)[fbg_baseline_col_idx],
+                        "\\(.*\\)")[1]
+                    )
+                )
+    }
+
+    colnames(patient_df) <- sanitize_str(colnames(patient_df))
+    synonym_headers <- sanitize_str(columns_synonyms$tracker_name)
 
     # replacing var codes
     colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
@@ -101,10 +116,9 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     if (length(mismatching_column_ids) > 0) {
         print("Non-matching column names found:")
         print(colnames(patient_df)[mismatching_column_ids])
-        #view(colnames_found)
-    } else {
-        return(patient_df)
     }
+
+    patient_df
 }
 
 

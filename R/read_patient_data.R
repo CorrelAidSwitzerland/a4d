@@ -269,6 +269,9 @@ reading_patient_data_2 <-
 
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
+        if (is.na(year)) {
+            year = as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
+        }
         print(year)
 
         tidy_tracker_list <- NULL
