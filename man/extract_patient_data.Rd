@@ -4,10 +4,12 @@
 \alias{extract_patient_data}
 \title{Extract the patient data from a month sheet of a tracker file.}
 \usage{
-extract_patient_data(tracker_data, year)
+extract_patient_data(tracker_data_file, sheet, year)
 }
 \arguments{
-\item{tracker_data}{data.frame holding the data from a month sheet.}
+\item{tracker_data_file}{Excel tracker file.}
+
+\item{sheet}{Excel sheet name.}
 
 \item{year}{year of this tracker.}
 }
