@@ -19,19 +19,31 @@ extract_country_clinic_code <- function(patient_data) {
 #' and extracts the data from this range as data.frame
 #'
 #'
-#' @param tracker_data data.frame holding the data from a month sheet.
+#' @param tracker_data_file Excel tracker file.
+#' @param sheet Excel sheet name.
 #' @param year year of this tracker.
 #'
 #' @return data.frame with the patient data
 #' @export
-extract_patient_data <- function(tracker_data, year) {
+extract_patient_data <- function(tracker_data_file, sheet, year) {
+    tracker_data <-
+            openxlsx::read.xlsx(
+                xlsxFile = tracker_data_file,
+                fillMergedCells = TRUE,
+                skipEmptyRows = FALSE,
+                skipEmptyCols = FALSE,
+                colNames=FALSE,
+                rowNames=FALSE,
+                detectDates = TRUE,
+                sheet = sheet
+            )
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
-    patient_df <- data.frame(tracker_data[row_min:row_max, ])
-    header_cols <- as.vector(t(tracker_data[row_min - 1, ]))
+    patient_df <- tracker_data[row_min:row_max,-1]
+    header_cols <- as.vector(t(tracker_data[row_min - 1, -1]))
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
