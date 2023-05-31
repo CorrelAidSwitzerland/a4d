@@ -6,12 +6,9 @@ tracker_root_path <- select_A4D_directory()
 tracker_files <- list.files(tracker_root_path, "*.xlsx")
 tracker_files <- tracker_files[!str_detect("~", tracker_files)]
 
-codebook_path <- "master_tracker_variables.xlsx"
 
 ## Extract codebooks for each data form
-columns_synonyms <- read_column_synonyms(
-    codebook_path, sheet <- "synonyms_PatientData"
-)
+columns_synonyms <- read_column_synonyms(synonym_file = "synonyms_patient.yaml")
 
 output_root = file.path(
     tracker_root_path,
