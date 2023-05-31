@@ -34,7 +34,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
                 skipEmptyCols = FALSE,
                 colNames=FALSE,
                 rowNames=FALSE,
-                detectDates = TRUE,
+                detectDates = FALSE,
                 sheet = sheet
             )
     # Assumption: first column is always empty until patient data begins
@@ -42,7 +42,13 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
-    patient_df <- tracker_data[row_min:row_max,-1]
+    patient_df <- readxl::read_excel(
+        path = tracker_data_file,
+        sheet=sheet,
+        range=readxl::cell_rows(row_min:row_max),
+        trim_ws=T,
+        col_names=F,
+    )
     header_cols <- as.vector(t(tracker_data[row_min - 1, -1]))
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
@@ -105,7 +111,7 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     patient_df <- patient_df[!is.na(names(patient_df))]
 
     fbg_baseline_col_idx = which(colnames(patient_df) %in% (columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg"))$tracker_name)
-    if (fbg_baseline_col_idx != 0) {
+    if (length(fbg_baseline_col_idx) > 0) {
         patient_df <- patient_df %>%
             mutate(
                 baseline_fbg_unit = sanitize_str(
