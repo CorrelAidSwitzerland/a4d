@@ -26,7 +26,7 @@
 #### Input ####
 tracker_root_path <- select_A4D_directory()
 tracker_file <- rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
-codebook_data_file <- "4ADMonthlyTrackerCodebook.xlsx" # Define path of codebook
+codebook_data_file <- "master_tracker_variables.xlsx" # Define path of codebook
 
 #### Define product data function ####
 
@@ -37,6 +37,9 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
 
   # Initialization
   # columns_synonyms <- codebook
+  #codebook_product <-
+  #    read_column_synonyms(synonym_file = "synonyms_product.yaml")
+  #colnames(codebook_product) <- c('name_clean','name_to_be_matched')
   columns_synonyms <- read_column_synonyms_product(codebook_data_file)
 
   # Set parameters
@@ -91,7 +94,8 @@ reading_a4d_products_from_tracker <- function(tracker_data_file, codebook_data_f
 
     product_df <- product_df %>%
       dplyr::slice(., -del_rows) %>%
-      filter_all(any_vars(complete.cases(.))) # Remove empty rows
+      filter_all(any_vars(complete.cases(.))) %>% # Remove empty rows
+      dplyr::filter(product != 'Product' | is.na(product)) # remove new headers from data 2022 onwards
 
     # Split product cells with various products and/or unit information
     product_df <- extract_product_multiple(product_df)
