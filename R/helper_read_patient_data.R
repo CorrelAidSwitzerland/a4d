@@ -94,9 +94,11 @@ harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
     colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
     # browser()
 
-    if (sum(colnames_found == 0) != 0) {
-        "Non-matching column names found (see 0)"
-        view(colnames_found)
+    mismatching_column_ids = which(colnames_found == 0)
+    if (length(mismatching_column_ids) > 0) {
+        print("Non-matching column names found:")
+        print(colnames(patient_df)[mismatching_column_ids])
+        #view(colnames_found)
     } else {
         return(patient_df)
     }
