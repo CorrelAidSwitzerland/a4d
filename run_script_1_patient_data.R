@@ -65,6 +65,7 @@ for (tracker_file in tracker_files) {
                           output_root,
                           paste0(tools::file_path_sans_ext(basename(tracker_file)), "_extracted.csv")
                       ),
-                  row.names = F)
+                  row.names=F
+                  )
 
 }

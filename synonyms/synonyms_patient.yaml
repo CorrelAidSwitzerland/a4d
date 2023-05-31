@@ -4,7 +4,7 @@ age:
 - Age
 - Age*
 - age on reporting
-- Age (Years)a
+- Age (Years)
 age_diagnosis:
 - Age at diagnosis of T1DM
 - Age at Diagnosis
@@ -15,6 +15,7 @@ baseline_fbg:
 - Baseline FBG (mg/dL)
 - Baseline FBG (mmol/L)
 - Baseline FBG (mg%)
+- Baseline FBG or CBG (mg/dL)
 baseline_fbg_unit:
 - baseline_fbg_unit
 baseline_hba1c:
