@@ -279,17 +279,7 @@ reading_patient_data_2 <-
         for (curr_sheet in month_list) {
             print(curr_sheet)
 
-            tracker_data <-
-                as.data.frame(
-                    openxlsx::read.xlsx(
-                        xlsxFile = tracker_data_file,
-                        fillMergedCells = TRUE,
-                        sheet = curr_sheet
-                    )
-                )
-            print("tracker read in")
-
-            patient_df <- extract_patient_data(tracker_data, year)
+            patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             print("patient df extracted")
 
             patient_df <-
