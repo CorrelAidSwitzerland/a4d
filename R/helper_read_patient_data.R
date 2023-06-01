@@ -42,20 +42,20 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
+    header_cols <- str_replace(as.vector(t(tracker_data[row_min - 1,])), "\r\n", "")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet=sheet,
-        range=readxl::cell_rows(row_min:row_max),
+        range=readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
         trim_ws=T,
         col_names=F,
     )
-    header_cols <- as.vector(t(tracker_data[row_min - 1, -1]))
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        header_cols_2 <- as.vector(t(tracker_data[row_min - 2, ]))
+        header_cols_2 <- str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
         diff_colnames <- which((header_cols != header_cols_2))
-        header_cols[diff_colnames] <- paste0(header_cols_2[diff_colnames], header_cols[diff_colnames])
+        header_cols[diff_colnames] <- paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
 
         empty_colnames <- which(is.na(header_cols))
         header_cols[empty_colnames] <- header_cols_2[empty_colnames]
@@ -63,9 +63,14 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     colnames(patient_df) <- header_cols
 
-    # reset row index
-    rownames(patient_df) <- NULL
-    patient_df
+    # only keep columns with header
+    patient_df <- patient_df %>% select(header_cols[!is.na(header_cols)])
+
+    # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
+    patient_df <- patient_df %>% distinct()
+    # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
+
+    patient_df <- patient_df %>% mutate(across(everything(), as.character))
 }
 
 
