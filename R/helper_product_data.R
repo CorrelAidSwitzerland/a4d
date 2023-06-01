@@ -19,9 +19,9 @@ helper_is_msd_start_row <- function(df, i) {
     condition <- case_when(
 
         # 2021
-        #any(grepl("MEDICAL", df[i, ])) &
-        #    any(grepl("Product", df[i + 1, ])) &
-        #    any(grepl("Entry Date", df[i + 1, ])) ~ TRUE,
+        # any(grepl("MEDICAL", df[i, ])) &
+        # any(grepl("Product", df[i + 1, ])) &
+        # any(grepl("Entry Date", df[i + 1, ])) ~ TRUE,
 
         # 2019 & 2020 & 2021
         any(grepl("Product", df[i, ])) &
