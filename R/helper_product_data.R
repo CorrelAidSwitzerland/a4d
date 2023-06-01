@@ -19,11 +19,11 @@ helper_is_msd_start_row <- function(df, i) {
     condition <- case_when(
 
         # 2021
-        any(grepl("MEDICAL", df[i, ])) &
-            any(grepl("Product", df[i + 1, ])) &
-            any(grepl("Entry Date", df[i + 1, ])) ~ TRUE,
+        # any(grepl("MEDICAL", df[i, ])) &
+        # any(grepl("Product", df[i + 1, ])) &
+        # any(grepl("Entry Date", df[i + 1, ])) ~ TRUE,
 
-        # 2019 & 2020
+        # 2019 & 2020 & 2021
         any(grepl("Product", df[i, ])) &
             any(grepl("Date", df[i, ])) &
             any(grepl("Units Received", df[i, ])) ~ TRUE,
@@ -99,13 +99,6 @@ extract_product_data <- function(monthly_tracker_df) {
         }
     }
     product_data_df <- monthly_tracker_df[start_df_msd:end_df_msd, ]
-
-    # Exception 2021: Remove row with "Medical Supplies Distribution" Title
-    for (i in 1:nrow(monthly_tracker_df)) {
-        if (any(grepl("MEDICAL", monthly_tracker_df[i, ]))) {
-            remove_row_index <- i
-        }
-    }
 
     # Clean empty remaining first row
     product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df)
