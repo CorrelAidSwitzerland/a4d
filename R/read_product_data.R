@@ -7,6 +7,9 @@ reading_product_data_step1 <-
         rm(product_df)
         rm(df_final)
 
+        # rename column names to match
+        colnames(columns_synonyms) <- c('name_clean','name_to_be_matched')
+
         # get all month sheets with product data, get year
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
