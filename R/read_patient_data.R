@@ -279,16 +279,13 @@ reading_patient_data_2 <-
         for (curr_sheet in month_list) {
             print(curr_sheet)
 
+
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             print("patient df extracted")
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
             print("patient df harmonized")
-
-            # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
-            patient_df <- patient_df %>% distinct()
-            # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
 
             cc_codes <- extract_country_clinic_code(patient_df)
             country_code <- cc_codes$country_code
@@ -317,7 +314,6 @@ reading_patient_data_2 <-
                 # patient_df %>% left_join(an_patient_data, by = "id")
                 # print("added patient anon data")
             }
-
 
             patient_df <- patient_df %>%
                 mutate(

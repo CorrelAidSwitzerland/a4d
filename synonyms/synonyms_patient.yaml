@@ -112,9 +112,6 @@ updated_mean_fbg:
 updated_fbg_sample: []
 updated_hba1c_date:
 - Updated HbA1c Date
-- Updated HbA1cDate
-- Updated HbA1c%
-- Updated HbA1c (%)
 updated_hba1c:
 - HbA1c (%) - UPDATED
 - Updated HbA1c (%)
