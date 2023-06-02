@@ -265,8 +265,6 @@ reading_patient_data_2 <-
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
 
-        # browser()
-
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
         if (is.na(year)) {
@@ -279,7 +277,6 @@ reading_patient_data_2 <-
         for (curr_sheet in month_list) {
             print(curr_sheet)
 
-
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             print("patient df extracted")
 
@@ -290,30 +287,6 @@ reading_patient_data_2 <-
             cc_codes <- extract_country_clinic_code(patient_df)
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
-
-            # INCOMPLETE Load "Patient List" data and later merge it ------------------------------------------------------------
-            # The follownig section has to be improved from here on now to get patient info from Sheet "Patient List"
-            {
-                # AN PATIENT DATA SHEET: select sheet in workbook with PATIENT AN DATA
-                # if (any(grepl("Patient List", sheet_list))) {
-                # patient_sheet <- sheet_list[na.omit(grepl("Patient List", sheet_list))]
-                #
-                # # AN PATIENT DATA DATA (merge/join at the end of the if year):
-                # an_patient_data <-
-                # data.frame(readxl::read_xlsx(tracker_data_file, patient_sheet))
-                # all_patient_ids <- an_patient_data$Patient.ID
-                #
-                # an_patient_data <- clean_anon_data(an_patient_data)
-                # print("cleaned patient anon data")
-                # } else {
-                # warning("File has no Patient List - Either fake data file or error")
-                # an_patient_data <- NA
-                # }
-                # print("patient AN Data extracted")
-                # patient_df <-
-                # patient_df %>% left_join(an_patient_data, by = "id")
-                # print("added patient anon data")
-            }
 
             patient_df <- patient_df %>%
                 mutate(
@@ -330,5 +303,19 @@ reading_patient_data_2 <-
         }
 
         df_raw <- bind_rows(tidy_tracker_list)
+
+        if ("Patient List" %in% sheet_list) {
+            patient_list <- extract_patient_data(
+                tracker_data_file,
+                "Patient List",
+                year
+            )
+            patient_list <- harmonize_patient_data_columns_2(
+                patient_list,
+                columns_synonyms
+            )
+            df_raw <- merge(x = df_raw, y = patient_list, by = "patient_id", all.x = F)
+        }
+
         return(df_raw)
     }

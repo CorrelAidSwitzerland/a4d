@@ -1,10 +1,15 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    patient_ids <- patient_data["id"] %>%
+    patient_ids <- patient_data["patient_id"] %>%
+        dplyr::filter(patient_id != "0") %>%
         drop_na() %>%
         rowwise() %>%
-        mutate(country = str_split(id, "_", n = 2, simplify = T)[1], clinic = substr(str_split(id, "_", n = 2, simplify = T)[2], 0, 2))
+        mutate(
+            country = str_split(patient_id, "_", n = 2, simplify = T)[1],
+            clinic = substr(str_split(patient_id, "_", n = 2, simplify = T)[2], 0, 2)
+        )
+
     country_code <- names(sort(table(patient_ids$country), decreasing = T))[1]
     clinic_code <- names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
@@ -26,6 +31,7 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
+    empty_first_row = all(is.na(readxl::read_excel(tracker_data_file, sheet=sheet, range=readxl::anchored("A1", dim=c(1,50)))))
     tracker_data <-
         openxlsx::read.xlsx(
             xlsxFile = tracker_data_file,
@@ -35,18 +41,25 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
             colNames = FALSE,
             rowNames = FALSE,
             detectDates = FALSE,
-            sheet = sheet
+            sheet = sheet,
+            startRow=1
         )
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
+    if (empty_first_row) {
+        offset <- 1
+    } else {
+        offset <- 0
+    }
+
     header_cols <- str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
-        range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
+        range = readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols))),
         trim_ws = T,
         col_names = F,
     )
