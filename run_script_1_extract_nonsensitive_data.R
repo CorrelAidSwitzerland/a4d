@@ -37,19 +37,19 @@ for (tracker_file in tracker_files) {
     cat("processing", tracker_file, fill=T)
 
     # Use new read function ---------------------------------------------------
-    df_raw <-
+    df_raw_patient <-
         reading_patient_data_2(tracker_data_file = tracker_data_file,
                                columns_synonyms = codebook_patient)
 
 
     # Combine to a new data frame ---------------------------------------------
-    print(df_raw %>% dim) # quickly check dimensions
+    print(df_raw_patient %>% dim) # quickly check dimensions
 
 
     # INCOMPLETE - Set sensitive rows to NA -------------------------------------
     # level of education is in the patient list - we need to get data from there as well
-    df_raw <-
-        df_raw %>%
+    df_raw_patient <-
+        df_raw_patient %>%
         mutate(across(
             any_of(c(
                 "patient_name",
@@ -59,9 +59,10 @@ for (tracker_file in tracker_files) {
                 "clinic_code"
             )),
             ~NA
-        ))
+        )) %>%
+        mutate(file_name=fs::path_ext_remove(tracker_file))
 
-    df_raw %>%
+    df_raw_patient %>%
         write.csv(file =
                       file.path(
                           output_root,
@@ -85,7 +86,7 @@ for (tracker_file in tracker_files) {
             )),
             ~NA
         )) %>%
-        mutate(tracker_file= sub('\\.xlsx','',tracker_file))
+        mutate(file_name=fs::path_ext_remove(tracker_file))
 
     # write output product extract
     df_raw_product %>%
