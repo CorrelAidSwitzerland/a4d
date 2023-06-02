@@ -3,7 +3,6 @@
 export(extract_patient_data)
 export(harmonize_patient_data_columns)
 export(read_column_synonyms)
-export(read_patient_an_data)
 export(sanitize_str)
 export(select_A4D_directory)
 export(set_a4d_data_root)
