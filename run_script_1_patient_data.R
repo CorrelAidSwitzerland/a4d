@@ -51,12 +51,14 @@ for (tracker_file in tracker_files) {
     df_raw <-
         df_raw %>%
         mutate(across(
-            c(patient_name,
-              province,
-              dob,
-              country_code,
-              clinic_code, ),
-            ~ NA
+            any_of(c(
+                "patient_name",
+                "province",
+                "dob",
+                "country_code",
+                "clinic_code"
+            )),
+            ~NA
         ))
 
     df_raw %>%
