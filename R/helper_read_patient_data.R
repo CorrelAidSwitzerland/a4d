@@ -42,13 +42,13 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
-    header_cols <- str_replace(as.vector(t(tracker_data[row_min - 1,])), "\r\n", "")
+    header_cols <- str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
-        sheet=sheet,
-        range=readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
-        trim_ws=T,
-        col_names=F,
+        sheet = sheet,
+        range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
+        trim_ws = T,
+        col_names = F,
     )
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
