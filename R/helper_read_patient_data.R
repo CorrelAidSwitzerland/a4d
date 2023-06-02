@@ -68,6 +68,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
     patient_df <- patient_df %>% distinct()
+    patient_df <- patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
     # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
 
     patient_df <- patient_df %>% mutate(across(everything(), as.character))
