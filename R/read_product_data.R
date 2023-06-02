@@ -54,6 +54,15 @@ reading_product_data_step1 <-
                 dplyr::filter(product != "Product" | is.na(product)) # remove new headers from data 2022 onwards
 
 
+            # Add columns that should be in final dataframe but are still missing
+            columns_missing <- columns_synonyms %>%
+                group_by(name_clean) %>% distinct(., name_clean) %>% unlist() %>% as.character()
+
+            missing_cols <- which(columns_missing %notin% colnames(product_df))
+            missing_cols_names <- unique(columns_missing[missing_cols])
+            product_df[missing_cols_names] <- NA
+
+
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
                 mutate(
