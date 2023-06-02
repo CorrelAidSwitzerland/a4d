@@ -104,12 +104,22 @@ testing_fqr_pday:
 tracker_year: []
 updated_fbg_date:
 - Updated FBG Date
-updated_mean_fbg:
-- updated mean fbg (mg/dl)
-- Updated Mean FBG (mmol/L)
-- Updated Mean FBG (mg/%)
+- Updated FBG or CBG Date
+updated_fbg:
+- FBG (mg/dL) - UPDATED
+- Updated FBG (mg/dL)
 - Updated FBG (mmol/L)
-updated_fbg_sample: []
+- Updated FBG FBG (mg/dL)
+- updated fbg fbg mgdl
+- Updated FBG mg/dl
+- Updated FBG ml/dL
+- Updated FBG or CBG mg/dl
+- Updated FBG or CBG mmol/L
+- Updated Mean FBG (mg/%)
+- Updated Mean FBG (mmol/L)
+- Updated Mean FBG (mg/dL)
+- Updated SMBG or CBG (mg/dL) Date
+- Updated SMBG or CBG mg/dL
 updated_hba1c_date:
 - Updated HbA1c Date
 updated_hba1c:
@@ -119,13 +129,6 @@ updated_hba1c:
 - updated hba1c hba1c
 weight:
 - Body Weight (Kg)
-updated_fbg:
-- FBG (mg/dL) - UPDATED
-- Updated SMBG or CBG mg/dL
-- Updated FBG (mg/dL)
-- Updated SMBG or CBG (mg/dL) Date
-- Updated FBG ml/dL
-- updated fbg fbg mgdl
 blood_pressure_mmhg:
 - Blood Pressure (mm HG)
 latest_complication_screenning:
