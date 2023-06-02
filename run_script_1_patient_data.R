@@ -70,4 +70,31 @@ for (tracker_file in tracker_files) {
                   row.names=F
                   )
 
+
+    # product data extract
+    df_raw_product <-
+        reading_product_data_step1(tracker_data_file = tracker_data_file,
+                               columns_synonyms = codebook_product)
+
+    # product set sensitive column to NA and add tracker file name as a column
+    df_raw_product <-
+        df_raw_product %>%
+        mutate(across(
+            any_of(c(
+                "product_released_to"
+            )),
+            ~NA
+        )) %>%
+        mutate(tracker_file= sub('\\.xlsx','',tracker_file))
+
+    # write output product extract
+    df_raw_product %>%
+        write.csv(file =
+                      file.path(
+                          output_root,
+                          paste0(tools::file_path_sans_ext(basename(tracker_file)), "_extracted_product.csv")
+                      ),
+                  row.names=F
+        )
+
 }
