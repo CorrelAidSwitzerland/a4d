@@ -34,7 +34,7 @@ if (!file.exists(output_root)) {
 
 for (tracker_file in tracker_files) {
     tracker_data_file <- file.path(tracker_root_path, tracker_file)
-    cat("processing", tracker_file, fill=T)
+    cat("\n\nprocessing", tracker_file, fill=T)
 
     # Use new read function ---------------------------------------------------
     df_raw_patient <-
