@@ -315,6 +315,8 @@ reading_patient_data_2 <-
                 patient_list,
                 columns_synonyms
             )
+
+            message("check with A4D whether duplicate columns in patient list sheet should be removed")
             df_raw <- dplyr::left_join(
                 df_raw,
                 patient_list %>%
