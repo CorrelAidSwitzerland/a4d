@@ -65,6 +65,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         range = readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols))),
         trim_ws = T,
         col_names = F,
+        .name_repair = "unique_quiet"
     )
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
