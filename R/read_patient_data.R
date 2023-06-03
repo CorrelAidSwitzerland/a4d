@@ -315,7 +315,14 @@ reading_patient_data_2 <-
                 patient_list,
                 columns_synonyms
             )
-            df_raw <- merge(x = df_raw, y = patient_list, by = "patient_id", all.x = F)
+            df_raw <- dplyr::left_join(
+                df_raw,
+                patient_list %>%
+                    select(-c(baseline_fbg,
+                              baseline_hba1c,
+                              patient_name,
+                              updated_2022_date)),
+                by = "id")
         }
 
         return(df_raw)
