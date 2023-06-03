@@ -80,6 +80,7 @@ for (tracker_file in tracker_files) {
                                columns_synonyms = codebook_product)
 
     # product set sensitive column to NA and add tracker file name as a column
+    if (!is.null(df_raw_product)){
     df_raw_product <-
         df_raw_product %>%
         mutate(across(
@@ -99,5 +100,6 @@ for (tracker_file in tracker_files) {
                       ),
                   row.names=F
         )
+    }
 
 }
