@@ -26,7 +26,7 @@ helper_is_msd_start_row <- function(df, i) {
         # 2019 & 2020 & 2021
         any(grepl("Product", df[i, ])) &
             any(grepl("Date", df[i, ])) &
-            any(grepl("Units Received", df[i, ])) ~ TRUE,
+            any(grepl("Units Received|Units \r\nReceived", df[i, ])) ~ TRUE,
 
         # 2017 & 2018
         any(grepl("Description of Support", df[i, ])) &
