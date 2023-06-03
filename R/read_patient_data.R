@@ -275,6 +275,7 @@ reading_patient_data_2 <-
         tidy_tracker_list <- NULL
 
         for (curr_sheet in month_list) {
+            cat("\n")
             print(curr_sheet)
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
