@@ -56,7 +56,9 @@ for (tracker_file in tracker_files) {
                 "province",
                 "dob",
                 "country_code",
-                "clinic_code"
+                "clinic_code",
+                "gender",
+                "edu_occ"
             )),
             ~NA
         )) %>%
