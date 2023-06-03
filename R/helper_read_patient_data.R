@@ -31,7 +31,10 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
-    empty_first_row = all(is.na(readxl::read_excel(tracker_data_file, sheet=sheet, range=readxl::anchored("A1", dim=c(1,50)))))
+    empty_first_row = all(is.na(readxl::read_excel(tracker_data_file, sheet=sheet,
+                                                   .name_repair = "unique_quiet",
+                                                   range=readxl::anchored("A1", dim=c(1,50)))))
+
     tracker_data <-
         openxlsx::read.xlsx(
             xlsxFile = tracker_data_file,
