@@ -82,6 +82,6 @@ reading_product_data_step1 <-
             } else {
                 df_final <- rbind(df_final, product_df)
             }
-        return(df_final)
+            return(df_final)
         }
     }
