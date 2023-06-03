@@ -131,7 +131,7 @@ read_patient_data <-
 
                 if ("recruitment_date" %in% colnames(patient_df)) {
                     patient_df <- patient_df %>%
-                        mutate(recruitment_date = openxlsx::convertToDate(as.numeric(
+                        dplyr::mutate(recruitment_date = openxlsx::convertToDate(as.numeric(
                             patient_df$recruitment_date
                         )))
                 }
@@ -146,12 +146,12 @@ read_patient_data <-
             print("patient cleaning done")
 
             patient_df <-
-                patient_df %>% left_join(an_patient_data, by = "id")
+                patient_df %>% dplyr::left_join(an_patient_data, by = "id")
             print("added patient anon data")
 
 
             patient_df <- patient_df %>%
-                mutate(
+                dplyr::mutate(
                     sheet_name = CurrSheet,
                     tracker_mo = match(substr(CurrSheet, 1, 3), month.abb),
                     tracker_year = year,
@@ -168,7 +168,7 @@ read_patient_data <-
 
 
         # standard df, consistent for all tracker years
-        standard_df <- tibble(
+        standard_df <- tibble::tibble(
             patient_name = character(),
             province = character(),
             gender = character(),
@@ -290,7 +290,7 @@ reading_patient_data_2 <-
             clinic_code <- cc_codes$clinic_code
 
             patient_df <- patient_df %>%
-                mutate(
+                dplyr::mutate(
                     sheet_name = curr_sheet,
                     tracker_mo = match(substr(curr_sheet, 1, 3), month.abb),
                     tracker_year = year,
@@ -303,7 +303,7 @@ reading_patient_data_2 <-
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
         }
 
-        df_raw <- bind_rows(tidy_tracker_list)
+        df_raw <- dplyr::bind_rows(tidy_tracker_list)
 
         if ("Patient List" %in% sheet_list) {
             patient_list <- extract_patient_data(
@@ -320,7 +320,7 @@ reading_patient_data_2 <-
             df_raw <- dplyr::left_join(
                 df_raw,
                 patient_list %>%
-                    select(-c(
+                    dplyr::select(-c(
                         baseline_fbg,
                         baseline_hba1c,
                         patient_name,
