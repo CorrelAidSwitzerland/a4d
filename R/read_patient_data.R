@@ -320,11 +320,14 @@ reading_patient_data_2 <-
             df_raw <- dplyr::left_join(
                 df_raw,
                 patient_list %>%
-                    select(-c(baseline_fbg,
-                              baseline_hba1c,
-                              patient_name,
-                              updated_2022_date)),
-                by = "id")
+                    select(-c(
+                        baseline_fbg,
+                        baseline_hba1c,
+                        patient_name,
+                        updated_2022_date
+                    )),
+                by = "id"
+            )
         }
 
         return(df_raw)
