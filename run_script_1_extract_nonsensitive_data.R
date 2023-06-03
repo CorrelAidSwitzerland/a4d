@@ -50,8 +50,8 @@ for (tracker_file in tracker_files) {
     # level of education is in the patient list - we need to get data from there as well
     df_raw_patient <-
         df_raw_patient %>%
-        mutate(across(
-            any_of(c(
+        dplyr::mutate(across(
+            tidyr::any_of(c(
                 "patient_name",
                 "province",
                 "dob",
@@ -62,7 +62,7 @@ for (tracker_file in tracker_files) {
             )),
             ~NA
         )) %>%
-        mutate(file_name=fs::path_ext_remove(tracker_file))
+        dplyr::mutate(file_name=fs::path_ext_remove(tracker_file))
 
     df_raw_patient %>%
         write.csv(file =
