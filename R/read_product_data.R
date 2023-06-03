@@ -22,8 +22,8 @@ reading_product_data_step1 <-
 
             # open tracker data
             tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, CurrSheet,
-                                                         .name_repair = "unique_quiet"
-                                                         ))
+                .name_repair = "unique_quiet"
+            ))
 
             # Jump to next tab sheet if there are no product data
             if (!
