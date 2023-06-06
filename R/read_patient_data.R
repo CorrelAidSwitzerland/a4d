@@ -260,20 +260,23 @@ reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
         # list the sheets in excel workbook & filter these
         sheet_list <- readxl::excel_sheets(tracker_data_file)
-        # browser()
+        log_info("Found {length(sheet_list)} sheets inside the current file = {sheet_list}.")
+
         # MONTHLY SHEETS: only select sheets with monthly data
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
+        log_info("Found {length(month_list)} month sheets inside the current file = {month_list}.")
 
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
         if (is.na(year)) {
             year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
         }
-        print(year)
+        log_info("Tracker year = {year}.")
 
         tidy_tracker_list <- NULL
 
+        log_info("Start processing month sheets.")
         for (curr_sheet in month_list) {
             cat("\n")
             print(curr_sheet)

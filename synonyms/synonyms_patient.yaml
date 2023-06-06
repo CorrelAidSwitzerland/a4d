@@ -56,9 +56,10 @@ hospitalisation:
 - Hospitalisation due to diabetes emergency
 - Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
 - hospitalisation due to diabetes emergency or glucose control egdka include date
-id:
+patient_id:
 - ID
 - Patient ID
+- Patient ID*
 insulin_dosage:
 - insulin dosage
 - insulin dosage tdd
