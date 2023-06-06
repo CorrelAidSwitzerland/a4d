@@ -276,10 +276,9 @@ reading_patient_data_2 <-
 
         tidy_tracker_list <- NULL
 
-        log_info("Start processing month sheets.")
+        log_info("Start processing sheets.")
         for (curr_sheet in month_list) {
-            cat("\n")
-            print(curr_sheet)
+            log_info("Start processing sheet {curr_sheet}.")
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             print("patient df extracted")

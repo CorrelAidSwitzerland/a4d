@@ -26,7 +26,7 @@ synonyms_product <-
     read_column_synonyms(synonym_file = "synonyms_product.yaml")
 
 
-log_info("Starting main loop...")
+log_info("Start processing tracker files.")
 for (tracker_file in tracker_files) {
     tracker_data_file <- file.path(tracker_root_path, tracker_file)
     log_info("Start processing {tracker_file}.")
@@ -34,7 +34,7 @@ for (tracker_file in tracker_files) {
     log_info("Start extracting patient data.")
     df_raw_patient <-
         reading_patient_data_2(tracker_data_file = tracker_data_file,
-                               columns_synonyms = codebook_patient)
+                               columns_synonyms = synonyms_patient)
     log_success("Finish extracting patient data.")
     log_info("Patient data dim: {df_raw_patient %>% dim}.")
 
@@ -69,7 +69,7 @@ for (tracker_file in tracker_files) {
     # product data extract
     df_raw_product <-
         reading_product_data_step1(tracker_data_file = tracker_data_file,
-                               columns_synonyms = codebook_product)
+                               columns_synonyms = synonyms_product)
 
     # product set sensitive column to NA and add tracker file name as a column
     if (!is.null(df_raw_product)){
@@ -97,3 +97,5 @@ for (tracker_file in tracker_files) {
     log_success("Finish processing {tracker_file}.")
 
 }
+
+log_success("Finish processing tracker files.")
