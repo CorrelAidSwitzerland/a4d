@@ -12,14 +12,12 @@ setup_logger <- function(output_dir) {
 
     log_threshold(TRACE)
 
-    log_dir = file.path(output_dir, "logs")
-    log_file_name = paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), ".log")
-    log_file = file.path(log_dir, log_file_name)
+    log_dir <- file.path(output_dir, "logs")
+    log_file_name <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), ".log")
+    log_file <- file.path(log_dir, log_file_name)
     log_appender(appender_file(log_file))
 
     if (!file.exists(log_dir)) {
         dir.create(log_dir, recursive = FALSE)
     }
-
-
 }
