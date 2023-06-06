@@ -1,29 +1,6 @@
 # Read in data and codebook -----------------------------------------------
 
 tracker_root_path <- select_A4D_directory()
-
-# Only for single files, for now, for easier testing
-# Loop will be implemented later
-#tracker_file <-
-#    rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
-tracker_files <- list.files(tracker_root_path, "*.xlsx")
-tracker_files <-
-    tracker_files[str_detect(tracker_files, "~", negate = T)]
-
-# codebook_path <- "master_tracker_variables.xlsx"# not needed anymore
-
-
-## Extract codebooks for each data form
-codebook_patient <-
-    read_column_synonyms(synonym_file = "synonyms_patient.yaml")
-
-
-codebook_product <-
-    read_column_synonyms(synonym_file = "synonyms_product.yaml")
-
-
-columns_synonyms = codebook_patient
-
 output_root = file.path(tracker_root_path,
                         "output",
                         "sensitive_data_removed")
@@ -32,19 +9,34 @@ if (!file.exists(output_root)) {
     dir.create(output_root, recursive = TRUE)
 }
 
+setup_logger(output_root)
+
+#tracker_file <-
+#    rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
+tracker_files <- list.files(tracker_root_path, "*.xlsx")
+tracker_files <-
+    tracker_files[str_detect(tracker_files, "~", negate = T)]
+log_info("Found {length(tracker_files)} xlsx files under {tracker_root_path}.")
+
+## Extract codebooks for each data form
+synonyms_patient <-
+    read_column_synonyms(synonym_file = "synonyms_patient.yaml")
+
+synonyms_product <-
+    read_column_synonyms(synonym_file = "synonyms_product.yaml")
+
+
+log_info("Starting main loop...")
 for (tracker_file in tracker_files) {
     tracker_data_file <- file.path(tracker_root_path, tracker_file)
-    cat("\n\nprocessing", tracker_file, fill=T)
+    log_info("Start processing {tracker_file}.")
 
-    # Use new read function ---------------------------------------------------
+    log_info("Start extracting patient data.")
     df_raw_patient <-
         reading_patient_data_2(tracker_data_file = tracker_data_file,
                                columns_synonyms = codebook_patient)
-
-
-    # Combine to a new data frame ---------------------------------------------
-    print(df_raw_patient %>% dim) # quickly check dimensions
-
+    log_success("Finish extracting patient data.")
+    log_info("Patient data dim: {df_raw_patient %>% dim}.")
 
     # INCOMPLETE - Set sensitive rows to NA -------------------------------------
     # level of education is in the patient list - we need to get data from there as well
@@ -101,5 +93,7 @@ for (tracker_file in tracker_files) {
                   row.names=F
         )
     }
+
+    log_success("Finish processing {tracker_file}.")
 
 }

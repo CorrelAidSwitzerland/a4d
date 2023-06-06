@@ -956,18 +956,6 @@
       "Repository": "CRAN",
       "Hash": "6154ec2223172bce8162d4153cda21f7"
     },
-    "installr": {
-      "Package": "installr",
-      "Version": "0.23.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stringr",
-        "utils"
-      ],
-      "Hash": "cea0103d69aba216be514f7e5f526961"
-    },
     "isoband": {
       "Package": "isoband",
       "Version": "0.2.7",
@@ -1064,6 +1052,16 @@
         "rlang"
       ],
       "Hash": "001cecbeac1cff9301bdc3775ee46a86"
+    },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "utils"
+      ],
+      "Hash": "c269b06beb2bbadb0d058c0e6fa4ec3d"
     },
     "lubridate": {
       "Package": "lubridate",
