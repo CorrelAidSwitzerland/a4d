@@ -4,9 +4,7 @@
 # function based on parts from run_a4d_product_data.R and helper functions
 reading_product_data_step1 <-
     function(tracker_data_file, columns_synonyms) {
-        rm(product_df)
-        rm(df_final)
-
+        log_debug("Start reading_product_data_step1.")
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
 
@@ -18,7 +16,6 @@ reading_product_data_step1 <-
         # loop through all months
         for (CurrSheet in month_list) {
             print(CurrSheet)
-            rm(tracker_data)
 
             # open tracker data
             tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, CurrSheet,
@@ -38,7 +35,7 @@ reading_product_data_step1 <-
             product_df <- extract_product_data(tracker_data)
 
             # If after extraction, dataframe is empty, this iteration is also skipped.
-            if (all(is.na(product_df) == TRUE)) {
+            if (all(is.na(product_df))) {
                 print(paste0(CurrSheet, " is skipped!"))
                 next
             }
@@ -84,4 +81,5 @@ reading_product_data_step1 <-
             }
             return(df_final)
         }
+        log_success("Finish reading_product_data_step1.")
     }

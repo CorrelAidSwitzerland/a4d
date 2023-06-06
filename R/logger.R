@@ -6,7 +6,7 @@
 #' @export
 setup_logger <- function(output_dir) {
     example_layout <-
-        layout_glue_generator(format = '{level} {format(time, \"%Y-%m-%d %H:%M:%S\")} {call} {fn}: {msg}')
+        layout_glue_generator(format = '{level} {format(time, \"%Y-%m-%d %H:%M:%S\")} {fn}: {msg}')
 
     log_layout(example_layout)
 
