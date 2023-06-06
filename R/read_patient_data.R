@@ -258,14 +258,14 @@ read_patient_data <-
 # function is based on reading_a4d_patient_data() but shortened
 reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
-        # list the sheets in excel workbook & filter these
+        log_debug("Start reading_patient_data_2.")
+?log_in
         sheet_list <- readxl::excel_sheets(tracker_data_file)
-        log_info("Found {length(sheet_list)} sheets inside the current file = {sheet_list}.")
+        log_info("Found {length(sheet_list)} sheets inside the current file = {paste(sheet_list, collapse=',')}.")
 
-        # MONTHLY SHEETS: only select sheets with monthly data
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        log_info("Found {length(month_list)} month sheets inside the current file = {month_list}.")
+        log_info("Found {length(month_list)} month sheets inside the current file = {paste(month_list, collapse=',')}.")
 
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
@@ -276,12 +276,12 @@ reading_patient_data_2 <-
 
         tidy_tracker_list <- NULL
 
-        log_info("Start processing sheets.")
+        log_debug("Start processing sheets.")
         for (curr_sheet in month_list) {
-            log_info("Start processing sheet {curr_sheet}.")
+            log_debug("Start processing sheet {curr_sheet}.")
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
-            print("patient df extracted")
+            log_debug("patient_df dim: {dim(patient_df)}.")
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
@@ -299,13 +299,14 @@ reading_patient_data_2 <-
                     country_code = country_code,
                     clinic_code = clinic_code
                 )
-            print("added tracker metadata")
 
-            tidy_tracker_list[[curr_sheet]] <- patient_df # %>%
-            # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
+            tidy_tracker_list[[curr_sheet]] <- patient_df
+            log_success("Finish processing sheet {curr_sheet}.")
         }
 
+        log_info("Start combining sheet data into single data frame.")
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
+        log_success("Finish combining sheet data into single data frame.")
 
         if ("Patient List" %in% sheet_list) {
             patient_list <- extract_patient_data(
@@ -328,9 +329,9 @@ reading_patient_data_2 <-
                         patient_name,
                         updated_2022_date
                     )),
-                by = "id"
+                by = "patient_id"
             )
         }
-
+        log_success("Finish reading_patient_data_2.")
         return(df_raw)
     }

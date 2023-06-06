@@ -1,18 +1,26 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    patient_ids <- patient_data["id"] %>%
-        dplyr::filter(id != "0") %>%
+    log_debug("Start extract_country_clinic_code.")
+    patient_ids <- patient_data["patient_id"] %>%
+        dplyr::filter(patient_id != "0") %>%
         drop_na() %>%
         rowwise() %>%
         mutate(
-            country = str_split(id, "_", n = 2, simplify = T)[1],
-            clinic = substr(str_split(id, "_", n = 2, simplify = T)[2], 0, 2)
+            country = str_split(patient_id, "_", n = 2, simplify = T)[1],
+            clinic = substr(str_split(
+                patient_id, "_", n = 2, simplify = T
+            )[2], 0, 2)
         )
 
-    country_code <- names(sort(table(patient_ids$country), decreasing = T))[1]
-    clinic_code <- names(sort(table(patient_ids$clinic), decreasing = T))[1]
+    country_code <-
+        names(sort(table(patient_ids$country), decreasing = T))[1]
+    clinic_code <-
+        names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
+    log_debug("country_code = {country_code}.")
+    log_debug("clinic_code = {clinic_code}.")
+    log_success("Finish extract_country_clinic_code.")
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
@@ -31,12 +39,19 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
-    empty_first_row <- all(is.na(readxl::read_excel(tracker_data_file,
-        sheet = sheet,
-        .name_repair = "unique_quiet",
-        range = readxl::anchored("A1", dim = c(1, 50))
-    )))
+    log_debug("Start extract_patient_data for sheet = {sheet}.")
+    empty_first_row <-
+        all(is.na(
+            readxl::read_excel(
+                tracker_data_file,
+                sheet = sheet,
+                .name_repair = "unique_quiet",
+                range = readxl::anchored("A1", dim = c(1, 50))
+            )
+        ))
+    log_info("Sheet {sheet} has empty first row = {empty_first_row}.")
 
+    log_debug("Start openxlsx::read.xlsx to get tracker_data.")
     tracker_data <-
         openxlsx::read.xlsx(
             xlsxFile = tracker_data_file,
@@ -49,6 +64,8 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
             sheet = sheet,
             startRow = 1
         )
+    log_success("Finish openxlsx::read.xlsx.")
+
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
@@ -59,8 +76,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     } else {
         offset <- 0
     }
+    log_info("Patient data found in rows {row_min + offset} to {row_max + offset}.")
 
-    header_cols <- str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
+    header_cols <-
+        str_replace(as.vector(t(tracker_data[row_min - 1,])), "\r\n", "")
+    log_debug("Start readxl::read_excel to get patient data.")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
@@ -69,28 +89,37 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         col_names = F,
         .name_repair = "unique_quiet"
     )
+    log_success("Finish readxl::read_excel.")
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        header_cols_2 <- str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
+        log_info("Read in multiline header.")
+        header_cols_2 <-
+            str_replace(as.vector(t(tracker_data[row_min - 2,])), "\r\n", "")
         diff_colnames <- which((header_cols != header_cols_2))
-        header_cols[diff_colnames] <- paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
+        header_cols[diff_colnames] <-
+            paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
 
         empty_colnames <- which(is.na(header_cols))
         header_cols[empty_colnames] <- header_cols_2[empty_colnames]
     }
 
     colnames(patient_df) <- header_cols
+    log_debug("Found patient column names = {paste(header_cols, collapse=',')}.")
 
-    # only keep columns with header
-    patient_df <- patient_df %>% select(header_cols[!is.na(header_cols)])
+    patient_df <-
+        patient_df %>% select(header_cols[!is.na(header_cols)])
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
     patient_df <- patient_df %>% distinct()
-    patient_df <- patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
-    # patient_df <- patient_df %>% select(unique(colnames(.))) # is this a good alternative?
+    # remove empty rows with only NA
+    patient_df <-
+        patient_df[rowSums(is.na(patient_df)) != ncol(patient_df),]
 
-    patient_df <- patient_df %>% mutate(across(everything(), as.character))
+    log_success("Finish extract_patient_data.")
+    # store every column as character to avoid wrong data transformations
+    patient_df <-
+        patient_df %>% mutate(across(everything(), as.character))
 }
 
 
@@ -106,91 +135,107 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #'
 #' @return data.frame with harmonized column names.
 #' @export
-harmonize_patient_data_columns <- function(patient_df, columns_synonyms) {
-    patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
-    patient_df <- patient_df[!is.na(names(patient_df))]
+harmonize_patient_data_columns <-
+    function(patient_df, columns_synonyms) {
+        patient_df <- patient_df %>% discard( ~ all(is.na(.) | . == ""))
+        patient_df <- patient_df[!is.na(names(patient_df))]
 
-    colnames(patient_df) <- sanitize_column_name(colnames(patient_df))
-    synonym_headers <- sanitize_column_name(columns_synonyms$tracker_name)
+        colnames(patient_df) <-
+            sanitize_column_name(colnames(patient_df))
+        synonym_headers <-
+            sanitize_column_name(columns_synonyms$tracker_name)
 
-    # replacing var codes
-    colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
-    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
+        # replacing var codes
+        colnames_found <-
+            match(colnames(patient_df), synonym_headers, nomatch = 0)
+        colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <-
+            columns_synonyms$variable_name[colnames_found]
 
-    if (sum(colnames_found == 0) != 0) {
-        "Non-matching column names found (see 0)"
-        view(colnames_found)
-    } else {
-        return(patient_df)
+        if (sum(colnames_found == 0) != 0) {
+            "Non-matching column names found (see 0)"
+            view(colnames_found)
+        } else {
+            return(patient_df)
+        }
     }
-}
 
 
 # adjust new harmonize function ---------------------------------------------------------
 # adjusted harmonize function that has the same name as the original function
 # function is based on harmonize_patient_data_columns() but shortened
 # Might need a better solution
-harmonize_patient_data_columns_2 <- function(patient_df, columns_synonyms) {
-    # Uncommented because we want to retain columns with only NAs
-    # patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
-    patient_df <- patient_df[!is.na(names(patient_df))]
+harmonize_patient_data_columns_2 <-
+    function(patient_df, columns_synonyms) {
+        log_debug("Start harmonize_patient_data_columns_2.")
 
-    fbg_baseline_col_idx <- which(colnames(patient_df) %in% (columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg"))$tracker_name)
-    if (length(fbg_baseline_col_idx) > 0) {
-        patient_df <- patient_df %>%
-            mutate(
-                baseline_fbg_unit = sanitize_str(
-                    str_match(
-                        colnames(patient_df)[fbg_baseline_col_idx],
-                        "\\(.*\\)"
-                    )[1]
-                )
+        patient_df <- patient_df[!is.na(names(patient_df))]
+
+        # for fbg split column into value and unit column
+        fbg_baseline_col_idx <-
+            which(colnames(patient_df) %in% (
+                columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg")
+            )$tracker_name)
+        if (length(fbg_baseline_col_idx) > 0) {
+            patient_df <- patient_df %>%
+                mutate(baseline_fbg_unit = sanitize_str(str_match(
+                    colnames(patient_df)[fbg_baseline_col_idx],
+                    "\\(.*\\)"
+                )[1]))
+        }
+
+        colnames(patient_df) <- sanitize_str(colnames(patient_df))
+        synonym_headers <- sanitize_str(columns_synonyms$tracker_name)
+
+        colnames_found <-
+            match(colnames(patient_df), synonym_headers, nomatch = 0)
+        colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <-
+            columns_synonyms$variable_name[colnames_found]
+
+        mismatching_column_ids <- which(colnames_found == 0)
+        if (length(mismatching_column_ids) > 0) {
+            log_warn(
+                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}."
             )
+        }
+
+        log_success("Finish harmonize_patient_data_columns_2.")
+        patient_df
     }
 
-    colnames(patient_df) <- sanitize_str(colnames(patient_df))
-    synonym_headers <- sanitize_str(columns_synonyms$tracker_name)
 
-    # replacing var codes
-    colnames_found <- match(colnames(patient_df), synonym_headers, nomatch = 0)
-    colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <- columns_synonyms$variable_name[colnames_found]
-    # browser()
+extract_date_from_measurement_column <-
+    function(patient_df, colname) {
+        # produces columns with names coherent with original naming before refactor
+        colname_value <- paste(c(colname, ""), collapse = "")
+        colname_core <-
+            sub("[_][^_]+$", "", colname) # remove last element after "_"
+        colname_date <- paste(c(colname_core, "_date"), collapse = "")
+        patient_df <- separate(
+            data = patient_df,
+            col = colname,
+            into = c(colname_value, colname_date),
+            sep = "([(])"
+        )
+        patient_df[[colname_date]] <-
+            gsub(")", "", patient_df[[colname_date]])
+        print(c("separated column: ", colname))
 
-    mismatching_column_ids <- which(colnames_found == 0)
-    if (length(mismatching_column_ids) > 0) {
-        print("Non-matching column names found:")
-        print(colnames(patient_df)[mismatching_column_ids])
+        return(patient_df)
     }
-
-    patient_df
-}
-
-
-extract_date_from_measurement_column <- function(patient_df, colname) {
-    # produces columns with names coherent with original naming before refactor
-    colname_value <- paste(c(colname, ""), collapse = "")
-    colname_core <- sub("[_][^_]+$", "", colname) # remove last element after "_"
-    colname_date <- paste(c(colname_core, "_date"), collapse = "")
-    patient_df <- separate(
-        data = patient_df, col = colname,
-        into = c(colname_value, colname_date), sep = "([(])"
-    )
-    patient_df[[colname_date]] <- gsub(")", "", patient_df[[colname_date]])
-    print(c("separated column: ", colname))
-
-    return(patient_df)
-}
 
 transform_MM_DD_to_YYYY_MM_DD_str <- function(column, year) {
     for (i in 1:length(column)) {
         if (!is.na(column[i])) {
             arr <- str_split(column[i], "-") %>% unlist()
             day <- arr[2]
-            month <- ifelse(day < 10, paste0("0", day), as.character(day))
+            month <-
+                ifelse(day < 10, paste0("0", day), as.character(day))
             month <- match(c(arr[1]), month.abb)
-            month <- ifelse(month < 10, paste0("0", month), as.character(month))
+            month <-
+                ifelse(month < 10, paste0("0", month), as.character(month))
 
-            column[i] <- as.character(paste(year, month, day, sep = "/"))
+            column[i] <-
+                as.character(paste(year, month, day, sep = "/"))
         }
     }
     return(as.character(column))
@@ -199,80 +244,103 @@ transform_MM_DD_to_YYYY_MM_DD_str <- function(column, year) {
 
 
 bmi_fix <- function(patient_df) {
-    if ("height" %in% colnames(patient_df) & "weight" %in% colnames(patient_df)) {
+    if ("height" %in% colnames(patient_df) &
+        "weight" %in% colnames(patient_df)) {
         patient_df <- patient_df %>%
-            mutate(bmi = if_else(is.na(height) | is.na(weight), NA_character_, bmi))
+            mutate(bmi = if_else(is.na(height) |
+                                     is.na(weight), NA_character_, bmi))
     }
     return(patient_df)
 }
 
 
 
-date_fix <- function(df, year) { # used to be initial_clean_up_patient_df
+date_fix <-
+    function(df, year) {
+        # used to be initial_clean_up_patient_df
 
-    format <- "%Y/%m/%d"
+        format <- "%Y/%m/%d"
 
 
-    if ("recruitment_date" %in% colnames(df) & year > 2018) {
-        df <- df %>%
-            mutate(recruitment_date = as.Date(as.numeric(recruitment_date) * (60 * 60 * 24),
-                origin = "1899-12-30",
-                format = format,
-                tz = "GMT"
-            ))
+        if ("recruitment_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    recruitment_date = as.Date(
+                        as.numeric(recruitment_date) * (60 * 60 * 24),
+                        origin = "1899-12-30",
+                        format = format,
+                        tz = "GMT"
+                    )
+                )
+        }
+
+        if ("last_clinic_visit_date" %in% colnames(df)) {
+            df <- df %>%
+                mutate(
+                    last_clinic_visit_date = as.POSIXct(
+                        as.numeric(last_clinic_visit_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    )
+                )
+        }
+
+        if ("bmi_date" %in% colnames(df)) {
+            df <- df %>%
+                mutate(
+                    bmi_date = as.POSIXct(
+                        as.numeric(bmi_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    bmi_date = format(as.Date(bmi_date), "%Y-%m")
+                )
+        }
+
+        if ("updated_fbg_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    updated_fbg_date = as.POSIXct(
+                        as.numeric(updated_fbg_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    updated_fbg_date = case_when(
+                        year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000),
+                        TRUE ~ updated_fbg_date
+                    )
+                )
+        }
+
+        if ("updated_hba1c_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    updated_hba1c_date = as.POSIXct(
+                        as.numeric(updated_hba1c_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    updated_hba1c_date = case_when(
+                        year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000),
+                        TRUE ~ updated_hba1c_date
+                    )
+                )
+        }
+
+        return(df)
     }
-
-    if ("last_clinic_visit_date" %in% colnames(df)) {
-        df <- df %>%
-            mutate(last_clinic_visit_date = as.POSIXct(as.numeric(last_clinic_visit_date) * (60 * 60 * 24),
-                format = format,
-                origin = "1899-12-30",
-                tz = "GMT"
-            ))
-    }
-
-    if ("bmi_date" %in% colnames(df)) {
-        df <- df %>%
-            mutate(
-                bmi_date = as.POSIXct(as.numeric(bmi_date) * (60 * 60 * 24),
-                    format = format,
-                    origin = "1899-12-30",
-                    tz = "GMT"
-                ),
-                bmi_date = format(as.Date(bmi_date), "%Y-%m")
-            )
-    }
-
-    if ("updated_fbg_date" %in% colnames(df) & year > 2018) {
-        df <- df %>%
-            mutate(
-                updated_fbg_date = as.POSIXct(as.numeric(updated_fbg_date) * (60 * 60 * 24),
-                    format = format,
-                    origin = "1899-12-30",
-                    tz = "GMT"
-                ),
-                updated_fbg_date = case_when(year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000), TRUE ~ updated_fbg_date)
-            )
-    }
-
-    if ("updated_hba1c_date" %in% colnames(df) & year > 2018) {
-        df <- df %>%
-            mutate(
-                updated_hba1c_date = as.POSIXct(as.numeric(updated_hba1c_date) * (60 * 60 * 24),
-                    format = format,
-                    origin = "1899-12-30",
-                    tz = "GMT"
-                ),
-                updated_hba1c_date = case_when(year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000), TRUE ~ updated_hba1c_date)
-            )
-    }
-
-    return(df)
-}
 
 
 
 bp_fix <- function(df) {
     df <- df %>%
-        separate(blood_pressure_mmhg, c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"), sep = "([/])")
+        separate(
+            blood_pressure_mmhg,
+            c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
+            sep = "([/])"
+        )
 }
