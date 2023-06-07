@@ -13,6 +13,7 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- 2000 + unique(parse_number(month_list))
 
+        rm(df_final)
         # loop through all months
         for (CurrSheet in month_list) {
             print(CurrSheet)
@@ -45,24 +46,12 @@ reading_product_data_step1 <-
 
             # Remove meaningless rows with only information in one column or no information
             del_rows <- apply(product_df, MARGIN = 1, function(x) sum(!is.na(x))) # count per row how many cols are not NA. If only 0 or 1, there is not enough information and row is dropped.
-            del_rows <- as.numeric(which(del_rows <= 1))
+            del_rows <- as.numeric(which(del_rows < 1))
 
             product_df <- product_df %>%
                 dplyr::slice(., -del_rows) %>%
                 filter_all(any_vars(complete.cases(.))) %>% # Remove empty rows
                 dplyr::filter(product != "Product" | is.na(product)) # remove new headers from data 2022 onwards
-
-
-            # Add columns that should be in final dataframe but are still missing
-            columns_missing <- columns_synonyms %>%
-                group_by(name_clean) %>%
-                distinct(., name_clean) %>%
-                unlist() %>%
-                as.character()
-
-            missing_cols <- which(columns_missing %notin% colnames(product_df))
-            missing_cols_names <- unique(columns_missing[missing_cols])
-            product_df[missing_cols_names] <- NA
 
 
             # Add country, hospital, month, year, tabname
@@ -77,11 +66,13 @@ reading_product_data_step1 <-
             if (!exists("df_final")) {
                 df_final <- product_df
             } else {
-                df_final <- rbind(df_final, product_df)
+                df_final <- bind_rows(df_final, product_df)
             }
         }
         if (exists("df_final")) {
             return(df_final)
+        } else {
+            return(NULL)
         }
         log_success("Finish reading_product_data_step1.")
     }
