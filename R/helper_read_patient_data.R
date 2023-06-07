@@ -9,7 +9,8 @@ extract_country_clinic_code <- function(patient_data) {
         mutate(
             country = str_split(patient_id, "_", n = 2, simplify = T)[1],
             clinic = substr(str_split(
-                patient_id, "_", n = 2, simplify = T
+                patient_id, "_",
+                n = 2, simplify = T
             )[2], 0, 2)
         )
 
@@ -79,7 +80,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     log_info("Patient data found in rows {row_min + offset} to {row_max + offset}.")
 
     header_cols <-
-        str_replace(as.vector(t(tracker_data[row_min - 1,])), "\r\n", "")
+        str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
     log_debug("Start readxl::read_excel to get patient data.")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
@@ -95,7 +96,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         log_info("Read in multiline header.")
         header_cols_2 <-
-            str_replace(as.vector(t(tracker_data[row_min - 2,])), "\r\n", "")
+            str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
             paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
@@ -114,7 +115,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_df <- patient_df %>% distinct()
     # remove empty rows with only NA
     patient_df <-
-        patient_df[rowSums(is.na(patient_df)) != ncol(patient_df),]
+        patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
 
     log_success("Finish extract_patient_data.")
     # store every column as character to avoid wrong data transformations
@@ -137,7 +138,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #' @export
 harmonize_patient_data_columns <-
     function(patient_df, columns_synonyms) {
-        patient_df <- patient_df %>% discard( ~ all(is.na(.) | . == ""))
+        patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
         patient_df <- patient_df[!is.na(names(patient_df))]
 
         colnames(patient_df) <-
@@ -248,7 +249,7 @@ bmi_fix <- function(patient_df) {
         "weight" %in% colnames(patient_df)) {
         patient_df <- patient_df %>%
             mutate(bmi = if_else(is.na(height) |
-                                     is.na(weight), NA_character_, bmi))
+                is.na(weight), NA_character_, bmi))
     }
     return(patient_df)
 }
