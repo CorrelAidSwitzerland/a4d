@@ -79,6 +79,8 @@ reading_product_data_step1 <-
             } else {
                 df_final <- rbind(df_final, product_df)
             }
+        }
+        if (exists("df_final")) {
             return(df_final)
         }
         log_success("Finish reading_product_data_step1.")
