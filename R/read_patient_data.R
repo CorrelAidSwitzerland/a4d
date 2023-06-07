@@ -259,7 +259,6 @@ read_patient_data <-
 reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
         log_debug("Start reading_patient_data_2.")
-?log_in
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         log_info("Found {length(sheet_list)} sheets inside the current file = {paste(sheet_list, collapse=',')}.")
 
