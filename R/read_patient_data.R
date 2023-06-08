@@ -260,11 +260,13 @@ reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
         log_debug("Start reading_patient_data_2.")
         sheet_list <- readxl::excel_sheets(tracker_data_file)
+        testit::assert(length(sheet_list) > 0)
         log_info("Found {length(sheet_list)} sheets inside the current file = {paste(sheet_list, collapse=',')}.")
 
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         log_info("Found {length(month_list)} month sheets inside the current file = {paste(month_list, collapse=',')}.")
+        testit::assert(length(month_list) > 0)
 
         # Extract year
         year <- 2000 + unique(parse_number(month_list))
@@ -272,6 +274,7 @@ reading_patient_data_2 <-
             year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
         }
         log_info("Tracker year = {year}.")
+        testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022))
 
         tidy_tracker_list <- NULL
 
@@ -280,6 +283,7 @@ reading_patient_data_2 <-
             log_debug("Start processing sheet {curr_sheet}.")
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
+            testit::assert(nrow(patient_df) > 0)
             log_debug("patient_df dim: {dim(patient_df)}.")
 
             patient_df <-

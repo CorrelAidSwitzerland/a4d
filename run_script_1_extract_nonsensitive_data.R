@@ -9,7 +9,15 @@ main <- function() {
 
     log_debug("Start processing tracker files.")
     for (tracker_file in tracker_files) {
-        process_tracker_file(paths, tracker_file, synonyms)
+        tryCatch(
+            process_tracker_file(paths, tracker_file, synonyms),
+            error = function (e) {
+                log_error("Could not process {tracker_file}. Error = {e}.", namespace="logger.error")
+            },
+            warnning = function (w) {
+                log_error("Could not process {tracker_file}. Warning = {w}.", namespace="logger.warning")
+            }
+        )
     }
     log_success("Finish processing all tracker files.")
 
@@ -97,6 +105,7 @@ process_patient_data <-
                 data = df_raw_patient,
                 tracker_file = tracker_file,
                 cols = c(
+                    "patient_id",
                     "patient_name",
                     "province",
                     "dob",

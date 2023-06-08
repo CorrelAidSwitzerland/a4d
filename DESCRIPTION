@@ -19,6 +19,7 @@ Imports:
     openxlsx,
     readr,
     readxl,
+    testit,
     tidyr,
     yaml,
     zoo
