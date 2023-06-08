@@ -71,6 +71,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
+    testit::assert(row_min < row_max)
 
     if (empty_first_row) {
         offset <- 1
@@ -195,7 +196,8 @@ harmonize_patient_data_columns_2 <-
         mismatching_column_ids <- which(colnames_found == 0)
         if (length(mismatching_column_ids) > 0) {
             log_warn(
-                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}."
+                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}.",
+                namespace = "logger.warning"
             )
         }
 
