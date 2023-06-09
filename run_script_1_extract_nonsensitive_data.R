@@ -1,7 +1,10 @@
-doParallel::registerDoParallel()
 options(readxl.show_progress = FALSE)
 
 main <- function() {
+    # Calculate the number of cores
+    no_cores <- parallel::detectCores() - 1
+    doParallel::registerDoParallel(no_cores)
+
     paths <- init_paths()
     setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
@@ -13,26 +16,25 @@ main <- function() {
     log_appender(appender_stdout)
     foreach::`%dopar%`(
         foreach::foreach(tracker_file = tracker_files),
-        foreach_process(tracker_file, paths, synonyms)
-    )
-    log_appender(appender_console)
-
-    log_success("Finish processing all tracker files.")
-}
-
-
-foreach_process <- function(tracker_file, paths, synonyms) {
-    setup_sink(paths$output_root, tracker_file)
-    tryCatch(
-        process_tracker_file(paths, tracker_file, synonyms),
-        error = function(e) {
-            log_error("Could not process {tracker_file}. Error = {e}.")
-        },
-        warnning = function(w) {
-            log_warn("Could not process {tracker_file}. Warning = {w}.")
+        {
+            setup_sink(paths$output_root, tracker_file)
+            tryCatch(
+                process_tracker_file(paths, tracker_file, synonyms),
+                error = function(e) {
+                    log_error("Could not process {tracker_file}. Error = {e}.")
+                },
+                warnning = function(w) {
+                    log_warn("Could not process {tracker_file}. Warning = {w}.")
+                }
+            )
+            sink()
         }
     )
-    sink()
+
+    doParallel::stopImplicitCluster()
+
+    log_appender(appender_console)
+    log_success("Finish processing all tracker files.")
 }
 
 
