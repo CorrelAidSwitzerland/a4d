@@ -13,7 +13,9 @@ Depends:
     logger
 Imports: 
     data.table,
+    doParallel,
     dplyr,
+    foreach,
     here,
     lubridate,
     openxlsx,

@@ -10,7 +10,7 @@ tracker_files <- tracker_files[!str_detect("~", tracker_files)]
 ## Extract codebooks for each data form
 columns_synonyms <- read_column_synonyms(synonym_file = "synonyms_patient.yaml")
 
-output_root = file.path(
+output_root <- file.path(
     tracker_root_path,
     "output",
     gert::git_branch(),
@@ -30,16 +30,16 @@ for (tracker_file_name in tracker_files) {
 
     ### Data extraction
     df_raw <- read_patient_data(
-      tracker_data_file,
-      columns_synonyms
-      )
-    filename_output = df_raw[[2]]
-    df_raw_data = df_raw[[1]]
-    #View(df_raw_data)
+        tracker_data_file,
+        columns_synonyms
+    )
+    filename_output <- df_raw[[2]]
+    df_raw_data <- df_raw[[1]]
+    # View(df_raw_data)
 
     save(
         df_raw_data,
-        file=file.path(
+        file = file.path(
             tracker_root_path,
             "output",
             gert::git_branch(),
@@ -50,11 +50,11 @@ for (tracker_file_name in tracker_files) {
 
     ### Data cleanse
     df_cleaned <- clean_tracker_raw_patient_data(data = df_raw_data)
-    #View(df_cleaned)
+    # View(df_cleaned)
 
     save(
         df_cleaned,
-        file=file.path(
+        file = file.path(
             tracker_root_path,
             "output",
             gert::git_branch(),
@@ -62,5 +62,4 @@ for (tracker_file_name in tracker_files) {
             paste0(tools::file_path_sans_ext(tracker_file_name), "_cleaned", ".RData")
         )
     )
-
 }

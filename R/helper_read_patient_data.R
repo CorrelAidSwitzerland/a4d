@@ -196,8 +196,7 @@ harmonize_patient_data_columns_2 <-
         mismatching_column_ids <- which(colnames_found == 0)
         if (length(mismatching_column_ids) > 0) {
             log_warn(
-                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}.",
-                namespace = "logger.warning"
+                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}."
             )
         }
 

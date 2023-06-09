@@ -1,42 +1,53 @@
-
+doParallel::registerDoParallel()
 
 main <- function() {
     paths <- init_paths()
+    setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
     log_info("Found {length(tracker_files)} xlsx files under {paths$tracker_root}.")
 
     synonyms <- get_synonyms()
 
     log_debug("Start processing tracker files.")
-    for (tracker_file in tracker_files) {
-        tryCatch(
-            process_tracker_file(paths, tracker_file, synonyms),
-            error = function (e) {
-                log_error("Could not process {tracker_file}. Error = {e}.", namespace="logger.error")
-            },
-            warnning = function (w) {
-                log_error("Could not process {tracker_file}. Warning = {w}.", namespace="logger.warning")
-            }
-        )
-    }
-    log_success("Finish processing all tracker files.")
+    log_appender(appender_stdout)
+    foreach::`%dopar%`(
+        foreach::foreach(tracker_file = tracker_files),
+        foreach_process(tracker_file, paths, synonyms)
+    )
+    log_appender(appender_console)
 
+    log_success("Finish processing all tracker files.")
+}
+
+
+foreach_process <- function(tracker_file, paths, synonyms) {
+    setup_sink(paths$output_root, tracker_file)
+    tryCatch(
+        process_tracker_file(paths, tracker_file, synonyms),
+        error = function(e) {
+            log_error("Could not process {tracker_file}. Error = {e}.")
+        },
+        warnning = function(w) {
+            log_warn("Could not process {tracker_file}. Warning = {w}.")
+        }
+    )
+    sink()
 }
 
 
 init_paths <- function() {
-    #tracker_file <-
-    #    rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
+    # tracker_file <-
+    # rstudioapi::selectFile(path = tracker_root_path, filter = "Excel Workbook (*.xlsx)")
     tracker_root_path <- select_A4D_directory()
-    output_root = file.path(tracker_root_path,
-                            "output",
-                            "sensitive_data_removed")
+    output_root <- file.path(
+        tracker_root_path,
+        "output",
+        "sensitive_data_removed"
+    )
 
     if (!file.exists(output_root)) {
         dir.create(output_root, recursive = TRUE)
     }
-
-    setup_logger(output_root)
 
     list(tracker_root = tracker_root_path, output_root = output_root)
 }
@@ -82,7 +93,6 @@ process_tracker_file <- function(paths, tracker_file, synonyms) {
     )
 
     log_success("Finish process_tracker_file.")
-
 }
 
 
@@ -94,8 +104,10 @@ process_patient_data <-
         log_debug("Start process_patient_data.")
 
         df_raw_patient <-
-            reading_patient_data_2(tracker_data_file = tracker_data_file,
-                                   columns_synonyms = synonyms_patient)
+            reading_patient_data_2(
+                tracker_data_file = tracker_data_file,
+                columns_synonyms = synonyms_patient
+            )
         log_debug("df_raw_patient dim: {dim(df_raw_patient)}.")
 
         # INCOMPLETE - Set sensitive rows to NA -------------------------------------
@@ -135,8 +147,10 @@ process_product_data <-
         log_info("Start process_product_data.")
 
         df_raw_product <-
-            reading_product_data_step1(tracker_data_file = tracker_data_file,
-                                       columns_synonyms = synonyms_product)
+            reading_product_data_step1(
+                tracker_data_file = tracker_data_file,
+                columns_synonyms = synonyms_product
+            )
         log_debug("df_raw_product dim: {dim(df_raw_product)}.")
 
         # product set sensitive column to NA and add tracker file name as a column
@@ -154,7 +168,6 @@ process_product_data <-
                 output_root = output_root,
                 suffix = "_product_data"
             )
-
         }
         log_success("Finish process_product_data.")
     }
@@ -163,8 +176,10 @@ process_product_data <-
 remove_sensitive_data <- function(data, tracker_file, cols) {
     data <-
         data %>%
-        dplyr::mutate(across(tidyr::any_of(cols),
-                             ~ NA)) %>%
+        dplyr::mutate(across(
+            tidyr::any_of(cols),
+            ~NA
+        )) %>%
         dplyr::mutate(file_name = fs::path_ext_remove(tracker_file))
 }
 
@@ -172,14 +187,18 @@ remove_sensitive_data <- function(data, tracker_file, cols) {
 export_data <- function(data, tracker_file, output_root, suffix) {
     log_debug("Start export_data. Suffix = {suffix}.")
     data %>%
-        write.csv(file =
-                      file.path(
-                          output_root,
-                          paste0(tools::file_path_sans_ext(basename(tracker_file)),
-                                 suffix,
-                                 ".csv")
-                      ),
-                  row.names = F)
+        write.csv(
+            file =
+                file.path(
+                    output_root,
+                    paste0(
+                        tools::file_path_sans_ext(basename(tracker_file)),
+                        suffix,
+                        ".csv"
+                    )
+                ),
+            row.names = F
+        )
     log_success("Finish export_data. Suffix = {suffix}")
 }
 
