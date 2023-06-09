@@ -11,7 +11,7 @@ library(stringr)
 # on your encrypted drive holding the tracker excel files
 # the main script creates an "output" folder
 # and stores .RData for raw and cleaned data.frames
-root = select_A4D_directory(reset=T)
+root <- select_A4D_directory(reset = T)
 ```
 
 ## Tracker comparison for different branches
@@ -23,7 +23,7 @@ Please knit this file with parameters and set `root` to the root directory conta
 The following branches are available:
 
 ```{r, echo=FALSE}
-branches <- as.list(list.dirs(file.path(root, "output"), recursive=FALSE))
+branches <- as.list(list.dirs(file.path(root, "output"), recursive = FALSE))
 names(branches) <- basename(unlist(branches))
 names(branches)
 ```
@@ -40,43 +40,41 @@ load_data <- function(path) {
 
 for (branch in branches) {
     cat("\nComparing", basename(branch), "\n")
-    commits <- list.dirs(branch, recursive=FALSE)
-    files <- list.files(commits[1], pattern="*.RData")
-    
+    commits <- list.dirs(branch, recursive = FALSE)
+    files <- list.files(commits[1], pattern = "*.RData")
+
     if (length(commits) == 1) {
         print("Current branch has only one commit so cannot compare different commits.")
         print("Proceeding with next branch.")
         next
     }
-    
+
     for (file in files) {
         cat("Comparing", file, "\n")
-        data_frames = lapply(commits, function (commit) load_data(file.path(commit, file)))
+        data_frames <- lapply(commits, function(commit) load_data(file.path(commit, file)))
         names(data_frames) <- basename(commits)
-        
-        for (i in 1:(length(data_frames)-1)) {
+
+        for (i in 1:(length(data_frames) - 1)) {
             curr_df <- data_frames[[i]]
-            
-            for (j in (i+1):length(data_frames)) {
+
+            for (j in (i + 1):length(data_frames)) {
                 other_df <- data_frames[[j]]
-                if (isTRUE(all.equal(curr_df, other_df, check.attributes=FALSE))) {
+                if (isTRUE(all.equal(curr_df, other_df, check.attributes = FALSE))) {
                     cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are identical", "\n")
                 } else {
-                    differences = all.equal(curr_df, other_df, check.attributes=FALSE)
-                    
+                    differences <- all.equal(curr_df, other_df, check.attributes = FALSE)
+
                     if (all(str_detect(differences, "target is .*, current is .*"))) {
                         cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are identical", "\n")
                     } else {
                         cat("Branches", names(data_frames)[i], "and", names(data_frames)[j], "are different:", "\n")
-                    print(all.equal(curr_df, other_df, check.attributes=FALSE))
+                        print(all.equal(curr_df, other_df, check.attributes = FALSE))
                     }
-                    
                 }
             }
         }
     }
 }
-
 ```
 
 ## Between-branch comparison
@@ -90,10 +88,10 @@ load_data <- function(path) {
 }
 
 # change these variables to your needs!
-source_branch = "22-writing-a-test-suite"
-source_commit = "d6480d50"
-target_branch = "develop"
-target_commit = "357b68cd"
+source_branch <- "22-writing-a-test-suite"
+source_commit <- "d6480d50"
+target_branch <- "develop"
+target_commit <- "357b68cd"
 
 cat(
     "\nComparing",
@@ -109,21 +107,25 @@ cat(
     "\n\n"
 )
 files <-
-    list.files(file.path(branches[[source_branch]], source_commit), pattern =
-                   "*.RData")
+    list.files(file.path(branches[[source_branch]], source_commit),
+        pattern =
+            "*.RData"
+    )
 
 for (file in files) {
     cat("Comparing", file, "\n")
     df1 <- load_data(file.path(branches[[source_branch]], source_commit, file))
     df2 <- load_data(file.path(branches[[target_branch]], target_commit, file))
-    
+
     if (identical(df1, df2)) {
-        cat("Branches",
+        cat(
+            "Branches",
             source_branch,
             "and",
             target_branch,
             "are identical",
-            "\n")
+            "\n"
+        )
     } else {
         cat(
             "Branches",
@@ -134,16 +136,17 @@ for (file in files) {
             "\n"
         )
         cat("Output of all.equal:\n")
-        print(all.equal(df2, df1, check.attributes=FALSE))
+        print(all.equal(df2, df1, check.attributes = FALSE))
 
         # Find the rows and columns that are different
         rows <- which(df1 != df2, arr.ind = TRUE)[, 1]
         cols <- which(df1 != df2, arr.ind = TRUE)[, 2]
-        
+
         # Print the differences
         if (any(rows) || any(cols)) {
             for (i in 1:length(rows)) {
-                cat("Row",
+                cat(
+                    "Row",
                     rows[i],
                     "Column",
                     cols[i],
@@ -151,16 +154,15 @@ for (file in files) {
                     df1[rows[i], cols[i]],
                     "vs.",
                     df2[rows[i], cols[i]],
-                    "\n")
+                    "\n"
+                )
             }
         } else {
             cat("All values are identical (df1 == df2)\n")
         }
-        
     }
     cat("\n")
 }
-
 ```
 
 

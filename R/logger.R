@@ -10,28 +10,23 @@ setup_logger <- function(output_dir) {
 
     log_threshold(TRACE)
 
-    file_name <- format(Sys.time(), "%Y%m%d_%H%M%S")
-
     log_dir <- file.path(output_dir, "logs")
-    log_file_name <- paste0(file_name, ".log")
-    log_file <- file.path(log_dir, log_file_name)
-    log_appender(appender_file(log_file))
-
-    log_threshold(ERROR, namespace = "logger.error")
-
-    log_dir <- file.path(output_dir, "logs")
-    log_file_name <- paste0(file_name, "_error", ".log")
-    log_file <- file.path(log_dir, log_file_name)
-    log_appender(appender_file(log_file), namespace = "logger.error")
-
-    log_threshold(WARN, namespace = "logger.warning")
-
-    log_dir <- file.path(output_dir, "logs")
-    log_file_name <- paste0(file_name, "_warning", ".log")
-    log_file <- file.path(log_dir, log_file_name)
-    log_appender(appender_file(log_file), namespace = "logger.warning")
 
     if (!file.exists(log_dir)) {
         dir.create(log_dir, recursive = FALSE)
     }
+}
+
+
+setup_sink <- function(output_dir, tracker_file) {
+    file_name <-
+        paste(format(Sys.time(), "%Y%m%d_%H%M%S"),
+            tools::file_path_sans_ext(tracker_file),
+            sep = "_"
+        )
+
+    log_dir <- file.path(output_dir, "logs")
+    log_file_name <- paste0(file_name, ".log")
+    log_file <- file.path(log_dir, log_file_name)
+    sink(file = log_file, append = F)
 }
