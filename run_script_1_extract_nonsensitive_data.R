@@ -1,4 +1,5 @@
 doParallel::registerDoParallel()
+options(readxl.show_progress = FALSE)
 
 main <- function() {
     paths <- init_paths()
