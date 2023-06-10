@@ -258,14 +258,14 @@ read_patient_data <-
 # function is based on reading_a4d_patient_data() but shortened
 reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
-        log_debug("Start reading_patient_data_2.")
+        logDebug("Start reading_patient_data_2.")
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         testit::assert(length(sheet_list) > 0)
-        log_info("Found {length(sheet_list)} sheets inside the current file = {paste(sheet_list, collapse=',')}.")
+        logInfo("Found ", {length(sheet_list)}, " sheets inside the current file = ", {paste(sheet_list, collapse=',')},".")
 
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        log_info("Found {length(month_list)} month sheets inside the current file = {paste(month_list, collapse=',')}.")
+        logInfo("Found ", {length(month_list)}, " month sheets inside the current file = ", {paste(month_list, collapse=',')}, ".")
         testit::assert(length(month_list) > 0)
 
         # Extract year
@@ -273,18 +273,18 @@ reading_patient_data_2 <-
         if (is.na(year)) {
             year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
         }
-        log_info("Tracker year = {year}.")
+        logInfo("Tracker year = ", {year}, ".")
         testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022))
 
         tidy_tracker_list <- NULL
 
-        log_debug("Start processing sheets.")
+        logDebug("Start processing sheets.")
         for (curr_sheet in month_list) {
-            log_debug("Start processing sheet {curr_sheet}.")
+            logDebug("Start processing sheet ", {curr_sheet}, ".")
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             testit::assert(nrow(patient_df) > 0)
-            log_debug("patient_df dim: {dim(patient_df)}.")
+            logDebug("patient_df dim: ", {dim(patient_df) %>% as.data.frame()}, ".")
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
@@ -304,12 +304,12 @@ reading_patient_data_2 <-
                 )
 
             tidy_tracker_list[[curr_sheet]] <- patient_df
-            log_success("Finish processing sheet {curr_sheet}.")
+            logInfo("Finish processing sheet ", {curr_sheet}, ".")
         }
 
-        log_info("Start combining sheet data into single data frame.")
+        logInfo("Start combining sheet data into single data frame.")
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
-        log_success("Finish combining sheet data into single data frame.")
+        logInfo("Finish combining sheet data into single data frame.")
 
         if ("Patient List" %in% sheet_list) {
             patient_list <- extract_patient_data(
@@ -335,6 +335,6 @@ reading_patient_data_2 <-
                 by = "patient_id"
             )
         }
-        log_success("Finish reading_patient_data_2.")
+        logInfo("Finish reading_patient_data_2.")
         return(df_raw)
     }

@@ -1,40 +1,60 @@
 options(readxl.show_progress = FALSE)
+library(ParallelLogger)
+options(future.rng.onMisuse = "ignore")
+
+
+source("R/read_patient_data.R")
+source("R/helper_read_patient_data.R")
+source("R/read_product_data.R")
+source("R/helper_clean_data.R")
+source("R/helper_product_data.R")
+source("R/logger.R")
+
+if (!file.exists("logging")) {
+    dir.create("logging", recursive = TRUE)
+}
+
+logFileName <- "logging/all_.log"
+logger <- createLogger(name = "PARALLEL",
+                       threshold = "TRACE",
+                       appenders = list(createFileAppender(layout = layoutParallel,
+                                                           fileName = logFileName)))
+registerLogger(logger)
 
 main <- function() {
     # Calculate the number of cores
-    no_cores <- parallel::detectCores() - 1
-    doParallel::registerDoParallel(no_cores)
-
+    # no_cores <- parallel::detectCores() - 1
+    # doParallel::registerDoParallel(no_cores)
+    # fl = file.path(getwd(), paste0("logging/logs/test", ".log"))
+    # log_appender(appender_file(fl))
     paths <- init_paths()
-    setup_logger(paths$output_root)
+    # setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
-    log_info("Found {length(tracker_files)} xlsx files under {paths$tracker_root}.")
+    logInfo("Found ", length(tracker_files), " xlsx files under ", {paths$tracker_root}, ".")
 
     synonyms <- get_synonyms()
 
-    log_debug("Start processing tracker files.")
-    log_appender(appender_stdout)
-    foreach::`%dopar%`(
-        foreach::foreach(tracker_file = tracker_files),
-        {
-            setup_sink(paths$output_root, tracker_file)
+    logDebug("Start processing tracker files.")
+    # log_appender(appender_stdout)
+            # setup_sink(paths$output_root, "test")
+    # logInfo("Starting with ", tracker_file, ".")
+    foreach(tracker_file = tracker_files) %dopar% {
             tryCatch(
                 process_tracker_file(paths, tracker_file, synonyms),
-                error = function(e) {
-                    log_error("Could not process {tracker_file}. Error = {e}.")
-                },
-                warnning = function(w) {
-                    log_warn("Could not process {tracker_file}. Warning = {w}.")
-                }
+            error = function(e) {
+                logError("Could not process {tracker_file}. Error = {e}.")
+            },
+            warnning = function(w) {
+                logWarn("Could not process {tracker_file}. Warning = {w}.")
+            }
             )
-            sink()
         }
-    )
+    # log_appender(appender_console)
+    logInfo("Finish processing all tracker files.")
+            # sink()
 
-    doParallel::stopImplicitCluster()
+    # doParallel::stopImplicitCluster()
 
-    log_appender(appender_console)
-    log_success("Finish processing all tracker files.")
 }
 
 
@@ -76,8 +96,9 @@ get_tracker_files <- function(tracker_root) {
 
 
 process_tracker_file <- function(paths, tracker_file, synonyms) {
-    log_debug("Start process_tracker_file.")
-    log_info("Current file: {tracker_file}.")
+    addDefaultFileLogger(paste0("logging/", tracker_file, ".log"))
+        logDebug("Start process_tracker_file.")
+    logInfo("Current file: ", {tracker_file}, ".")
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
 
@@ -95,7 +116,8 @@ process_tracker_file <- function(paths, tracker_file, synonyms) {
         synonyms_product = synonyms$product
     )
 
-    log_success("Finish process_tracker_file.")
+    logInfo("Finish process_tracker_file.")
+    # log_appender(appender_console)
 }
 
 
@@ -104,14 +126,15 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-        log_debug("Start process_patient_data.")
+
+        logDebug("Start process_patient_data.")
 
         df_raw_patient <-
             reading_patient_data_2(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_patient
             )
-        log_debug("df_raw_patient dim: {dim(df_raw_patient)}.")
+        logDebug("df_raw_patient dim: ", {dim(df_raw_patient) %>% as.data.frame()}, ".")
 
         # INCOMPLETE - Set sensitive rows to NA -------------------------------------
         # level of education is in the patient list - we need to get data from there as well
@@ -138,7 +161,7 @@ process_patient_data <-
             suffix = "_patient_data"
         )
 
-        log_success("Finish process_patient_data.")
+        logInfo("Finish process_patient_data.")
     }
 
 
@@ -147,14 +170,15 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-        log_info("Start process_product_data.")
+        # addDefaultFileLogger("Process_product.log")
+        logInfo("Start process_product_data.")
 
         df_raw_product <-
             reading_product_data_step1(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_product
             )
-        log_debug("df_raw_product dim: {dim(df_raw_product)}.")
+        logDebug("df_raw_product dim: ", {dim(df_raw_product) %>% as.data.frame()}, ".")
 
         # product set sensitive column to NA and add tracker file name as a column
         if (!is.null(df_raw_product)) {
@@ -172,7 +196,7 @@ process_product_data <-
                 suffix = "_product_data"
             )
         }
-        log_success("Finish process_product_data.")
+        logInfo("Finish process_product_data.")
     }
 
 
@@ -188,7 +212,8 @@ remove_sensitive_data <- function(data, tracker_file, cols) {
 
 
 export_data <- function(data, tracker_file, output_root, suffix) {
-    log_debug("Start export_data. Suffix = {suffix}.")
+    # addDefaultFileLogger("export.log")
+    logDebug("Start export_data. Suffix = ", {suffix}, ".")
     data %>%
         write.csv(
             file =
@@ -202,7 +227,22 @@ export_data <- function(data, tracker_file, output_root, suffix) {
                 ),
             row.names = F
         )
-    log_success("Finish export_data. Suffix = {suffix}")
+    logInfo("Finish export_data. Suffix = {suffix}")
 }
 
+# Calculate the number of cores
+no_cores <- future::availableCores() - 1
+library(doFuture)
+doFuture::registerDoFuture()
+plan(multisession, workers = no_cores)
+# plan(sequential)
+# future::plan(future::multisession, workers = no_cores)
+# cl <- parallel::makeCluster(no_cores)
+# cl <- doParallel::registerDoParallel(no_cores)
+# parallel::clusterExport(cl, c("setup_sink"))
 main()
+# doFuture::withDoRNG(main(10))
+# parallel::stopCluster(cl)
+# future::autoStopCluster(cl)
+
+ParallelLogger::clearLoggers()
