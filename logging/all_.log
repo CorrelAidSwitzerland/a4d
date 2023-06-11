@@ -1,0 +1,86 @@
+2023-06-10 22:20:11	[Main thread]	INFO			Loading required package: foreach 
+2023-06-10 22:20:11	[Main thread]	INFO			 Attaching package: ‘foreach’  
+2023-06-10 22:20:11	[Main thread]	INFO			The following objects are masked from ‘package:purrr’:      accumulate, when  
+2023-06-10 22:20:11	[Main thread]	INFO			Loading required package: future 
+2023-06-10 22:20:21	[Main thread]	INFO			Found 15 xlsx files under D:/A4D/Data Prep Step 1.
+2023-06-10 22:20:21	[Main thread]	DEBUG			Start processing tracker files.
+2023-06-10 22:20:50	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:20:50	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:20:50	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:20:50	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:20:50	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	3 parsing failures. row col expected actual   1  -- a number    Oct   2  -- a number    Nov   3  -- a number    Dec 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	3 parsing failures. row col expected actual   1  -- a number    Oct   2  -- a number    Nov   3  -- a number    Dec 
+2023-06-10 22:20:50	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	[38;5;255mDetected an unexpected many-to-many relationship between `x` and `y`. [36mℹ[38;5;255m Row 13 of `x` matches multiple rows in `y`. [36mℹ[38;5;255m Row 1 of `y` matches multiple rows in `x`. [36mℹ[38;5;255m If a many-to-many relationship is expected, set `relationship = "many-to-many"` to   silence this warning.[39m
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-10 22:21:08	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-10 22:21:08	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-10 22:21:08	[Main thread]	INFO			Finish processing all tracker files.
+2023-06-11 05:13:28	[Main thread]	INFO			Loading required package: foreach 
+2023-06-11 05:13:29	[Main thread]	INFO			 Attaching package: ‘foreach’  
+2023-06-11 05:13:29	[Main thread]	INFO			The following objects are masked from ‘package:purrr’:      accumulate, when  
+2023-06-11 05:13:29	[Main thread]	INFO			Loading required package: future 
+2023-06-11 05:13:37	[Main thread]	INFO			Found 15 xlsx files under D:/A4D/Data Prep Step 1.
+2023-06-11 05:13:37	[Main thread]	DEBUG			Start processing tracker files.
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	3 parsing failures. row col expected actual   1  -- a number    Oct   2  -- a number    Nov   3  -- a number    Dec 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	3 parsing failures. row col expected actual   1  -- a number    Oct   2  -- a number    Nov   3  -- a number    Dec 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:14	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:14	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:16	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:16	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-11 05:14:20	[Main thread]	WARN	future	signalConditions	[38;5;255mDetected an unexpected many-to-many relationship between `x` and `y`. [36mℹ[38;5;255m Row 13 of `x` matches multiple rows in `y`. [36mℹ[38;5;255m Row 1 of `y` matches multiple rows in `x`. [36mℹ[38;5;255m If a many-to-many relationship is expected, set `relationship = "many-to-many"` to   silence this warning.[39m
+2023-06-11 05:14:20	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-11 05:14:20	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-11 05:14:20	[Main thread]	INFO	future	signalConditions	check with A4D whether duplicate columns in patient list sheet should be removed 
+2023-06-11 05:14:20	[Main thread]	WARN	future	signalConditions	object 'df_final' not found
+2023-06-11 05:14:20	[Main thread]	INFO			Finish processing all tracker files.

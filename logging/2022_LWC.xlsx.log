@@ -1,0 +1,62 @@
+2023-06-10 22:20:51	[Main thread]	DEBUG	future		Start process_tracker_file.
+2023-06-10 22:20:51	[Main thread]	INFO	future		Current file: 2022_LWC.xlsx.
+2023-06-10 22:20:51	[Main thread]	DEBUG	future		Start process_patient_data.
+2023-06-10 22:20:51	[Main thread]	DEBUG	future		Start reading_patient_data_2.
+2023-06-10 22:20:51	[Main thread]	INFO	future		Found 6 sheets inside the current file = Patient List,INV,Dec22,Nov22,Oct22,Look Up List.
+2023-06-10 22:20:51	[Main thread]	INFO	future		Found 3 month sheets inside the current file = Oct22,Nov22,Dec22.
+2023-06-10 22:20:51	[Main thread]	INFO	future		Tracker year = 2022.
+2023-06-10 22:20:51	[Main thread]	DEBUG	future		Start processing sheets.
+2023-06-10 22:20:51	[Main thread]	DEBUG	future		Start processing sheet Oct22.
+2023-06-10 22:20:53	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-10 22:20:53	[Main thread]	INFO	future		Finish processing sheet Oct22.
+2023-06-10 22:20:53	[Main thread]	DEBUG	future		Start processing sheet Nov22.
+2023-06-10 22:20:54	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-10 22:20:54	[Main thread]	INFO	future		Finish processing sheet Nov22.
+2023-06-10 22:20:54	[Main thread]	DEBUG	future		Start processing sheet Dec22.
+2023-06-10 22:20:55	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-10 22:20:55	[Main thread]	INFO	future		Finish processing sheet Dec22.
+2023-06-10 22:20:55	[Main thread]	INFO	future		Start combining sheet data into single data frame.
+2023-06-10 22:20:55	[Main thread]	INFO	future		Finish combining sheet data into single data frame.
+2023-06-10 22:20:55	[Main thread]	INFO	future		Finish reading_patient_data_2.
+2023-06-10 22:20:55	[Main thread]	DEBUG	future		df_raw_patient dim: c(42, 47).
+2023-06-10 22:20:55	[Main thread]	DEBUG	future		Start export_data. Suffix = _patient_data.
+2023-06-10 22:20:55	[Main thread]	INFO	future		Finish export_data. Suffix = {suffix}
+2023-06-10 22:20:55	[Main thread]	INFO	future		Finish process_patient_data.
+2023-06-10 22:20:55	[Main thread]	INFO	future		Start process_product_data.
+2023-06-10 22:20:56	[Main thread]	DEBUG	future		Start reading_product_data_step1.
+2023-06-10 22:20:57	[Main thread]	DEBUG	future		df_raw_product dim: c(159, 10).
+2023-06-10 22:20:57	[Main thread]	DEBUG	future		Start export_data. Suffix = _product_data.
+2023-06-10 22:20:57	[Main thread]	INFO	future		Finish export_data. Suffix = {suffix}
+2023-06-10 22:20:57	[Main thread]	INFO	future		Finish process_product_data.
+2023-06-10 22:20:57	[Main thread]	INFO	future		Finish process_tracker_file.
+2023-06-11 05:14:14	[Main thread]	DEBUG	future		Start process_tracker_file.
+2023-06-11 05:14:14	[Main thread]	INFO	future		Current file: 2022_LWC.xlsx.
+2023-06-11 05:14:14	[Main thread]	DEBUG	future		Start process_patient_data.
+2023-06-11 05:14:15	[Main thread]	DEBUG	future		Start reading_patient_data_2.
+2023-06-11 05:14:15	[Main thread]	INFO	future		Found 6 sheets inside the current file = Patient List,INV,Dec22,Nov22,Oct22,Look Up List.
+2023-06-11 05:14:15	[Main thread]	INFO	future		Found 3 month sheets inside the current file = Oct22,Nov22,Dec22.
+2023-06-11 05:14:16	[Main thread]	INFO	future		Tracker year = 2022.
+2023-06-11 05:14:16	[Main thread]	DEBUG	future		Start processing sheets.
+2023-06-11 05:14:16	[Main thread]	DEBUG	future		Start processing sheet Oct22.
+2023-06-11 05:14:16	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-11 05:14:17	[Main thread]	INFO	future		Finish processing sheet Oct22.
+2023-06-11 05:14:17	[Main thread]	DEBUG	future		Start processing sheet Nov22.
+2023-06-11 05:14:17	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-11 05:14:17	[Main thread]	INFO	future		Finish processing sheet Nov22.
+2023-06-11 05:14:17	[Main thread]	DEBUG	future		Start processing sheet Dec22.
+2023-06-11 05:14:18	[Main thread]	DEBUG	future		patient_df dim: c(14, 31).
+2023-06-11 05:14:18	[Main thread]	INFO	future		Finish processing sheet Dec22.
+2023-06-11 05:14:18	[Main thread]	INFO	future		Start combining sheet data into single data frame.
+2023-06-11 05:14:18	[Main thread]	INFO	future		Finish combining sheet data into single data frame.
+2023-06-11 05:14:18	[Main thread]	INFO	future		Finish reading_patient_data_2.
+2023-06-11 05:14:18	[Main thread]	DEBUG	future		df_raw_patient dim: c(42, 47).
+2023-06-11 05:14:18	[Main thread]	DEBUG	future		Start export_data. Suffix = _patient_data.
+2023-06-11 05:14:18	[Main thread]	INFO	future		Finish export_data. Suffix = {suffix}
+2023-06-11 05:14:18	[Main thread]	INFO	future		Finish process_patient_data.
+2023-06-11 05:14:18	[Main thread]	INFO	future		Start process_product_data.
+2023-06-11 05:14:18	[Main thread]	DEBUG	future		Start reading_product_data_step1.
+2023-06-11 05:14:20	[Main thread]	DEBUG	future		df_raw_product dim: c(159, 10).
+2023-06-11 05:14:20	[Main thread]	DEBUG	future		Start export_data. Suffix = _product_data.
+2023-06-11 05:14:20	[Main thread]	INFO	future		Finish export_data. Suffix = {suffix}
+2023-06-11 05:14:20	[Main thread]	INFO	future		Finish process_product_data.
+2023-06-11 05:14:20	[Main thread]	INFO	future		Finish process_tracker_file.
