@@ -4,7 +4,7 @@
 # function based on parts from run_a4d_product_data.R and helper functions
 reading_product_data_step1 <-
     function(tracker_data_file, columns_synonyms) {
-        ParallelLogger::logDebug("Start reading_product_data_step1.")
+        logDebug("Start reading_product_data_step1.")
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
 
@@ -13,7 +13,6 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- 2000 + unique(parse_number(month_list))
 
-        rm(df_final)
         # loop through all months
         for (CurrSheet in month_list) {
             print(CurrSheet)
@@ -74,5 +73,5 @@ reading_product_data_step1 <-
         } else {
             return(NULL)
         }
-        ParallelLogger::logInfo("Finish reading_product_data_step1.")
+        logDebug("Finish reading_product_data_step1.")
     }

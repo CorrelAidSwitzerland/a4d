@@ -3,15 +3,19 @@
 #' @param output_dir: Output directory of the main script
 #' @export
 setup_logger <- function(output_dir) {
+    logFileName <- file.path(output_dir, "logs", "main.log")
 
-
-    logFileName <- paste0(init_paths()$output_root, "/logs/main.log")
-
-    logger <- ParallelLogger::createLogger(name = "PARALLEL",
-                                           threshold = "TRACE",
-                                           appenders = list(ParallelLogger::createFileAppender(layout = ParallelLogger::layoutParallel,
-                                                                                               fileName = logFileName)))
-    ParallelLogger::registerLogger(logger)
+    logger <- createLogger(
+        name = "PARALLEL",
+        threshold = "TRACE",
+        appenders = list(
+            createFileAppender(
+                layout = layoutParallel,
+                fileName = logFileName
+            )
+        )
+    )
+    registerLogger(logger)
 
     log_dir <- file.path(output_dir, "logs")
 

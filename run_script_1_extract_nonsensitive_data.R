@@ -11,30 +11,39 @@ source("R/helper_product_data.R")
 source("R/logger.R")
 
 main <- function() {
-
     paths <- init_paths()
     setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
-    ParallelLogger::logInfo("Found ", length(tracker_files), " xlsx files under ", {paths$tracker_root}, ".")
+    logInfo(
+        "Found ",
+        length(tracker_files),
+        " xlsx files under ",
+        paths$tracker_root,
+        "."
+    )
 
     synonyms <- get_synonyms()
 
-    ParallelLogger::logDebug("Start processing tracker files.")
+    logDebug("Start processing tracker files.")
 
     foreach::foreach(tracker_file = tracker_files) %dopar% {
-            tryCatch(
-                process_tracker_file(paths, tracker_file, synonyms),
+        tryCatch(
+            process_tracker_file(paths, tracker_file, synonyms),
             error = function(e) {
-                ParallelLogger::logError("Could not process {tracker_file}. Error = {e}.")
+                logError("Could not process ", tracker_file, ". Error = ", e, ".")
             },
             warnning = function(w) {
-                ParallelLogger::logWarn("Could not process {tracker_file}. Warning = {w}.")
+                logWarn(
+                    "Could not process ",
+                    tracker_file,
+                    ". Warning = ",
+                    w,
+                    "."
+                )
             }
-            )
-        }
-    ParallelLogger::logInfo("Finish processing all tracker files.")
-
-
+        )
+    }
+    logInfo("Finish processing all tracker files.")
 }
 
 
@@ -67,16 +76,16 @@ get_synonyms <- function() {
 
 
 get_tracker_files <- function(tracker_root) {
-    tracker_files <- list.files(tracker_root, "*.xlsx")
+    tracker_files <- list.files(tracker_root, "\\.xlsx$")
     tracker_files <-
         tracker_files[str_detect(tracker_files, "~", negate = T)]
 }
 
 
 process_tracker_file <- function(paths, tracker_file, synonyms) {
-    ParallelLogger::addDefaultFileLogger(paste0(init_paths()$output_root, "/logs/", tracker_file, ".log"))
-        ParallelLogger::logDebug("Start process_tracker_file.")
-    ParallelLogger::logInfo("Current file: ", {tracker_file}, ".")
+    addDefaultFileLogger(file.path(paths$output_root, "logs", paste0(tools::file_path_sans_ext(tracker_file), ".log")))
+    logDebug("Start process_tracker_file.")
+    logInfo("Current file: ", tracker_file, ".")
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
 
@@ -94,7 +103,7 @@ process_tracker_file <- function(paths, tracker_file, synonyms) {
         synonyms_product = synonyms$product
     )
 
-    ParallelLogger::logInfo("Finish process_tracker_file.")
+    logInfo("Finish process_tracker_file.")
 }
 
 
@@ -103,15 +112,18 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-
-        ParallelLogger::logDebug("Start process_patient_data.")
+        logDebug("Start process_patient_data.")
 
         df_raw_patient <-
             reading_patient_data_2(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_patient
             )
-        ParallelLogger::logDebug("df_raw_patient dim: ", {dim(df_raw_patient) %>% as.data.frame()}, ".")
+        logDebug(
+            "df_raw_patient dim: ",
+            dim(df_raw_patient) %>% as.data.frame(),
+            "."
+        )
 
         # INCOMPLETE - Set sensitive rows to NA -------------------------------------
         # level of education is in the patient list - we need to get data from there as well
@@ -138,7 +150,7 @@ process_patient_data <-
             suffix = "_patient_data"
         )
 
-        ParallelLogger::logInfo("Finish process_patient_data.")
+        logInfo("Finish process_patient_data.")
     }
 
 
@@ -147,15 +159,18 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-        # ParallelLogger::addDefaultFileLogger("Process_product.log")
-        ParallelLogger::logInfo("Start process_product_data.")
+        logDebug("Start process_product_data.")
 
         df_raw_product <-
             reading_product_data_step1(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_product
             )
-        ParallelLogger::logDebug("df_raw_product dim: ", {dim(df_raw_product) %>% as.data.frame()}, ".")
+        logDebug(
+            "df_raw_product dim: ",
+            dim(df_raw_product) %>% as.data.frame(),
+            "."
+        )
 
         # product set sensitive column to NA and add tracker file name as a column
         if (!is.null(df_raw_product)) {
@@ -173,7 +188,7 @@ process_product_data <-
                 suffix = "_product_data"
             )
         }
-        ParallelLogger::logInfo("Finish process_product_data.")
+        logDebug("Finish process_product_data.")
     }
 
 
@@ -189,7 +204,7 @@ remove_sensitive_data <- function(data, tracker_file, cols) {
 
 
 export_data <- function(data, tracker_file, output_root, suffix) {
-    ParallelLogger::logDebug("Start export_data. Suffix = ", {suffix}, ".")
+    logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         write.csv(
             file =
@@ -203,7 +218,7 @@ export_data <- function(data, tracker_file, output_root, suffix) {
                 ),
             row.names = F
         )
-    ParallelLogger::logInfo("Finish export_data. Suffix = ", {suffix}, ".")
+    logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 
 # Calculate the number of cores
@@ -215,4 +230,4 @@ future::plan(future::multisession, workers = no_cores)
 
 main()
 
-ParallelLogger::clearLoggers()
+clearLoggers()

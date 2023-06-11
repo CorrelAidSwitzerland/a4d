@@ -258,14 +258,26 @@ read_patient_data <-
 # function is based on reading_a4d_patient_data() but shortened
 reading_patient_data_2 <-
     function(tracker_data_file, columns_synonyms) {
-        ParallelLogger::logDebug("Start reading_patient_data_2.")
+        logDebug("Start reading_patient_data_2.")
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         testit::assert(length(sheet_list) > 0)
-        ParallelLogger::logInfo("Found ", {length(sheet_list)}, " sheets inside the current file = ", {paste(sheet_list, collapse=',')},".")
+        logInfo(
+            "Found ",
+            length(sheet_list),
+            " sheets inside the current file = ",
+            paste(sheet_list, collapse = ","),
+            "."
+        )
 
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        ParallelLogger::logInfo("Found ", {length(month_list)}, " month sheets inside the current file = ", {paste(month_list, collapse=',')}, ".")
+        logInfo(
+            "Found ",
+            length(month_list),
+            " month sheets inside the current file = ",
+            paste(month_list, collapse = ","),
+            "."
+        )
         testit::assert(length(month_list) > 0)
 
         # Extract year
@@ -273,22 +285,21 @@ reading_patient_data_2 <-
         if (is.na(year)) {
             year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
         }
-        ParallelLogger::logInfo("Tracker year = ", {year}, ".")
+        logInfo("Tracker year = ", year, ".")
         testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022))
 
         tidy_tracker_list <- NULL
 
-        ParallelLogger::logDebug("Start processing sheets.")
+        logDebug("Start processing sheets.")
         for (curr_sheet in month_list) {
-            ParallelLogger::logDebug("Start processing sheet ", {curr_sheet}, ".")
+            logDebug("Start processing sheet ", curr_sheet, ".")
 
             patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
             testit::assert(nrow(patient_df) > 0)
-            ParallelLogger::logDebug("patient_df dim: ", {dim(patient_df) %>% as.data.frame()}, ".")
+            logDebug("patient_df dim: ", dim(patient_df) %>% as.data.frame(), ".")
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
-            print("patient df harmonized")
 
             cc_codes <- extract_country_clinic_code(patient_df)
             country_code <- cc_codes$country_code
@@ -304,14 +315,15 @@ reading_patient_data_2 <-
                 )
 
             tidy_tracker_list[[curr_sheet]] <- patient_df
-            ParallelLogger::logInfo("Finish processing sheet ", {curr_sheet}, ".")
+            logDebug("Finish processing sheet ", curr_sheet, ".")
         }
 
-        ParallelLogger::logInfo("Start combining sheet data into single data frame.")
+        logDebug("Start combining sheet data into single data frame.")
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
-        ParallelLogger::logInfo("Finish combining sheet data into single data frame.")
+        logDebug("Finish combining sheet data into single data frame.")
 
         if ("Patient List" %in% sheet_list) {
+            logDebug("Start extracting patient list.")
             patient_list <- extract_patient_data(
                 tracker_data_file,
                 "Patient List",
@@ -322,7 +334,6 @@ reading_patient_data_2 <-
                 columns_synonyms
             )
 
-            message("check with A4D whether duplicate columns in patient list sheet should be removed")
             df_raw <- dplyr::left_join(
                 df_raw,
                 patient_list %>%
@@ -334,7 +345,9 @@ reading_patient_data_2 <-
                     )),
                 by = "patient_id"
             )
+            logDebug("Finish extracting patient list.")
         }
-        ParallelLogger::logInfo("Finish reading_patient_data_2.")
+
+        logInfo("Finish reading_patient_data_2.")
         return(df_raw)
     }

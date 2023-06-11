@@ -1,7 +1,7 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    log_debug("Start extract_country_clinic_code.")
+    logDebug("Start extract_country_clinic_code.")
     patient_ids <- patient_data["patient_id"] %>%
         dplyr::filter(patient_id != "0") %>%
         drop_na() %>%
@@ -19,9 +19,9 @@ extract_country_clinic_code <- function(patient_data) {
     clinic_code <-
         names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
-    log_debug("country_code = {country_code}.")
-    log_debug("clinic_code = {clinic_code}.")
-    log_success("Finish extract_country_clinic_code.")
+    logDebug("country_code = ", country_code, ".")
+    logDebug("clinic_code = ", clinic_code, ".")
+    logDebug("Finish extract_country_clinic_code.")
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
@@ -40,7 +40,7 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
-    log_debug("Start extract_patient_data for sheet = {sheet}.")
+    logDebug("Start extract_patient_data for sheet = ", sheet, ".")
     empty_first_row <-
         all(is.na(
             readxl::read_excel(
@@ -50,9 +50,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
                 range = readxl::anchored("A1", dim = c(1, 50))
             )
         ))
-    log_info("Sheet {sheet} has empty first row = {empty_first_row}.")
+    logInfo("Sheet ", sheet, " has empty first row = ", empty_first_row, ".")
 
-    log_debug("Start openxlsx::read.xlsx to get tracker_data.")
+    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
     tracker_data <-
         openxlsx::read.xlsx(
             xlsxFile = tracker_data_file,
@@ -65,7 +65,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
             sheet = sheet,
             startRow = 1
         )
-    log_success("Finish openxlsx::read.xlsx.")
+    logDebug("Finish openxlsx::read.xlsx.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
@@ -78,11 +78,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     } else {
         offset <- 0
     }
-    log_info("Patient data found in rows {row_min + offset} to {row_max + offset}.")
+    logInfo("Patient data found in rows ", row_min + offset, " to ", row_max + offset, ".")
 
     header_cols <-
         str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
-    log_debug("Start readxl::read_excel to get patient data.")
+    logDebug("Start readxl::read_excel to get patient data.")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
@@ -91,11 +91,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         col_names = F,
         .name_repair = "unique_quiet"
     )
-    log_success("Finish readxl::read_excel.")
+    logDebug("Finish readxl::read_excel.")
 
     if (year %in% c(2019, 2020, 2021, 2022)) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        log_info("Read in multiline header.")
+        logInfo("Read in multiline header.")
         header_cols_2 <-
             str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
         diff_colnames <- which((header_cols != header_cols_2))
@@ -107,7 +107,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     }
 
     colnames(patient_df) <- header_cols
-    log_debug("Found patient column names = {paste(header_cols, collapse=',')}.")
+    logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
     patient_df <-
         patient_df %>% select(header_cols[!is.na(header_cols)])
@@ -118,7 +118,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_df <-
         patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
 
-    log_success("Finish extract_patient_data.")
+    logDebug("Finish extract_patient_data.")
     # store every column as character to avoid wrong data transformations
     patient_df <-
         patient_df %>% mutate(across(everything(), as.character))
@@ -168,7 +168,7 @@ harmonize_patient_data_columns <-
 # Might need a better solution
 harmonize_patient_data_columns_2 <-
     function(patient_df, columns_synonyms) {
-        log_debug("Start harmonize_patient_data_columns_2.")
+        logDebug("Start harmonize_patient_data_columns_2.")
 
         patient_df <- patient_df[!is.na(names(patient_df))]
 
@@ -195,12 +195,12 @@ harmonize_patient_data_columns_2 <-
 
         mismatching_column_ids <- which(colnames_found == 0)
         if (length(mismatching_column_ids) > 0) {
-            log_warn(
-                "Non-matching column names found: {paste(colnames(patient_df)[mismatching_column_ids], collapse=',')}."
+            logWarn(
+                "Non-matching column names found: ", paste(colnames(patient_df)[mismatching_column_ids], collapse = ","), "."
             )
         }
 
-        log_success("Finish harmonize_patient_data_columns_2.")
+        logDebug("Finish harmonize_patient_data_columns_2.")
         patient_df
     }
 

@@ -83,7 +83,7 @@ get_patient_end <- function(df, j) {
 
 # @Description: Reads product data from a monthly file based on extraction logic
 extract_product_data <- function(monthly_tracker_df) {
-    print("Extract product data - Start")
+    logDebug("Extract product data - Start")
     start_df_msd <- NULL
     end_df_msd <- NULL
 
@@ -103,7 +103,7 @@ extract_product_data <- function(monthly_tracker_df) {
     # Clean empty remaining first row
     product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df)
 
-    print("Extract product data - End")
+    logDebug("Extract product data - End")
 
     return(product_data_df)
 }
