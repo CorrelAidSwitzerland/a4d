@@ -4,7 +4,7 @@
 # function based on parts from run_a4d_product_data.R and helper functions
 reading_product_data_step1 <-
     function(tracker_data_file, columns_synonyms) {
-        logDebug("Start reading_product_data_step1.")
+        ParallelLogger::logDebug("Start reading_product_data_step1.")
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
 
@@ -74,5 +74,5 @@ reading_product_data_step1 <-
         } else {
             return(NULL)
         }
-        logInfo("Finish reading_product_data_step1.")
+        ParallelLogger::logInfo("Finish reading_product_data_step1.")
     }
