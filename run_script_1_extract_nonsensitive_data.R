@@ -203,7 +203,7 @@ export_data <- function(data, tracker_file, output_root, suffix) {
                 ),
             row.names = F
         )
-    ParallelLogger::logInfo("Finish export_data. Suffix = {suffix}")
+    ParallelLogger::logInfo("Finish export_data. Suffix = ", {suffix}, ".")
 }
 
 # Calculate the number of cores

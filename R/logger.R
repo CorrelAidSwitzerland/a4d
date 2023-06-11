@@ -18,6 +18,4 @@ setup_logger <- function(output_dir) {
     if (!file.exists(log_dir)) {
         dir.create(log_dir, recursive = FALSE)
     }
-
-
 }
