@@ -32,7 +32,7 @@ main <- function() {
             error = function(e) {
                 logError("Could not process ", tracker_file, ". Error = ", e, ".")
             },
-            warnning = function(w) {
+            warning = function(w) {
                 logWarn(
                     "Could not process ",
                     tracker_file,
