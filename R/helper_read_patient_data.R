@@ -86,7 +86,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
-        range = readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols))),
+        range = if (!sheet == "Patient List") {
+            readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols)))
+        } else {
+            readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols)))
+        },
         trim_ws = T,
         col_names = F,
         .name_repair = "unique_quiet"
