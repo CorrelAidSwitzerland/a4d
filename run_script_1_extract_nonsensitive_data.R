@@ -187,6 +187,8 @@ process_product_data <-
                 output_root = output_root,
                 suffix = "_product_data"
             )
+        } else {
+            logInfo("No product data in the file - ", tracker_file)
         }
         logDebug("Finish process_product_data.")
     }
