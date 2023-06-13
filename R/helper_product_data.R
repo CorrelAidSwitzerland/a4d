@@ -245,7 +245,7 @@ recode_unitcolumnstozero <- function(product_df) {
 clean_unitsreceived <- function(product_df) {
     # Clean column "product_units_received from" from character values
     drop_rows <- product_df %>%
-        dplyr::filter(grepl("START|END|BALANCE", product_units_received)) %>%
+        dplyr::filter(grepl("START|END|BALANCE", product_units_received, ignore.case = TRUE)) %>%
         dplyr::select(index) %>%
         unlist() %>%
         as.numeric()
@@ -258,14 +258,30 @@ clean_unitsreceived <- function(product_df) {
     return(product_df)
 }
 
+# @Description: Run before clean_receivedfrom for format in the example 2019_PKH.xlsx
+#               Where 'Released' column in the tracker file also includes values for Start/End Balance
+#               To change the 2019_PKH.xlsx format to standard format 'Start/End Balance' in 'Received From'.
+update_receivedfrom <- function(product_df){
+    if(any(grepl("Balance", product_df[["product_units_received"]], ignore.case = TRUE)) & any(is.na(product_df$product_received_from))){
+        product_df <- product_df %>%
+            dplyr::mutate(product_received_from = case_when(
+                grepl("Balance", product_units_received, ignore.case = TRUE) ~ product_units_released
+            ))%>%
+            dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released
+            ))
+        logInfo("The rule for the case was applied - Released (product_units_released) column also includes values for Start/End Balance")
+    }
+    return(product_df)
+}
+
 # @Description: Clean column "product_received_from" from character values
 clean_receivedfrom <- function(product_df) {
     # If there is notion of a balance trackkeeping in received column, which would align with a "START" statement in product_received column:
-    if (any(grepl("START", product_df[["product_units_received"]]))) {
+    if (any(grepl("START", product_df[["product_units_received"]], ignore.case = TRUE))) {
         # Copy balance start values from this column to product_balance column. Balance end values are not kept since these seem to represent final accounting values.
         product_df <- product_df %>%
             dplyr::mutate(product_balance = case_when(
-                grepl("START", product_units_received) ~ product_received_from
+                grepl("START", product_units_received, ignore.case = TRUE) ~ product_received_from
             ))
     }
 
