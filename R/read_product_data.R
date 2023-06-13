@@ -43,8 +43,8 @@ reading_product_data_step1 <-
             # harmonize to names
             product_df <- product_df %>% harmonize_input_data_columns(columns_synonyms)
 
-            # Remove meaningless rows with only information in one column or no information
-            del_rows <- apply(product_df, MARGIN = 1, function(x) sum(!is.na(x))) # count per row how many cols are not NA. If only 0 or 1, there is not enough information and row is dropped.
+            # Remove meaningless rows with no information
+            del_rows <- apply(product_df, MARGIN = 1, function(x) sum(!is.na(x))) # count per row how many cols are not NA. If only 0, there is not enough information and row is dropped.
             del_rows <- as.numeric(which(del_rows < 1))
 
             product_df <- product_df %>%
@@ -52,6 +52,13 @@ reading_product_data_step1 <-
                 filter_all(any_vars(complete.cases(.))) %>% # Remove empty rows
                 dplyr::filter(product != "Product" | is.na(product)) # remove new headers from data 2022 onwards
 
+            # Checking if the patient's name is missing next to the released units
+            col_released <- "product_units_released"
+            col_released_to <- "product_released_to"
+            num_na_rows <- count_na_rows(product_df, col_released, col_released_to)
+            if (num_na_rows > 0) {
+                logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+            }
 
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
@@ -75,3 +82,9 @@ reading_product_data_step1 <-
         }
         logDebug("Finish reading_product_data_step1.")
     }
+
+# function for checking if the patient's name is missing next to the released units
+count_na_rows <- function(df, units_released_col, released_to_col) {
+    na_rows <- df[is.na(df[[released_to_col]]) & !is.na(df[[units_released_col]]), ]
+    nrow(na_rows)
+}
