@@ -77,15 +77,14 @@ get_synonyms <- function() {
 
 
 get_tracker_files <- function(tracker_root) {
-
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
 
     # only choose files in folders containing the following names
     regex_tracker_country <- "01_THAILAND|02_MYANMAR|03_LAOS|04_VIETNAM|05_CAMBODIA|06_MALAYSIA"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = regex_tracker_country)]
+    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = regex_tracker_country, ignore.case = T)]
 
     # only choose files within folders called "ARCHIVE"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = "ARCHIVE")]
+    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = "ARCHIVE", ignore.case = T)]
 
     tracker_files <-
         tracker_files[str_detect(tracker_files, "~", negate = T)]
@@ -93,9 +92,13 @@ get_tracker_files <- function(tracker_root) {
 
 
 process_tracker_file <- function(paths, tracker_file, synonyms) {
-    addDefaultFileLogger(file.path(paths$output_root, "logs",
-                                   paste0(tools::file_path_sans_ext(basename(tracker_file)),
-                                          ".log")))
+    addDefaultFileLogger(file.path(
+        paths$output_root, "logs",
+        paste0(
+            tools::file_path_sans_ext(basename(tracker_file)),
+            ".log"
+        )
+    ))
     logDebug("Start process_tracker_file.")
     logInfo("Current file: ", tracker_file, ".")
     tracker_data_file <-
