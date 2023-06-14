@@ -49,7 +49,7 @@ main <- function() {
 
 
 init_paths <- function() {
-    tracker_root_path <- select_A4D_directory()
+    tracker_root_path <- select_A4D_directory(T)
     output_root <- file.path(
         tracker_root_path,
         "output",
@@ -77,14 +77,20 @@ get_synonyms <- function() {
 
 
 get_tracker_files <- function(tracker_root) {
-    tracker_files <- list.files(tracker_root, "\\.xlsx$")
+
+    tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
+
+    tracker_files <- files1[grepl(x = tracker_files, pattern = "ARCHIVE")]
+
     tracker_files <-
         tracker_files[str_detect(tracker_files, "~", negate = T)]
 }
 
 
 process_tracker_file <- function(paths, tracker_file, synonyms) {
-    addDefaultFileLogger(file.path(paths$output_root, "logs", paste0(tools::file_path_sans_ext(tracker_file), ".log")))
+    addDefaultFileLogger(file.path(paths$output_root, "logs",
+                                   paste0(tools::file_path_sans_ext(basename(tracker_file)),
+                                          ".log")))
     logDebug("Start process_tracker_file.")
     logInfo("Current file: ", tracker_file, ".")
     tracker_data_file <-
