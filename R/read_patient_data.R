@@ -281,10 +281,7 @@ reading_patient_data_2 <-
         testit::assert(length(month_list) > 0)
 
         # Extract year
-        year <- 2000 + suppressWarnings(unique(parse_number(month_list)))
-        if (is.na(year)) {
-            year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
-        }
+        year <- get_tracker_year(tracker_data_file, month_list)
         logInfo("Tracker year = ", year, ".")
         testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022))
 
