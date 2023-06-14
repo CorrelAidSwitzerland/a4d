@@ -11,10 +11,7 @@ reading_product_data_step1 <-
         # get all month sheets with product data, get year
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
-        year <- suppressWarnings(2000 + unique(parse_number(month_list)))
-        if (is.na(year)) {
-            year <- as.integer(str_match(tracker_data_file, "[:digit:]{4}"))
-        }
+        year <- get_tracker_year(tracker_data_file, month_list)
 
         # loop through all months
         for (CurrSheet in month_list) {

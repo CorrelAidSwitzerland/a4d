@@ -8,6 +8,7 @@ source("R/helper_read_patient_data.R")
 source("R/read_product_data.R")
 source("R/helper_clean_data.R")
 source("R/helper_product_data.R")
+source("R/get_tracker_year.R")
 source("R/logger.R")
 
 main <- function() {
