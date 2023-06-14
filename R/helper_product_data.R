@@ -259,16 +259,15 @@ clean_unitsreceived <- function(product_df) {
 }
 
 # @Description: Run before clean_receivedfrom for format in the example 2019_PKH.xlsx
-#               Where 'Released' column in the tracker file also includes values for Start/End Balance
-#               To change the 2019_PKH.xlsx format to standard format 'Start/End Balance' in 'Received From'.
-update_receivedfrom <- function(product_df){
-    if(any(grepl("Balance", product_df[["product_units_received"]], ignore.case = TRUE)) & any(is.na(product_df$product_received_from))){
+# Where 'Released' column in the tracker file also includes values for Start/End Balance
+# To change the 2019_PKH.xlsx format to standard format 'Start/End Balance' in 'Received From'.
+update_receivedfrom <- function(product_df) {
+    if (any(grepl("Balance", product_df[["product_units_received"]], ignore.case = TRUE)) & any(is.na(product_df$product_received_from))) {
         product_df <- product_df %>%
             dplyr::mutate(product_received_from = case_when(
                 grepl("Balance", product_units_received, ignore.case = TRUE) ~ product_units_released
-            ))%>%
-            dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released
-            ))
+            )) %>%
+            dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released))
         logInfo("The rule for the case was applied - Released (product_units_released) column also includes values for Start/End Balance")
     }
     return(product_df)

@@ -1,0 +1,6 @@
+2023-06-14 17:34:19	[Main thread]	INFO			Found 2 xlsx files under /Users/miay/git/github/CorrelAidSwitzerland/a4d/data.
+2023-06-14 17:34:19	[Main thread]	INFO			Found 2 xlsx files under /Users/miay/git/github/CorrelAidSwitzerland/a4d/data.
+2023-06-14 17:34:20	[Main thread]	DEBUG			Start processing tracker files.
+2023-06-14 17:34:20	[Main thread]	DEBUG			Start processing tracker files.
+2023-06-14 17:34:20	[Main thread]	FATAL	future	receiveMessageFromWorker	there is no package called ‘a4d’
+2023-06-14 17:34:20	[Main thread]	FATAL	future	receiveMessageFromWorker	there is no package called ‘a4d’
