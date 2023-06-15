@@ -33,7 +33,7 @@ get_mapping_table <- function(tracker_files, mapping_table_output) {
         ) %>%
         unite("scrambled_name", year:scrambled_name, sep = "_")
 
-    write.csv(x = mapping_table, file.path(mapping_table_output, "Reference_table.csv"), row.names = F)
+    write.csv(x = mapping_table, file.path(mapping_table_output, "Mapping_table.csv"), row.names = F)
 
     return(mapping_table)
 }
