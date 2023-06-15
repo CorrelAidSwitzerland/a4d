@@ -50,7 +50,7 @@ reading_product_data_step1 <-
             product_df <- product_df %>%
                 dplyr::slice(., -del_rows) %>%
                 filter_all(any_vars(complete.cases(.))) %>% # Remove empty rows
-                dplyr::filter((product != "Product" | is.na(product)) & (product != "PATIENT DATA SUMMARY" | is.na(product)) ) # remove new headers from data 2022 onwards
+                dplyr::filter((product != "Product" | is.na(product)) & (product != "PATIENT DATA SUMMARY" | is.na(product))) # remove new headers from data 2022 onwards
 
             # Checking if the patient's name is missing next to the released units
             col_released <- "product_units_released"
