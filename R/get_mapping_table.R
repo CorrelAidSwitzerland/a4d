@@ -17,7 +17,7 @@ get_mapping_table <- function(tracker_files, mapping_table_output) {
     )
 
     mapping_table <- tracker_files %>%
-        bind_cols() %>%
+        bind_cols(.name_repair = ~ vctrs::vec_as_names(..., repair = "unique", quiet = TRUE)) %>%
         set_names("original_name") %>%
         mutate(
             scrambled_name = original_name,
