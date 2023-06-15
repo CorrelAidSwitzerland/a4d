@@ -13,6 +13,7 @@ Depends:
     ParallelLogger
 Imports: 
     data.table,
+    digest,
     doParallel,
     dplyr,
     foreach,
@@ -21,6 +22,7 @@ Imports:
     openxlsx,
     readr,
     readxl,
+    scrambler (>= 0.1.0),
     testit,
     tidyr,
     yaml,
@@ -28,3 +30,5 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Remotes:  
+    EvgenyPetrovsky/scrambler

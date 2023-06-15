@@ -15,6 +15,7 @@ main <- function() {
     paths <- init_paths()
     setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
+    mapping_table <- get_mapping_table(tracker_files, mapping_table_output = paths$tracker_root)
     logInfo(
         "Found ",
         length(tracker_files),
@@ -29,7 +30,7 @@ main <- function() {
 
     foreach::foreach(tracker_file = tracker_files) %dopar% {
         tryCatch(
-            process_tracker_file(paths, tracker_file, synonyms),
+            process_tracker_file(paths, tracker_file, synonyms, mapping_table),
             error = function(e) {
                 logError("Could not process ", tracker_file, ". Error = ", e, ".")
             },
@@ -78,6 +79,9 @@ get_synonyms <- function() {
 
 get_tracker_files <- function(tracker_root) {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
+    # browser()
+
+
 
     # only choose files in folders containing the following names
     regex_tracker_country <- "01_THAILAND|02_MYANMAR|03_LAOS|04_VIETNAM|05_CAMBODIA|06_MALAYSIA"
@@ -91,16 +95,24 @@ get_tracker_files <- function(tracker_root) {
 }
 
 
-process_tracker_file <- function(paths, tracker_file, synonyms) {
+process_tracker_file <- function(paths, tracker_file, synonyms, mapping_table) {
     addDefaultFileLogger(file.path(
         paths$output_root, "logs",
         paste0(
-            tools::file_path_sans_ext(basename(tracker_file)),
+            mapping_table %>%
+                dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name,
             ".log"
         )
     ))
     logDebug("Start process_tracker_file.")
-    logInfo("Current file: ", tracker_file, ".")
+    logInfo(
+        "Current file: ",
+        mapping_table %>%
+            dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name
+        # tracker_file
+
+        , "."
+    )
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
 
@@ -108,14 +120,16 @@ process_tracker_file <- function(paths, tracker_file, synonyms) {
         tracker_file = tracker_file,
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
-        synonyms_patient = synonyms$patient
+        synonyms_patient = synonyms$patient,
+        mapping_table = mapping_table
     )
 
     process_product_data(
         tracker_file = tracker_file,
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
-        synonyms_product = synonyms$product
+        synonyms_product = synonyms$product,
+        mapping_table = mapping_table
     )
 
     logInfo("Finish process_tracker_file.")
@@ -126,7 +140,8 @@ process_patient_data <-
     function(tracker_file,
              tracker_data_file,
              output_root,
-             synonyms_patient) {
+             synonyms_patient,
+             mapping_table) {
         logDebug("Start process_patient_data.")
 
         df_raw_patient <-
@@ -162,7 +177,8 @@ process_patient_data <-
             data = df_raw_patient,
             tracker_file = tracker_file,
             output_root = output_root,
-            suffix = "_patient_data"
+            suffix = "_patient_data",
+            mapping_table = mapping_table
         )
 
         logInfo("Finish process_patient_data.")
@@ -173,7 +189,8 @@ process_product_data <-
     function(tracker_file,
              tracker_data_file,
              output_root,
-             synonyms_product) {
+             synonyms_product,
+             mapping_table) {
         logDebug("Start process_product_data.")
 
         df_raw_product <-
@@ -200,7 +217,8 @@ process_product_data <-
                 data = df_raw_product,
                 tracker_file = tracker_file,
                 output_root = output_root,
-                suffix = "_product_data"
+                suffix = "_product_data",
+                mapping_table = mapping_table
             )
         } else {
             logInfo("No product data in the file - ", tracker_file)
@@ -220,7 +238,7 @@ remove_sensitive_data <- function(data, tracker_file, cols) {
 }
 
 
-export_data <- function(data, tracker_file, output_root, suffix) {
+export_data <- function(data, tracker_file, output_root, suffix, mapping_table) {
     logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         write.csv(
@@ -228,7 +246,8 @@ export_data <- function(data, tracker_file, output_root, suffix) {
                 file.path(
                     output_root,
                     paste0(
-                        tools::file_path_sans_ext(basename(tracker_file)),
+                        mapping_table %>%
+                            dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name,
                         suffix,
                         ".csv"
                     )
