@@ -16,7 +16,7 @@ main <- function() {
     paths <- init_paths()
     setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
-    mapping_table <- get_mapping_table(tracker_files, mapping_table_output = paths$tracker_root)
+    mapping_table <- get_mapping_table(tracker_files, paths$tracker_root)
     logInfo(
         "Found ",
         length(tracker_files),
@@ -30,21 +30,20 @@ main <- function() {
     logDebug("Start processing tracker files.")
 
     foreach::foreach(tracker_file = tracker_files) %dopar% {
+        pseudoname <- paste0(
+            mapping_table %>%
+                dplyr::filter(original == tracker_file) %>% select(pseudoname)
+        )
         tryCatch(
-            process_tracker_file(paths, tracker_file, synonyms, mapping_table),
+            process_tracker_file(paths, tracker_file, synonyms, pseudoname),
             error = function(e) {
-                logError("Could not process ", tracker_file, ". Error = ", e, ".")
+                logError("Could not process ", pseudoname, ". Error = ", e, ".")
             },
             warning = function(w) {
-                logWarn(
-                    "Could not process ",
-                    tracker_file,
-                    ". Warning = ",
-                    w,
-                    "."
-                )
+                logWarn("Could not process ", pseudoname, ". Warning = ", w, ".")
             }
         )
+        unregisterLogger(pseudoname)
     }
     logInfo("Finish processing all tracker files.")
 }
@@ -60,6 +59,8 @@ init_paths <- function() {
 
     if (!file.exists(output_root)) {
         dir.create(output_root, recursive = TRUE)
+    } else {
+        do.call(file.remove, list(list.files(output_root, include.dirs = T, recursive = T, full.names = T, no.. = T)))
     }
 
     list(tracker_root = tracker_root_path, output_root = output_root)
@@ -80,9 +81,6 @@ get_synonyms <- function() {
 
 get_tracker_files <- function(tracker_root) {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
-    # browser()
-
-
 
     # only choose files in folders containing the following names
     regex_tracker_country <- "01_THAILAND|02_MYANMAR|03_LAOS|04_VIETNAM|05_CAMBODIA|06_MALAYSIA"
@@ -96,33 +94,26 @@ get_tracker_files <- function(tracker_root) {
 }
 
 
-process_tracker_file <- function(paths, tracker_file, synonyms, mapping_table) {
+process_tracker_file <- function(paths, tracker_file, synonyms, pseudoname) {
+    tracker_data_file <-
+        file.path(paths$tracker_root, tracker_file)
     addDefaultFileLogger(file.path(
         paths$output_root, "logs",
-        paste0(
-            mapping_table %>%
-                dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name,
-            ".log"
-        )
-    ))
+        paste0(pseudoname, ".log")
+    ), pseudoname)
     logDebug("Start process_tracker_file.")
     logInfo(
         "Current file: ",
-        mapping_table %>%
-            dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name
-        # tracker_file
-
-        , "."
+        pseudoname,
+        ".xlsx."
     )
-    tracker_data_file <-
-        file.path(paths$tracker_root, tracker_file)
 
     process_patient_data(
         tracker_file = tracker_file,
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
         synonyms_patient = synonyms$patient,
-        mapping_table = mapping_table
+        pseudoname = pseudoname
     )
 
     process_product_data(
@@ -130,7 +121,7 @@ process_tracker_file <- function(paths, tracker_file, synonyms, mapping_table) {
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
         synonyms_product = synonyms$product,
-        mapping_table = mapping_table
+        pseudoname = pseudoname
     )
 
     logInfo("Finish process_tracker_file.")
@@ -142,7 +133,7 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient,
-             mapping_table) {
+             pseudoname) {
         logDebug("Start process_patient_data.")
 
         df_raw_patient <-
@@ -176,10 +167,9 @@ process_patient_data <-
 
         export_data(
             data = df_raw_patient,
-            tracker_file = tracker_file,
+            filename = pseudoname,
             output_root = output_root,
-            suffix = "_patient_data",
-            mapping_table = mapping_table
+            suffix = "_patient_data"
         )
 
         logInfo("Finish process_patient_data.")
@@ -191,7 +181,7 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product,
-             mapping_table) {
+             pseudoname) {
         logDebug("Start process_product_data.")
 
         df_raw_product <-
@@ -216,13 +206,12 @@ process_product_data <-
 
             export_data(
                 data = df_raw_product,
-                tracker_file = tracker_file,
+                filename = pseudoname,
                 output_root = output_root,
-                suffix = "_product_data",
-                mapping_table = mapping_table
+                suffix = "_product_data"
             )
         } else {
-            logInfo("No product data in the file - ", tracker_file)
+            logWarn("No product data in the file")
         }
         logDebug("Finish process_product_data.")
     }
@@ -239,7 +228,7 @@ remove_sensitive_data <- function(data, tracker_file, cols) {
 }
 
 
-export_data <- function(data, tracker_file, output_root, suffix, mapping_table) {
+export_data <- function(data, filename, output_root, suffix) {
     logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         write.csv(
@@ -247,8 +236,7 @@ export_data <- function(data, tracker_file, output_root, suffix, mapping_table) 
                 file.path(
                     output_root,
                     paste0(
-                        mapping_table %>%
-                            dplyr::filter(grepl(x = original_name, tracker_file)) %>% .$scrambled_name,
+                        filename,
                         suffix,
                         ".csv"
                     )

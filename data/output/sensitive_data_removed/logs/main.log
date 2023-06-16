@@ -1,6 +1,10 @@
-2023-06-14 17:34:19	[Main thread]	INFO			Found 2 xlsx files under /Users/miay/git/github/CorrelAidSwitzerland/a4d/data.
-2023-06-14 17:34:19	[Main thread]	INFO			Found 2 xlsx files under /Users/miay/git/github/CorrelAidSwitzerland/a4d/data.
-2023-06-14 17:34:20	[Main thread]	DEBUG			Start processing tracker files.
-2023-06-14 17:34:20	[Main thread]	DEBUG			Start processing tracker files.
-2023-06-14 17:34:20	[Main thread]	FATAL	future	receiveMessageFromWorker	there is no package called ‘a4d’
-2023-06-14 17:34:20	[Main thread]	FATAL	future	receiveMessageFromWorker	there is no package called ‘a4d’
+2023-06-16 09:20:04	[Main thread]	INFO			Found 15 xlsx files under /Users/miay/git/github/CorrelAidSwitzerland/a4d/data.
+2023-06-16 09:20:04	[Main thread]	DEBUG			Start processing tracker files.
+2023-06-16 09:20:13	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:13	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:15	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:16	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:17	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:17	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:17	[Main thread]	INFO	future	signalConditions	Currently in a tryCatch or withCallingHandlers block, so unable to add global calling handlers. ParallelLogger will not capture R messages, errors, and warnings, only explicit calls to ParallelLogger. (This message will not be shown again this R session) 
+2023-06-16 09:20:17	[Main thread]	INFO			Finish processing all tracker files.

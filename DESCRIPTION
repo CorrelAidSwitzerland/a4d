@@ -22,7 +22,6 @@ Imports:
     openxlsx,
     readr,
     readxl,
-    scrambler (>= 0.1.0),
     testit,
     tidyr,
     yaml,
