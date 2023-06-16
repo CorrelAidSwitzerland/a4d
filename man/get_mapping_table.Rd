@@ -4,12 +4,12 @@
 \alias{get_mapping_table}
 \title{Get mapping table for A4D}
 \usage{
-get_mapping_table(tracker_files, mapping_table_output)
+get_mapping_table(tracker_files, output_dir)
 }
 \arguments{
 \item{tracker_files}{The paths to the tracker files found using \code{get_tracker_files()}}
 
-\item{mapping_table_output}{The output destination of the mapping table}
+\item{output_dir}{The output destination of the mapping table}
 }
 \value{
 A mapping table containing the original and scrambled file names

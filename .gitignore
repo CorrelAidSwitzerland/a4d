@@ -8,3 +8,6 @@
 .DS_Store
 .Renviron
 rsconnect
+
+data/output
+data/mapping_table.csv

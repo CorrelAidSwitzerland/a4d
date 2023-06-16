@@ -6,7 +6,7 @@ setup_logger <- function(output_dir) {
     logFileName <- file.path(output_dir, "logs", "main.log")
 
     logger <- createLogger(
-        name = "PARALLEL",
+        name = "MAIN",
         threshold = "TRACE",
         appenders = list(
             createFileAppender(
