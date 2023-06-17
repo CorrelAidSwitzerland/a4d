@@ -10,15 +10,20 @@
 #'
 get_mapping_table <- function(tracker_files, output_dir) {
     dirnames <- purrr::map_chr(tracker_files, dirname)
-    basenames <- purrr::map_chr(tracker_files, function(x) {
-        tools::file_path_sans_ext(basename(x))
-    })
+    basenames <- purrr::map_chr(tracker_files, ~ tools::file_path_sans_ext(basename(.)))
     pseudo_names <- stringi::stri_rand_strings(length(basenames), 10)
-    mapped_names <- purrr::map2_chr(basenames, pseudo_names, function(x, y) {
-        paste0(stringr::str_extract(x, pattern = "[:digit:]{4}"), "_", y)
-    })
+    mapped_names <- purrr::map2_chr(
+        basenames,
+        pseudo_names,
+        ~ paste0(stringr::str_extract(.x, pattern = "[:digit:]{4}"), "_", .y)
+    )
 
-    mapping_table <- data.frame(original = tracker_files, dirname = dirnames, basename = basenames, pseudoname = mapped_names)
+    mapping_table <- data.frame(
+        original = tracker_files,
+        dirname = dirnames,
+        basename = basenames,
+        pseudoname = mapped_names
+    )
 
     write.csv(x = mapping_table, file.path(output_dir, "mapping_table.csv"), row.names = F)
 
