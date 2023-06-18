@@ -1,0 +1,211 @@
+additional_support:
+- Potential additional support or intervention from A4D e.g. complications or family support
+age:
+- Age
+- Age*
+- age on reporting
+- Age (Years)
+age_diagnosis:
+- Age at diagnosis of T1DM
+- Age at Diagnosis
+- age of diagnosis
+baseline_fbg:
+- FBG (mg/dL) - BASELINE
+- Baseline SMBG or CBG (mg/dL)
+- Baseline FBG (mg/dL)
+- Baseline FBG (mmol/L)
+- Baseline FBG (mg%)
+- Baseline FBG or CBG (mg/dL)
+baseline_fbg_unit:
+- baseline_fbg_unit
+baseline_hba1c:
+- HbA1c (%) - BASELINE
+- Baseline HbA1c (%)
+blood_pressure_dias_mmhg: []
+blood_pressure_sys_mmhg: []
+bmi:
+- BMI
+- BMI*
+bmi_date:
+- Date of BMI (mmm-yy)
+- Date of BMI (mm-yy)
+- date of bmi date
+clinic_code: []
+country_code: []
+dob:
+- D.O.B.
+- d.o.b. (dd-mm-yyyy)
+- D.O.B. (dd-mmm-yyyy)
+- DOB..ANON
+edu_occ:
+- Education (School Grade) Or Occupation
+- Level of Education Or Occupation (Date if Applicable or NA)
+- Education (School Grade)
+- Education...Ocupation
+- Level of Education Or Occupation
+est_strips_pmoth:
+- Estimated testing strips per month
+gender:
+- Gender
+height:
+- Height (Meters)
+hospitalisation:
+- Last hospitalisation due to diabetes emergency or glucose control
+- Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
+- Hospitalisation due to diabetes emergency or glucose control (Include Date)
+- Hospitalisation due to diabetes emergency
+- Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
+- hospitalisation due to diabetes emergency or glucose control egdka include date
+patient_id:
+- ID
+- Patient ID
+- Patient ID*
+insulin_dosage:
+- insulin dosage
+- insulin dosage tdd
+insulin_regimen:
+- Insulin Regimen
+- Insuline regime
+- Insulin Regime
+- insulin regimen1
+last_clinic_visit_date:
+- Last Clinic Visit
+- Last Clinic Visit (dd-mmm-yy)
+- last clinic visit date
+latest_complication_screening_date: []
+latest_complication_screening_type: []
+no:
+- No
+patient_name:
+- Patient Name
+- Patient.Name..ANON
+province:
+- Province
+recruitment_date:
+- Date of Recruitment
+- Date of recruitment into A4D Programme
+- date of recruitment into a4d programme (mmm-yy)
+- date of recruitment mmmyy
+- Date of Recruitment into A4D
+remarks:
+- Any opportunity or intervention that may require support from A4D e.g. complications or family support Remarks (If Applicable)
+- Complications e.g. (1,3,4)
+- remarks
+sheet_name: []
+status:
+- Status
+- patient status
+support_from_a4d:
+- Support received from A4D
+- Level of Support
+- level of support dropdown
+- Support required from A4D
+testing_fqr_pday:
+- Testing Frequency (per day)
+tracker_year: []
+updated_fbg_date:
+- Updated FBG Date
+- Updated FBG or CBG Date
+updated_fbg:
+- FBG (mg/dL) - UPDATED
+- Updated FBG (mg/dL)
+- Updated FBG (mmol/L)
+- Updated FBG FBG (mg/dL)
+- updated fbg fbg mgdl
+- Updated FBG mg/dl
+- Updated FBG ml/dL
+- Updated FBG or CBG mg/dl
+- Updated FBG or CBG mmol/L
+- Updated Mean FBG (mg/%)
+- Updated Mean FBG (mmol/L)
+- Updated Mean FBG (mg/dL)
+- Updated SMBG or CBG (mg/dL) Date
+- Updated SMBG or CBG mg/dL
+updated_hba1c_date:
+- Updated HbA1c Date
+updated_hba1c:
+- HbA1c (%) - UPDATED
+- Updated HbA1c (%)
+- Updated HbA1c %
+- updated hba1c hba1c
+weight:
+- Body Weight (Kg)
+blood_pressure_mmhg:
+- Blood Pressure (mm HG)
+latest_complication_screenning:
+- Complication Screening (starting from Q2 2021)
+- Latest Complication Screening (select from list)
+- Latest Complication Screening (dd-mmm-yy)
+qol_survey:
+- QoL Survey (Est. Q3 2021)
+required_insulin:
+- estimated insulin required per year
+required_insulin_product_name:
+- estimated insulin required per year col18
+- Estimated Insulin Required per year col18
+- Estimated Insulin Required per year.1
+family_support_scale:
+- Family Support Scale
+dm_complication_comment:
+- Comments on other complications
+dm_complication_other:
+- Others (Y/N)
+dm_complication_kidney:
+- Kidney (Y/N)
+dm_complication_eye:
+- Eye (Y/N)
+num_admin_hosp_total:
+- total
+num_admin_hosp_dka:
+- Number DKA
+num_admin_hosp_hypo:
+- Number Hypo
+num_admin_hosp_other_reason:
+- Reason for Others
+num_admin_hosp_other:
+- Number Others
+inactive_reason:
+- Inactive Reason
+lost_date:
+- Lost/ Deceased  Date
+lost_age:
+- Lost/ Deceased  Age
+diag_date:
+- Date of Diagnosis
+- Date of Diagnosis (mmm-yy)
+dka_diag:
+- dkaatdiagnosisyn
+clinic_visit_currmonth:
+- clinicvisitcurrentmonth
+- clinicvisit
+remote_followup_currmonth:
+- remote follow up current month
+- remote follow up
+last_remote_followup_date:
+- last remote follow update
+currmonth_hospitalisation_cause:
+- current month hospitalisation dka hypo other dropdown
+currmonth_hospitalisation_date:
+- current month hospitalisation dka hypo other date
+updated_2022_date:
+- updated 2022 date
+currmonth_complication_screening:
+- currentmonthcomplicationscreeningkidneyeyefootdropdown
+- currentmonthcomplicationscreeningkidneyeyefootdropdown1
+- currentmonthcomplicationscreeningkidneyeyefootdropdown2
+- currentmonthcomplicationscreeningkidneyeyefootdropdown3
+- currentmonthcomplicationscreeningkidneyeyefootdropdown4
+currmonth_complication_screening_date:
+- currentmonthcomplicationscreeningkidneyeyefootdate
+currmonth_complication_screening_results:
+- currentmonthcomplicationscreeningkidneyeyefootresults
+current_patient_observations:
+- currentpatientobservations
+current_patient_observations_category:
+- currentpatientobservationscategory
+meterreceiveddate:
+- meterreceiveddate
+- isensmeterreceiveddate
+- wizmeterreceiveddate
+required_insulin_month:
+- estimatedinsulinrequiredpermonth

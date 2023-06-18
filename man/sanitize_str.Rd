@@ -19,8 +19,8 @@ removing all spaces and special characters except alphanumeric characters,
 and then returns the sanitized string.
 }
 \examples{
-sanitize_column_name("John Doe's Column") # should return "johndoescolumn"
-sanitize_column_name("Date 2022") # should return "date2022"
-sanitize_column_name("My Awesome 1st Column!!") # should return "myawesome1stcolumn"
+sanitize_str("John Doe's Column") # should return "johndoescolumn"
+sanitize_str("Date 2022") # should return "date2022"
+sanitize_str("My Awesome 1st Column!!") # should return "myawesome1stcolumn"
 
 }
