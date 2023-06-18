@@ -16,7 +16,7 @@
 #' }
 read_column_synonyms <- function(synonym_file) {
     columns_synonyms <-
-        yaml::read_yaml(here::here("synonyms", synonym_file)) %>%
+        yaml::read_yaml(file.path("synonyms/", synonym_file)) %>%
         unlist() %>%
         as.data.frame() %>%
         rownames_to_column() %>%
