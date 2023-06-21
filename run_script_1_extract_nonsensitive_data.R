@@ -152,7 +152,7 @@ process_patient_data <-
         df_raw_patient <-
             remove_sensitive_data(
                 data = df_raw_patient,
-                tracker_file = pseudoname,
+                filename = pseudoname,
                 cols = c(
                     "patient_id",
                     "patient_name",
@@ -200,7 +200,7 @@ process_product_data <-
             df_raw_product <-
                 remove_sensitive_data(
                     data = df_raw_product,
-                    tracker_file = pseudoname,
+                    filename = pseudoname,
                     cols = c("product_released_to")
                 )
 
