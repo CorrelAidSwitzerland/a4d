@@ -152,7 +152,7 @@ process_patient_data <-
         df_raw_patient <-
             remove_sensitive_data(
                 data = df_raw_patient,
-                tracker_file = tracker_file,
+                tracker_file = pseudoname,
                 cols = c(
                     "patient_id",
                     "patient_name",
@@ -200,7 +200,7 @@ process_product_data <-
             df_raw_product <-
                 remove_sensitive_data(
                     data = df_raw_product,
-                    tracker_file = tracker_file,
+                    tracker_file = pseudoname,
                     cols = c("product_released_to")
                 )
 
@@ -217,14 +217,14 @@ process_product_data <-
     }
 
 
-remove_sensitive_data <- function(data, tracker_file, cols) {
+remove_sensitive_data <- function(data, filename, cols) {
     data <-
         data %>%
         dplyr::mutate(across(
             tidyr::any_of(cols),
             ~NA
         )) %>%
-        dplyr::mutate(file_name = fs::path_ext_remove(tracker_file))
+        dplyr::mutate(file_name = filename)
 }
 
 
