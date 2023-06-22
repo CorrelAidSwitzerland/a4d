@@ -56,9 +56,16 @@ reading_product_data_step1 <-
             col_released <- "product_units_released"
             col_released_to <- "product_released_to"
             num_na_rows <- count_na_rows(product_df, col_released, col_released_to)
-            if (num_na_rows > 0) {
-                logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
-            }
+            tryCatch(
+                {
+                    if (num_na_rows > 0) {
+                        logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+                    }
+                },
+                error = function(e) {
+                    logError(CurrSheet, " trying with num_na_rows for products. Error: ", e$message)
+                }
+            )
 
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
