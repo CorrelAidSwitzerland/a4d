@@ -95,3 +95,101 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
     na_rows <- df[is.na(df[[released_to_col]]) & !is.na(df[[units_released_col]]), ]
     nrow(na_rows)
 }
+
+
+
+# function to process product data in step 3
+# further process and re-calculate product balance
+# function based on parts from run_a4d_product_data.R and helper functions
+reading_product_data_step3 <-
+    function(tracker_data_file, columns_synonyms) {
+
+        logDebug("Start reading_product_data_step3.")
+
+        # rename column names to match
+        colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
+
+        # open tracker
+        tracker_df <- read.csv(file=tracker_data_file, sep=',', head = TRUE, stringsAsFactors=FALSE)
+
+        # save all results
+        df_final <- c()
+
+        # loop through all months
+        for(sheet_month in unique(tracker_df$product_sheet_name)){
+
+            # remove former
+            rm(product_df)
+
+            # filter on month sheet
+            product_df <- tracker_df %>%
+                dplyr::filter(product_sheet_name == sheet_month)
+
+            # Split product cells with various products and/or unit information
+            product_df <- extract_product_multiple(product_df)
+
+            # Add columns that should be in final dataframe but are still missing
+            columns_missing <- columns_synonyms %>%
+                group_by(name_clean) %>%
+                distinct(., name_clean) %>%
+                unlist() %>%
+                as.character()
+
+            missing_cols <- which(columns_missing %notin% colnames(product_df))
+            missing_cols_names <- unique(columns_missing[missing_cols])
+            product_df[missing_cols_names] <- NA
+
+            # Add row index
+            product_df$index <- seq(1, nrow(product_df), 1)
+
+            # Recode date
+            product_df <- format_date(product_df)
+
+            # Extend product name and sort by product
+            # Keep first row and last row and order the rest by date
+            product_df <- product_df %>%
+                ungroup() %>%
+                tidyr::fill(c(product, product_entry_date), .direction = "down") %>%
+                group_by(product) %>%
+                mutate(rank = ifelse(row_number() == 1, 1,
+                                     if_else(row_number() == n(), n() + 2, dense_rank(product_entry_date) + 1)
+                )) %>%
+                arrange(product, rank) %>%
+                ungroup() %>%
+                select(-rank)
+
+            # Recode all NAs in unit columns to 0
+            product_df <- recode_unitcolumnstozero(product_df)
+
+            # Clean columns "units received" and "received from" from unexpected character (units) vs. numeric (received from) values.
+            # In first function, received_from numeric information (Balance status at START BALANCE) is transferred to variable product_balance for later computation of this variable.
+            product_df <- clean_receivedfrom(product_df)
+            product_df <- clean_unitsreceived(product_df)
+
+            # Recode all NAs in unit columns to 0, if NA coercion was applied earlier
+            product_df <- recode_unitcolumnstozero(product_df)
+
+            ## Compute balance
+            # Remove rows without changes in units release or without information on balance
+            product_df <- compute_balance_cleanrows(product_df)
+
+            # Compute balance_status (start vs. end vs. change)
+            product_df <- compute_balance_status(product_df)
+
+            # Compute balance
+            product_df <- compute_balance(product_df, product_df$product_table_year[1])
+
+            # Adjust classes of variables
+            product_df <- adjust_column_classes(product_df)
+
+            # remove index column
+            product_df <- subset(product_df, select = -index)
+
+            #### hospital and country information missing here!!
+
+            # finish and combine
+            df_final <- df_final %>%
+                rbind(product_df)
+        }
+
+    }
