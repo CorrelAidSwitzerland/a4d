@@ -73,12 +73,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_max <- max(patient_data_range)
     testit::assert(row_min < row_max)
 
-    if (empty_first_row) {
-        offset <- 1
-    } else {
-        offset <- 0
-    }
-    logInfo("Patient data found in rows ", row_min + offset, " to ", row_max + offset, ".")
+    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
 
     header_cols <-
         str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
@@ -86,11 +81,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
-        range = if (!sheet == "Patient List") {
-            readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols)))
-        } else {
-            readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols)))
-        },
+        range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
         trim_ws = T,
         col_names = F,
         .name_repair = "unique_quiet"
