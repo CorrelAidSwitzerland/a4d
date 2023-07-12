@@ -3,7 +3,7 @@ sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-
 sudo apt update
 sudo apt -y install r-base
 sudo apt -y install libssl-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
-	libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libxml2-dev
+	libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libxml2-dev libcurl4-openssl-dev
 
 sudo apt -y install gdebi-core
 wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-2023.06.1-524-amd64.deb
