@@ -16,7 +16,6 @@ main <- function() {
     paths <- init_paths()
     setup_logger(paths$output_root)
     tracker_files <- get_tracker_files(paths$tracker_root)
-    mapping_table <- get_mapping_table(tracker_files, paths$tracker_root)
     logInfo(
         "Found ",
         length(tracker_files),
@@ -30,20 +29,17 @@ main <- function() {
     logDebug("Start processing tracker files.")
 
     foreach::foreach(tracker_file = tracker_files) %dopar% {
-        pseudoname <- paste0(
-            mapping_table %>%
-                dplyr::filter(original == tracker_file) %>% select(pseudoname)
-        )
+        tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
         tryCatch(
-            process_tracker_file(paths, tracker_file, synonyms, pseudoname),
+            process_tracker_file(paths, tracker_file, tracker_name, synonyms),
             error = function(e) {
-                logError("Could not process ", pseudoname, ". Error = ", e, ".")
+                logError("Could not process ", tracker_name, ". Error = ", e, ".")
             },
             warning = function(w) {
-                logWarn("Could not process ", pseudoname, ". Warning = ", w, ".")
+                logWarn("Could not process ", tracker_name, ". Warning = ", w, ".")
             }
         )
-        unregisterLogger(pseudoname)
+        unregisterLogger(tracker_file)
     }
     logInfo("Finish processing all tracker files.")
 }
@@ -94,34 +90,31 @@ get_tracker_files <- function(tracker_root) {
 }
 
 
-process_tracker_file <- function(paths, tracker_file, synonyms, pseudoname) {
+process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
     addDefaultFileLogger(file.path(
         paths$output_root, "logs",
-        paste0(pseudoname, ".log")
-    ), pseudoname)
+        paste0(tracker_name, ".log")
+    ), tracker_file)
     logDebug("Start process_tracker_file.")
     logInfo(
         "Current file: ",
-        pseudoname,
-        ".xlsx."
+        tracker_name
     )
 
     process_patient_data(
-        tracker_file = tracker_file,
+        tracker_name = tracker_name,
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
-        synonyms_patient = synonyms$patient,
-        pseudoname = pseudoname
+        synonyms_patient = synonyms$patient
     )
 
     process_product_data(
-        tracker_file = tracker_file,
+        tracker_name = tracker_name,
         tracker_data_file = tracker_data_file,
         output_root = paths$output_root,
-        synonyms_product = synonyms$product,
-        pseudoname = pseudoname
+        synonyms_product = synonyms$product
     )
 
     logInfo("Finish process_tracker_file.")
@@ -129,11 +122,10 @@ process_tracker_file <- function(paths, tracker_file, synonyms, pseudoname) {
 
 
 process_patient_data <-
-    function(tracker_file,
+    function(tracker_name,
              tracker_data_file,
              output_root,
-             synonyms_patient,
-             pseudoname) {
+             synonyms_patient) {
         logDebug("Start process_patient_data.")
 
         df_raw_patient <-
@@ -141,33 +133,18 @@ process_patient_data <-
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_patient
             )
+
+        df_raw_patient <- df_raw_patient %>% mutate(file_name = tracker_name)
+
         logDebug(
             "df_raw_patient dim: ",
             dim(df_raw_patient) %>% as.data.frame(),
             "."
         )
 
-        # INCOMPLETE - Set sensitive rows to NA -------------------------------------
-        # level of education is in the patient list - we need to get data from there as well
-        df_raw_patient <-
-            remove_sensitive_data(
-                data = df_raw_patient,
-                filename = pseudoname,
-                cols = c(
-                    "patient_id",
-                    "patient_name",
-                    "province",
-                    "dob",
-                    "country_code",
-                    "clinic_code",
-                    "gender",
-                    "edu_occ"
-                )
-            )
-
         export_data(
             data = df_raw_patient,
-            filename = pseudoname,
+            filename = tracker_name,
             output_root = output_root,
             suffix = "_patient_data"
         )
@@ -177,11 +154,10 @@ process_patient_data <-
 
 
 process_product_data <-
-    function(tracker_file,
+    function(tracker_name,
              tracker_data_file,
              output_root,
-             synonyms_product,
-             pseudoname) {
+             synonyms_product) {
         logDebug("Start process_product_data.")
 
         df_raw_product <-
@@ -189,6 +165,9 @@ process_product_data <-
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_product
             )
+
+        df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+
         logDebug(
             "df_raw_product dim: ",
             dim(df_raw_product) %>% as.data.frame(),
@@ -197,16 +176,9 @@ process_product_data <-
 
         # product set sensitive column to NA and add tracker file name as a column
         if (!is.null(df_raw_product)) {
-            df_raw_product <-
-                remove_sensitive_data(
-                    data = df_raw_product,
-                    filename = pseudoname,
-                    cols = c("product_released_to")
-                )
-
             export_data(
                 data = df_raw_product,
-                filename = pseudoname,
+                filename = tracker_name,
                 output_root = output_root,
                 suffix = "_product_data"
             )
@@ -215,17 +187,6 @@ process_product_data <-
         }
         logDebug("Finish process_product_data.")
     }
-
-
-remove_sensitive_data <- function(data, filename, cols) {
-    data <-
-        data %>%
-        dplyr::mutate(across(
-            tidyr::any_of(cols),
-            ~NA
-        )) %>%
-        dplyr::mutate(file_name = filename)
-}
 
 
 export_data <- function(data, filename, output_root, suffix) {
