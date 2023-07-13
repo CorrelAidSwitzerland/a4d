@@ -5,11 +5,12 @@ age:
 - Age*
 - age on reporting
 - Age (Years)
-age_diagnosis:
+t1d_diagnosis_age:
 - Age at diagnosis of T1DM
 - Age at Diagnosis
 - age of diagnosis
 - age t1d diagnosis
+t1d_diagnosis_date:
 - date of diagnosis of t1d
 - date of t1d diagnosis ddmmmyyyy
 baseline_fbg:

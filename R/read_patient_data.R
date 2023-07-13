@@ -78,13 +78,15 @@ read_patient_data <-
             print(CurrSheet)
 
             tracker_data <-
-                as.data.frame(
-                    openxlsx::read.xlsx(
-                        xlsxFile = tracker_data_file,
-                        fillMergedCells = TRUE,
-                        sheet = CurrSheet
-                    )
+                readxl::read_excel(
+                    path = tracker_data_file,
+                    sheet = sheet,
+                    range = readxl::cell_limits(c(1, NA), c(NA, NA)),
+                    trim_ws = T,
+                    col_names = F,
+                    .name_repair = "unique_quiet"
                 )
+
             print("tracker read in")
 
             cc_codes <-
@@ -340,7 +342,8 @@ reading_patient_data_2 <-
                         patient_name,
                         updated_2022_date
                     )),
-                by = "patient_id"
+                by = "patient_id",
+                relationship = "many-to-one"
             )
             logDebug("Finish extracting patient list.")
         }
