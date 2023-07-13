@@ -41,31 +41,18 @@ extract_country_clinic_code <- function(patient_data) {
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
     logDebug("Start extract_patient_data for sheet = ", sheet, ".")
-    empty_first_row <-
-        all(is.na(
-            readxl::read_excel(
-                tracker_data_file,
-                sheet = sheet,
-                .name_repair = "unique_quiet",
-                range = readxl::anchored("A1", dim = c(1, 50))
-            )
-        ))
-    logInfo("Sheet ", sheet, " has empty first row = ", empty_first_row, ".")
 
-    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
-    tracker_data <-
-        openxlsx::read.xlsx(
-            xlsxFile = tracker_data_file,
-            fillMergedCells = TRUE,
-            skipEmptyRows = FALSE,
-            skipEmptyCols = FALSE,
-            colNames = FALSE,
-            rowNames = FALSE,
-            detectDates = FALSE,
-            sheet = sheet,
-            startRow = 1
-        )
-    logDebug("Finish openxlsx::read.xlsx.")
+    logDebug("Start readxl::read_excel to get tracker_data.")
+    tracker_data <- readxl::read_excel(
+        path = tracker_data_file,
+        sheet = sheet,
+        range = readxl::cell_limits(c(1, NA), c(NA, NA)),
+        trim_ws = T,
+        col_names = F,
+        .name_repair = "unique_quiet"
+    )
+
+    logDebug("Finish readxl::read_excel.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
