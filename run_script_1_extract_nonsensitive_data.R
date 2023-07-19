@@ -77,14 +77,6 @@ get_synonyms <- function() {
 
 get_tracker_files <- function(tracker_root) {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
-
-    # only choose files in folders containing the following names
-    regex_tracker_country <- "01_THAILAND|02_MYANMAR|03_LAOS|04_VIETNAM|05_CAMBODIA|06_MALAYSIA"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = regex_tracker_country, ignore.case = T)]
-
-    # only choose files within folders called "ARCHIVE"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = "ARCHIVE", ignore.case = T)]
-
     tracker_files <-
         tracker_files[str_detect(tracker_files, "~", negate = T)]
 }

@@ -154,19 +154,6 @@ harmonize_patient_data_columns_2 <-
 
         patient_df <- patient_df[!is.na(names(patient_df))]
 
-        # for fbg split column into value and unit column
-        fbg_baseline_col_idx <-
-            which(colnames(patient_df) %in% (
-                columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg")
-            )$tracker_name)
-        if (length(fbg_baseline_col_idx) > 0) {
-            patient_df <- patient_df %>%
-                mutate(baseline_fbg_unit = sanitize_str(str_match(
-                    colnames(patient_df)[fbg_baseline_col_idx],
-                    "\\(.*\\)"
-                )[1]))
-        }
-
         colnames(patient_df) <- sanitize_str(colnames(patient_df))
         synonym_headers <- sanitize_str(columns_synonyms$tracker_name)
 
