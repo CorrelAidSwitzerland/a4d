@@ -51,8 +51,15 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         col_names = F,
         .name_repair = "unique_quiet"
     )
-
     logDebug("Finish readxl::read_excel.")
+    # tracker_data <- openxlsx::read.xlsx(
+    #     xlsxFile=tracker_data_file,
+    #     sheet = sheet,
+    #     colNames = F,
+    #     detectDates = F,
+    #     skipEmptyRows = F,
+    #     fillMergedCells = T
+    # )
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
@@ -80,6 +87,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         logInfo("Read in multiline header.")
         header_cols_2 <-
             str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
+        # because readxl cannot handle merged cells, we need to copy the header for these cells
+        #
+        header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm=F, fromLast=F))
+        testit::assert(length(header_cols) == length(header_cols_2))
+
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
             paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
