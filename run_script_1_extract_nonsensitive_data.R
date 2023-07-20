@@ -50,7 +50,7 @@ init_paths <- function() {
     output_root <- file.path(
         tracker_root_path,
         "output",
-        "sensitive_data_removed"
+        "patient_and_product_data_raw"
     )
 
     if (!file.exists(output_root)) {
