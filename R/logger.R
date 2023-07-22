@@ -19,7 +19,19 @@ setup_logger <- function(output_dir) {
 
     log_dir <- file.path(output_dir, "logs")
 
-    if (!file.exists(log_dir)) {
-        dir.create(log_dir, recursive = FALSE)
+    if (!fs::dir_exists(log_dir)) {
+        fs::dir_create(log_dir)
     }
+}
+
+
+#' @title Add a basic default file logger for a newly processed file.
+#'
+#' @param output_root Output root directory for the current process.
+#' @param logfile The name of the log file.
+setup_file_logger <- function(output_root, logfile) {
+    addDefaultFileLogger(file.path(
+        output_root, "logs",
+        paste0(logfile, ".log")
+    ), logfile)
 }

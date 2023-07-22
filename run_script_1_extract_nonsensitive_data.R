@@ -3,19 +3,19 @@ options(future.rng.onMisuse = "ignore")
 
 `%dopar%` <- foreach::`%dopar%`
 
+source("R/helper_main.R")
 source("R/read_patient_data.R")
 source("R/helper_read_patient_data.R")
 source("R/read_product_data.R")
 source("R/helper_clean_data.R")
 source("R/helper_product_data.R")
 source("R/get_tracker_year.R")
-source("R/get_mapping_table.R")
 source("R/logger.R")
 
 main <- function() {
-    paths <- init_paths()
+    paths <- init_paths(c("patient_data_raw", "product_data_raw"), delete = TRUE)
     setup_logger(paths$output_root)
-    tracker_files <- get_tracker_files(paths$tracker_root)
+    tracker_files <- get_files(paths$tracker_root)
     logInfo(
         "Found ",
         length(tracker_files),
@@ -39,75 +39,39 @@ main <- function() {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w, ".")
             }
         )
-        unregisterLogger(tracker_file)
     }
     logInfo("Finish processing all tracker files.")
-}
-
-
-init_paths <- function() {
-    tracker_root_path <- select_A4D_directory(T)
-    output_root <- file.path(
-        tracker_root_path,
-        "output",
-        "patient_and_product_data_raw"
-    )
-
-    if (!file.exists(output_root)) {
-        dir.create(output_root, recursive = TRUE)
-    } else {
-        do.call(file.remove, list(list.files(output_root, include.dirs = T, recursive = T, full.names = T, no.. = T)))
-    }
-
-    list(tracker_root = tracker_root_path, output_root = output_root)
-}
-
-
-get_synonyms <- function() {
-    ## Extract synonyms for products and patients
-    ## If you encounter new columns, just add the synonyms to these YAML files
-    synonyms_patient <-
-        read_column_synonyms(synonym_file = "synonyms_patient.yaml")
-    synonyms_product <-
-        read_column_synonyms(synonym_file = "synonyms_product.yaml")
-
-    list(patient = synonyms_patient, product = synonyms_product)
-}
-
-
-get_tracker_files <- function(tracker_root) {
-    tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
-    tracker_files <-
-        tracker_files[str_detect(tracker_files, "~", negate = T)]
 }
 
 
 process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
-    addDefaultFileLogger(file.path(
-        paths$output_root, "logs",
-        paste0(tracker_name, ".log")
-    ), tracker_file)
     logDebug("Start process_tracker_file.")
     logInfo(
         "Current file: ",
         tracker_name
     )
 
+    logfile <- paste0(tracker_name, "_", "patient")
+    setup_file_logger(paths$output_root, logfile)
     process_patient_data(
         tracker_name = tracker_name,
         tracker_data_file = tracker_data_file,
-        output_root = paths$output_root,
+        output_root = paths$patient_data_raw,
         synonyms_patient = synonyms$patient
     )
+    unregisterLogger(logfile)
 
+    logfile <- paste0(tracker_name, "_", "product")
+    setup_file_logger(paths$output_root, logfile)
     process_product_data(
         tracker_name = tracker_name,
         tracker_data_file = tracker_data_file,
-        output_root = paths$output_root,
+        output_root = paths$product_data_raw,
         synonyms_product = synonyms$product
     )
+    unregisterLogger(logfile)
 
     logInfo("Finish process_tracker_file.")
 }
@@ -179,25 +143,6 @@ process_product_data <-
         }
         logDebug("Finish process_product_data.")
     }
-
-
-export_data <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
-    data %>%
-        write.csv(
-            file =
-                file.path(
-                    output_root,
-                    paste0(
-                        filename,
-                        suffix,
-                        ".csv"
-                    )
-                ),
-            row.names = F
-        )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
-}
 
 # Calculate the number of cores
 no_cores <- future::availableCores() - 1
