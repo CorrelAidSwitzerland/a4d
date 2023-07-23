@@ -22,14 +22,6 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
         output_dir_name
     )
 
-    if (!fs::dir_exists(output_root)) {
-        fs::dir_create(output_root)
-    } else {
-        if (delete) {
-            fs::dir_delete(output_root)
-        }
-    }
-
     paths$output_root <- output_root
 
     for (name in names) {
@@ -38,6 +30,12 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
             output_dir_name,
             name
         )
+
+        if (fs::dir_exists(subdir)) {
+            if (delete) {
+                fs::dir_delete(subdir)
+            }
+        }
 
         fs::dir_create(subdir)
 

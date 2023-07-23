@@ -3,248 +3,110 @@ options(future.rng.onMisuse = "ignore")
 
 `%dopar%` <- foreach::`%dopar%`
 
+source("R/helper_main.R")
 source("R/read_patient_data.R")
 source("R/helper_read_patient_data.R")
 source("R/read_product_data.R")
 source("R/helper_clean_data.R")
 source("R/helper_product_data.R")
 source("R/get_tracker_year.R")
-source("R/get_mapping_table.R")
 source("R/logger.R")
 
 main <- function() {
-    paths <- init_paths()
+    paths <- init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
     setup_logger(paths$output_root)
-    tracker_files <- get_tracker_files(paths$tracker_root)
-    mapping_table <- get_mapping_table(tracker_files, paths$tracker_root)
+    patient_data_files <- get_files(paths$tracker_root, pattern = "patient_data.csv$")
+    product_data_files <- get_files(paths$tracker_root, pattern = "product_data.csv$")
     logInfo(
         "Found ",
-        length(tracker_files),
-        " xlsx files under ",
+        length(patient_data_files),
+        " patient csv files under ",
+        paths$tracker_root,
+        "."
+    )
+    logInfo(
+        "Found ",
+        length(product_data_files),
+        " product csv files under ",
         paths$tracker_root,
         "."
     )
 
-    synonyms <- get_synonyms()
+    logDebug("Start processing patient csv files.")
 
-    logDebug("Start processing tracker files.")
-
-    foreach::foreach(tracker_file = tracker_files) %dopar% {
-        pseudoname <- paste0(
-            mapping_table %>%
-                dplyr::filter(original == tracker_file) %>% select(pseudoname)
-        )
+    foreach::foreach(patient_file = patient_data_files) %dopar% {
+        patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
         tryCatch(
-            process_tracker_file(paths, tracker_file, synonyms, pseudoname),
+            process_patient_file(paths, patient_file, patient_file_name),
             error = function(e) {
-                logError("Could not process ", pseudoname, ". Error = ", e, ".")
+                logError("Could not process ", patient_file_name, ". Error = ", e, ".")
             },
             warning = function(w) {
-                logWarn("Could not process ", pseudoname, ". Warning = ", w, ".")
+                logWarn("Could not process ", patient_file_name, ". Warning = ", w, ".")
             }
         )
-        unregisterLogger(pseudoname)
-    }
-    logInfo("Finish processing all tracker files.")
-}
-
-
-init_paths <- function() {
-    tracker_root_path <- select_A4D_directory(T)
-    output_root <- file.path(
-        tracker_root_path,
-        "output",
-        "sensitive_data_removed"
-    )
-
-    if (!file.exists(output_root)) {
-        dir.create(output_root, recursive = TRUE)
-    } else {
-        do.call(file.remove, list(list.files(output_root, include.dirs = T, recursive = T, full.names = T, no.. = T)))
     }
 
-    list(tracker_root = tracker_root_path, output_root = output_root)
+    logInfo("Finish processing all patient csv files.")
+
+    logDebug("Start processing product csv files.")
+
+    foreach::foreach(product_file = product_data_files) %dopar% {
+        product_file_name <- tools::file_path_sans_ext(basename(product_file))
+        tryCatch(
+            process_product_file(paths, product_file, product_file_name),
+            error = function(e) {
+                logError("Could not process ", product_file_name, ". Error = ", e, ".")
+            },
+            warning = function(w) {
+                logWarn("Could not process ", product_file_name, ". Warning = ", w, ".")
+            }
+        )
+    }
+
+    logInfo("Finish processing all csv files.")
 }
 
 
-get_synonyms <- function() {
-    ## Extract synonyms for products and patients
-    ## If you encounter new columns, just add the synonyms to these YAML files
-    synonyms_patient <-
-        read_column_synonyms(synonym_file = "synonyms_patient.yaml")
-    synonyms_product <-
-        read_column_synonyms(synonym_file = "synonyms_product.yaml")
-
-    list(patient = synonyms_patient, product = synonyms_product)
-}
-
-
-get_tracker_files <- function(tracker_root) {
-    tracker_files <- list.files(path = tracker_root, recursive = T, pattern = "\\.xlsx$")
-
-    # only choose files in folders containing the following names
-    regex_tracker_country <- "01_THAILAND|02_MYANMAR|03_LAOS|04_VIETNAM|05_CAMBODIA|06_MALAYSIA"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = regex_tracker_country, ignore.case = T)]
-
-    # only choose files within folders called "ARCHIVE"
-    tracker_files <- tracker_files[grepl(x = tracker_files, pattern = "ARCHIVE", ignore.case = T)]
-
-    tracker_files <-
-        tracker_files[str_detect(tracker_files, "~", negate = T)]
-}
-
-
-process_tracker_file <- function(paths, tracker_file, synonyms, pseudoname) {
-    tracker_data_file <-
-        file.path(paths$tracker_root, tracker_file)
-    addDefaultFileLogger(file.path(
-        paths$output_root, "logs",
-        paste0(pseudoname, ".log")
-    ), pseudoname)
-    logDebug("Start process_tracker_file.")
+process_patient_file <- function(paths, patient_file, patient_file_name) {
+    patient_file_path <-
+        file.path(paths$tracker_root, patient_file)
+    logDebug("Start process_patient_file.")
     logInfo(
         "Current file: ",
-        pseudoname,
-        ".xlsx."
+        patient_file_name
     )
 
-    process_patient_data(
-        tracker_file = tracker_file,
-        tracker_data_file = tracker_data_file,
-        output_root = paths$output_root,
-        synonyms_patient = synonyms$patient,
-        pseudoname = pseudoname
-    )
+    logfile <- paste0(patient_file_name)
+    setup_file_logger(paths$output_root, logfile)
 
-    process_product_data(
-        tracker_file = tracker_file,
-        tracker_data_file = tracker_data_file,
-        output_root = paths$output_root,
-        synonyms_product = synonyms$product,
-        pseudoname = pseudoname
-    )
+    logInfo("Placeholder...add your procesisng logic here.")
 
-    logInfo("Finish process_tracker_file.")
+    unregisterLogger(logfile)
+
+    logInfo("Finish process_patient_file.")
 }
 
 
-process_patient_data <-
-    function(tracker_file,
-             tracker_data_file,
-             output_root,
-             synonyms_patient,
-             pseudoname) {
-        logDebug("Start process_patient_data.")
+process_product_file <- function(paths, product_file, product_file_name) {
+    product_file_path <-
+        file.path(paths$tracker_root, product_file)
+    logDebug("Start process_product_file.")
+    logInfo(
+        "Current file: ",
+        product_file_name
+    )
 
-        df_raw_patient <-
-            reading_patient_data_2(
-                tracker_data_file = tracker_data_file,
-                columns_synonyms = synonyms_patient
-            )
-        logDebug(
-            "df_raw_patient dim: ",
-            dim(df_raw_patient) %>% as.data.frame(),
-            "."
-        )
+    logfile <- paste0(product_file_name)
+    setup_file_logger(paths$output_root, logfile)
 
-        # INCOMPLETE - Set sensitive rows to NA -------------------------------------
-        # level of education is in the patient list - we need to get data from there as well
-        df_raw_patient <-
-            remove_sensitive_data(
-                data = df_raw_patient,
-                filename = pseudoname,
-                cols = c(
-                    "patient_id",
-                    "patient_name",
-                    "province",
-                    "dob",
-                    "country_code",
-                    "clinic_code",
-                    "gender",
-                    "edu_occ"
-                )
-            )
+    logInfo("Placeholder...add your procesisng logic here.")
 
-        export_data(
-            data = df_raw_patient,
-            filename = pseudoname,
-            output_root = output_root,
-            suffix = "_patient_data"
-        )
+    unregisterLogger(logfile)
 
-        logInfo("Finish process_patient_data.")
-    }
-
-
-process_product_data <-
-    function(tracker_file,
-             tracker_data_file,
-             output_root,
-             synonyms_product,
-             pseudoname) {
-        logDebug("Start process_product_data.")
-
-        df_raw_product <-
-            reading_product_data_step1(
-                tracker_data_file = tracker_data_file,
-                columns_synonyms = synonyms_product
-            )
-        logDebug(
-            "df_raw_product dim: ",
-            dim(df_raw_product) %>% as.data.frame(),
-            "."
-        )
-
-        # product set sensitive column to NA and add tracker file name as a column
-        if (!is.null(df_raw_product)) {
-            df_raw_product <-
-                remove_sensitive_data(
-                    data = df_raw_product,
-                    filename = pseudoname,
-                    cols = c("product_released_to")
-                )
-
-            export_data(
-                data = df_raw_product,
-                filename = pseudoname,
-                output_root = output_root,
-                suffix = "_product_data"
-            )
-        } else {
-            logWarn("No product data in the file")
-        }
-        logDebug("Finish process_product_data.")
-    }
-
-
-remove_sensitive_data <- function(data, filename, cols) {
-    data <-
-        data %>%
-        dplyr::mutate(across(
-            tidyr::any_of(cols),
-            ~NA
-        )) %>%
-        dplyr::mutate(file_name = filename)
+    logInfo("Finish process_product_file.")
 }
 
-
-export_data <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
-    data %>%
-        write.csv(
-            file =
-                file.path(
-                    output_root,
-                    paste0(
-                        filename,
-                        suffix,
-                        ".csv"
-                    )
-                ),
-            row.names = F
-        )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
-}
 
 # Calculate the number of cores
 no_cores <- future::availableCores() - 1
