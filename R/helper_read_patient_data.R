@@ -41,31 +41,25 @@ extract_country_clinic_code <- function(patient_data) {
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
     logDebug("Start extract_patient_data for sheet = ", sheet, ".")
-    empty_first_row <-
-        all(is.na(
-            readxl::read_excel(
-                tracker_data_file,
-                sheet = sheet,
-                .name_repair = "unique_quiet",
-                range = readxl::anchored("A1", dim = c(1, 50))
-            )
-        ))
-    logInfo("Sheet ", sheet, " has empty first row = ", empty_first_row, ".")
 
-    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
-    tracker_data <-
-        openxlsx::read.xlsx(
-            xlsxFile = tracker_data_file,
-            fillMergedCells = TRUE,
-            skipEmptyRows = FALSE,
-            skipEmptyCols = FALSE,
-            colNames = FALSE,
-            rowNames = FALSE,
-            detectDates = FALSE,
-            sheet = sheet,
-            startRow = 1
-        )
-    logDebug("Finish openxlsx::read.xlsx.")
+    logDebug("Start readxl::read_excel to get tracker_data.")
+    tracker_data <- readxl::read_excel(
+        path = tracker_data_file,
+        sheet = sheet,
+        range = readxl::cell_limits(c(1, NA), c(NA, NA)),
+        trim_ws = T,
+        col_names = F,
+        .name_repair = "unique_quiet"
+    )
+    logDebug("Finish readxl::read_excel.")
+    # tracker_data <- openxlsx::read.xlsx(
+    # xlsxFile=tracker_data_file,
+    # sheet = sheet,
+    # colNames = F,
+    # detectDates = F,
+    # skipEmptyRows = F,
+    # fillMergedCells = T
+    # )
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
@@ -73,12 +67,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_max <- max(patient_data_range)
     testit::assert(row_min < row_max)
 
-    if (empty_first_row) {
-        offset <- 1
-    } else {
-        offset <- 0
-    }
-    logInfo("Patient data found in rows ", row_min + offset, " to ", row_max + offset, ".")
+    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
 
     header_cols <-
         str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
@@ -86,11 +75,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
-        range = if (!sheet == "Patient List") {
-            readxl::cell_limits(c(row_min + offset, NA), c(row_max + offset, length(header_cols)))
-        } else {
-            readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols)))
-        },
+        range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
         trim_ws = T,
         col_names = F,
         .name_repair = "unique_quiet"
@@ -102,6 +87,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         logInfo("Read in multiline header.")
         header_cols_2 <-
             str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
+        # because readxl cannot handle merged cells, we need to copy the header for these cells
+        #
+        header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm = F, fromLast = F))
+        testit::assert(length(header_cols) == length(header_cols_2))
+
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
             paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
@@ -175,19 +165,6 @@ harmonize_patient_data_columns_2 <-
         logDebug("Start harmonize_patient_data_columns_2.")
 
         patient_df <- patient_df[!is.na(names(patient_df))]
-
-        # for fbg split column into value and unit column
-        fbg_baseline_col_idx <-
-            which(colnames(patient_df) %in% (
-                columns_synonyms %>% dplyr::filter(variable_name == "baseline_fbg")
-            )$tracker_name)
-        if (length(fbg_baseline_col_idx) > 0) {
-            patient_df <- patient_df %>%
-                mutate(baseline_fbg_unit = sanitize_str(str_match(
-                    colnames(patient_df)[fbg_baseline_col_idx],
-                    "\\(.*\\)"
-                )[1]))
-        }
 
         colnames(patient_df) <- sanitize_str(colnames(patient_df))
         synonym_headers <- sanitize_str(columns_synonyms$tracker_name)

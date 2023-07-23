@@ -1118,18 +1118,6 @@
       "Repository": "CRAN",
       "Hash": "6154ec2223172bce8162d4153cda21f7"
     },
-    "installr": {
-      "Package": "installr",
-      "Version": "0.23.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stringr",
-        "utils"
-      ],
-      "Hash": "cea0103d69aba216be514f7e5f526961"
-    },
     "isoband": {
       "Package": "isoband",
       "Version": "0.2.7",
