@@ -395,7 +395,7 @@ adjust_column_classes <- function(product_df) {
     list_date <- c("product_entry_date")
     list_character <- c(
         "product", "product_received_from", "product_released_to", "product_returned_by", "product_balance_status",
-        #"product_country", "product_hospital",
+        # "product_country", "product_hospital",
         "product_sheet_name"
     )
     list_numeric <- c(

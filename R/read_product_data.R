@@ -103,21 +103,19 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
 # function based on parts from run_a4d_product_data.R and helper functions
 reading_product_data_step3 <-
     function(tracker_data_file, columns_synonyms) {
-
         logDebug("Start reading_product_data_step3.")
 
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
 
         # open tracker
-        tracker_df <- read.csv(file=tracker_data_file, sep=',', head = TRUE, stringsAsFactors=FALSE)
+        tracker_df <- read.csv(file = tracker_data_file, sep = ",", head = TRUE, stringsAsFactors = FALSE)
 
         # save all results
         df_final <- c()
 
         # loop through all months
-        for(sheet_month in unique(tracker_df$product_sheet_name)){
-
+        for (sheet_month in unique(tracker_df$product_sheet_name)) {
             # remove former
             rm(product_df)
 
@@ -152,7 +150,7 @@ reading_product_data_step3 <-
                 tidyr::fill(c(product, product_entry_date), .direction = "down") %>%
                 group_by(product) %>%
                 mutate(rank = ifelse(row_number() == 1, 1,
-                                     if_else(row_number() == n(), n() + 2, dense_rank(product_entry_date) + 1)
+                    if_else(row_number() == n(), n() + 2, dense_rank(product_entry_date) + 1)
                 )) %>%
                 arrange(product, rank) %>%
                 ungroup() %>%
@@ -191,5 +189,4 @@ reading_product_data_step3 <-
             df_final <- df_final %>%
                 rbind(product_df)
         }
-
     }
