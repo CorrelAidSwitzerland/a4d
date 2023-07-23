@@ -19,9 +19,11 @@ setup_logger <- function(output_dir) {
 
     log_dir <- file.path(output_dir, "logs")
 
-    if (!fs::dir_exists(log_dir)) {
-        fs::dir_create(log_dir)
+    if (fs::dir_exists(log_dir)) {
+        fs::dir_delete(log_dir)
     }
+
+    fs::dir_create(log_dir)
 }
 
 
