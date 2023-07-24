@@ -1,11 +1,7 @@
 # DESCRIPTION -------------------------------------------------------------
 
 # This function cleans the output of the "tidy" function by reformatting certain columns.
-# Basic functions are created and then applied to each piece of data avaialbe in one row.
-
-
-
-# dat <- read.csv("/Volumes/A4D_project/clean_a4d_data.csv")
+# Basic functions are created and then applied to each piece of data available in one row.
 
 # Base Functions ####
 
@@ -987,6 +983,151 @@ clean_tracker_raw_patient_data <- function(data) {
     data_c <- as.data.frame(data_c)
 
     return(data_c)
+}
+
+
+#' @title Split a column value into value and date.
+#'
+#' @description
+#' Assumes that the measurement entry is in the format "8.53 (28/8/2017)".
+#' Uses regex to split this string into the value part and the date part,
+#' for example in "8.53 " and "28/8/2017".
+#'
+#' @param df data frame with patient data.
+#' @param colname column to split into value and date.
+#'
+#' @return data frame with the original column and a new colname_date column.
+extract_date_from_measurement <-
+    function(df, colname) {
+        df <- df %>% separate_wider_regex(!!colname, c(colname = ".*", "[(]", orig_colname_date = ".*?", "[)]?"))
+
+        if (colname == "updated_hba1c") {
+            df <- df %>% rename(updated_hba1c = orig_colname, updated_hba1c_date = orig_colname_date)
+        }
+
+        if (colname == "updated_fbg") {
+            df <- df %>% rename(updated_fbg = orig_colname, updated_fbg_date = orig_colname_date)
+        }
+
+        df
+    }
+
+
+
+#' @title Set bmi value to NA if height or weight is not available.
+#'
+#' @param df data frame with patient data.
+#'
+#' @return data frame with corrected bmi column.
+bmi_fix <- function(df) {
+    if ("height" %in% colnames(df) &
+        "weight" %in% colnames(df)) {
+        if (any(is.na(df$weight)) | any(is.na(df$height))) {
+            logInfo("Found rows with either height or weight values missing. Setting bmi to NA.")
+            df <- df %>%
+                mutate(bmi = if_else(is.na(height) |
+                    is.na(weight), NA_real_, bmi))
+        }
+    }
+    df
+}
+
+
+
+date_fix <-
+    function(df) {
+        format <- "%Y/%m/%d"
+        year <- df$tracker_year[1]
+
+
+        if ("recruitment_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    recruitment_date = as.Date(
+                        as.numeric(recruitment_date) * (60 * 60 * 24),
+                        origin = "1899-12-30",
+                        format = format,
+                        tz = "GMT"
+                    )
+                )
+        }
+
+        if ("last_clinic_visit_date" %in% colnames(df)) {
+            df <- df %>%
+                mutate(
+                    last_clinic_visit_date = as.POSIXct(
+                        as.numeric(last_clinic_visit_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    )
+                )
+        }
+
+        if ("bmi_date" %in% colnames(df)) {
+            df <- df %>%
+                mutate(
+                    bmi_date = as.POSIXct(
+                        as.numeric(bmi_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    bmi_date = format(as.Date(bmi_date), "%Y-%m")
+                )
+        }
+
+        if ("updated_fbg_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    updated_fbg_date = as.POSIXct(
+                        as.numeric(updated_fbg_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    updated_fbg_date = case_when(
+                        year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000),
+                        TRUE ~ updated_fbg_date
+                    )
+                )
+        }
+
+        if ("updated_hba1c_date" %in% colnames(df) & year > 2018) {
+            df <- df %>%
+                mutate(
+                    updated_hba1c_date = as.POSIXct(
+                        as.numeric(updated_hba1c_date) * (60 * 60 * 24),
+                        format = format,
+                        origin = "1899-12-30",
+                        tz = "GMT"
+                    ),
+                    updated_hba1c_date = case_when(
+                        year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000),
+                        TRUE ~ updated_hba1c_date
+                    )
+                )
+        }
+
+        return(df)
+    }
+
+
+
+#' @title Separate single blood pressure value into sys and dias values.
+#'
+#' @param df data frame with patient data.
+#'
+#' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
+split_bp_in_sys_and_dias <- function(df) {
+    logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
+    df <- df %>%
+        separate_wider_delim(
+            cols = blood_pressure_mmhg,
+            delim = "/",
+            names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
+        )
+    df
 }
 
 # TEST --------------------------------------------------------------------
