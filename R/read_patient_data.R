@@ -109,7 +109,7 @@ read_patient_data <-
 
                 # fix dates (split dates in cells)
                 patient_df <-
-                    extract_date_from_measurement_column(patient_df, "updated_hba1c_prc")
+                    split_col_into_value_date_pair(patient_df, "updated_hba1c_prc")
                 patient_df$updated_hba1c_date <-
                     transform_MM_DD_to_YYYY_MM_DD_str(patient_df$updated_hba1c_date, year)
                 patient_df$updated_hba1c_date <- as.Date(

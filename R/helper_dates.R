@@ -1,3 +1,22 @@
+#' @title Try to handle invalid dates.
+#'
+#' @description
+#' For each value of the character vector, this function uses the
+#' lubridate parse functions to find common formats
+#'
+#'
+#' @param df data frame with patient data.
+#' @param colname column that has invalid dates.
+#'
+#' @return
+parse_invalid_dates <- function(df, colname) {
+    orders <- c("dmy", "dmY", "by", "bY")
+    df <- df %>% mutate(across(!!colname, function(x) {
+        lubridate::parse_date_time(x, orders)
+    }))
+}
+
+
 numbers_only <- function(x) !grepl("\\D", x)
 
 

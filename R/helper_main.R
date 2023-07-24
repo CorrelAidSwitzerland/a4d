@@ -149,3 +149,20 @@ export_data <- function(data, filename, output_root, suffix) {
         )
     logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
+
+
+
+#' @title Read in patient data from CSV.
+#'
+#' @param patient_file_path Path to the CSV file.
+#'
+#' @return tibble with patient data
+read_patient_csv <- function(patient_file_path) {
+    logInfo("Start loading data from csv.")
+    df_patient_raw <- read_csv(patient_file_path, name_repair = "check_unique", progress = FALSE, show_col_types = FALSE)
+    logInfo("Finished loading data from csv.")
+    logInfo("Dim: ", dim(df_patient_raw))
+    logInfo("Columns: ", spec(df_patient_raw))
+
+    df_patient_raw
+}

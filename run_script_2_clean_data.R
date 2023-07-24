@@ -6,6 +6,7 @@ options(future.rng.onMisuse = "ignore")
 source("R/helper_main.R")
 source("R/read_patient_data.R")
 source("R/helper_read_patient_data.R")
+source("R/helper_patient_data_fix.R")
 source("R/read_product_data.R")
 source("R/helper_clean_data.R")
 source("R/helper_product_data.R")
@@ -80,7 +81,31 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     logfile <- paste0(patient_file_name)
     setup_file_logger(paths$output_root, logfile)
 
-    logInfo("Placeholder...add your procesisng logic here.")
+    df_patient_raw <- read_patient_csv(patient_file_path)
+
+    if (!"updated_hba1c_date" %in% colnames(df_patient_raw)) {
+        logInfo("Column updated_hba1c_date not found. Trying to parse from updated_hba1c.")
+        df_patient_raw <-
+            extract_date_from_measurement(df_patient_raw, "updated_hba1c")
+        df_patient_raw <-
+            parse_invalid_dates(df_patient_raw, "updated_hba1c_date")
+        logInfo("Finished parsing dates from updated_hba1c.")
+    }
+
+    if (!"updated_fbg_date" %in% colnames(df_patient_raw)) {
+        logInfo("Column updated_fbg_date not found. Trying to parse from updated_hba1c.")
+        df_patient_raw <-
+            extract_date_from_measurement(df_patient_raw, "updated_fbg")
+        df_patient_raw <-
+            parse_invalid_dates(df_patient_raw, "updated_fbg_date")
+        logInfo("Finished parsing dates from updated_fbg.")
+    }
+
+    df_patient_raw <- bmi_fix(df_patient_raw)
+    # df_patient_raw <- date_fix(df_patient_raw)
+    if ("blood_pressure_mmhg" %in% colnames(df_patient_raw)) {
+        df_patient_raw <- split_bp_in_sys_and_dias(df_patient_raw)
+    }
 
     unregisterLogger(logfile)
 
