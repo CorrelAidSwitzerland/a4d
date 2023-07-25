@@ -98,29 +98,35 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
 
 
 
-# function to process product data in step 3
-# further process and re-calculate product balance
-# function based on parts from run_a4d_product_data.R and helper functions
-reading_product_data_step3 <-
-    function(tracker_data_file, columns_synonyms) {
-        logDebug("Start reading_product_data_step3.")
+#' @title Process product data in script 2.
+#'
+#' @description
+#' Processes data output from script 1. Data will be further cleaned and processed to fix data quality issues and to create a report.
+#'
+#'
+#' @param df Dataframe. Output of tracker file from script 1 for product data.
+#' @param columns_synonyms Tibble with synonyms for product data (columns: name_clean and name_to_be_matched)
+#'
+#' @return Cleaned product data for one specified tracker.
+reading_product_data_step2 <-
+    function(df, columns_synonyms) {
+        logDebug("Start reading_product_data_step2.")
 
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
-
-        # open tracker
-        tracker_df <- read.csv(file = tracker_data_file, sep = ",", head = TRUE, stringsAsFactors = FALSE)
 
         # save all results
         df_final <- c()
 
         # loop through all months
-        for (sheet_month in unique(tracker_df$product_sheet_name)) {
+        for (sheet_month in unique(df$product_sheet_name)) {
+            logDebug(paste("Start processing the following sheet:", sheet_month))
+
             # remove former
             rm(product_df)
 
             # filter on month sheet
-            product_df <- tracker_df %>%
+            product_df <- df %>%
                 dplyr::filter(product_sheet_name == sheet_month)
 
             # Split product cells with various products and/or unit information
@@ -188,5 +194,13 @@ reading_product_data_step3 <-
             # finish and combine
             df_final <- df_final %>%
                 rbind(product_df)
+
+            logInfo(paste("Finished processing the following sheet:", sheet_month))
+        }
+
+        if(nrow(df_final) > 0){
+            return(df_final)
+        }else{
+            logDebug(paste("No product data extracted for the following tracker:", df$file_name[1]))
         }
     }
