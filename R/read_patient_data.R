@@ -301,15 +301,16 @@ reading_patient_data_2 <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
 
             # -- if we have duplicate columns, merge them
-            if (any(duplicated(colnames(patient_df)))) {
-                duplicated_cols <- as.vector(colnames(patient_df)[which(duplicated(colnames(patient_df)))])
+            if (anyDuplicated(colnames(patient_df)) > 0) {
+                duplicated_cols <- colnames(patient_df) %>%
+                    table() %>%
+                    as.tibble() %>%
+                    dplyr::filter(n > 1) %>%
+                    select(1)
                 for (col in duplicated_cols) {
-                    cols <- list()
-                    while (col %in% colnames(patient_df)) {
-                        cols <- append(cols, patient_df %>% select(!!col))
-                        patient_df <- patient_df %>% select(-!!col)
-                    }
-                    merged_col <- data.frame(cols) %>% unite(!!col, sep = ",")
+                    mask <- colnames(patient_df) == col
+                    merged_col <- patient_df[mask] %>% unite(!!col, sep = ",")
+                    patient_df <- patient_df[!mask]
                     patient_df <- patient_df %>% add_column(!!col := pull(merged_col))
                 }
             }

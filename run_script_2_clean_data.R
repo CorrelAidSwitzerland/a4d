@@ -52,7 +52,7 @@ main <- function() {
 
     logDebug("Start processing product csv files.")
     synonyms <- get_synonyms()
-    synonyms_product = synonyms$product
+    synonyms_product <- synonyms$product
 
     foreach::foreach(product_file = product_data_files) %dopar% {
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
@@ -85,6 +85,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
 
     df_patient_raw <- read_raw_csv(patient_file_path)
 
+    # --- TRANSFORMATIONS ---
+
     if (!"updated_hba1c_date" %in% colnames(df_patient_raw)) {
         logInfo("Column updated_hba1c_date not found. Trying to parse from updated_hba1c.")
         df_patient_raw <-
@@ -104,10 +106,70 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     }
 
     df_patient_raw <- bmi_fix(df_patient_raw)
-    # df_patient_raw <- date_fix(df_patient_raw)
     if ("blood_pressure_mmhg" %in% colnames(df_patient_raw)) {
         df_patient_raw <- split_bp_in_sys_and_dias(df_patient_raw)
     }
+
+    # --- META SCHEMA ---
+    standard_df <- tibble::tibble(
+        additional_support = character(),
+        age = integer(),
+        baseline_fbg = numeric(),
+        baseline_fbg_unit = character(),
+        baseline_hba1c = numeric(),
+        blood_pressure_sys_mmhg = numeric(),
+        blood_pressure_dias_mmhg = numeric(),
+        bmi = numeric(),
+        bmi_date = date(),
+        clinic_visit_currmonth = logical(),
+        current_patient_observations = character(),
+        current_patient_observations_category = character(),
+        currmonth_complication_screening = character(),
+        currmonth_complication_screening_date = date(),
+        currmonth_complication_screening_results = character(),
+        currmonth_hospitalisation_cause = character(),
+        currmonth_hospitalisation_date = date(),
+        diag_date = date(),
+        dka_diag = logical(),
+        dm_complication_comment = character(), # TODO
+        dm_complication_eye = character(), # TODO
+        dm_complication_kidney = character(), # TODO
+        dm_complication_other = character(), # TODO
+        dob = date(),
+        edu_occ = character(),
+        family_support_scale = character(), # TODO
+        gender = character(),
+        height = numeric(),
+        inactive_reason = character(),
+        insulin_dosage = character(),
+        insulin_regimen = character(),
+        last_clinic_visit_date = date(),
+        lost_age = integer(),
+        lost_date = date(),
+        meter_received_date = date(), # TODO
+        patient_id = character(),
+        patient_name = character(),
+        province = character(),
+        recruitment_date = date(),
+        remarks = character(),
+        remote_followup_currmonth = date(),
+        status = character(),
+        support_from_a4d = character(),
+        t1d_diagnosis_age = integer(),
+        t1d_diagnosis_date = date(),
+        testing_fqr_pday = integer(),
+        updated_2022_date = date(),
+        updated_fbg = numeric(),
+        updated_fbg_date = date(),
+        updated_hba1c = numeric(),
+        updated_hba1c_date = date(),
+        weight = numeric()
+    )
+
+    cols_missing <-
+        colnames(standard_df)[!colnames(standard_df) %in% colnames(df_patient_raw)]
+    df[cols_missing] <- NA
+
 
     unregisterLogger(logfile)
 

@@ -56,13 +56,6 @@ gender:
 - Gender
 height:
 - Height (Meters)
-hospitalisation:
-- Last hospitalisation due to diabetes emergency or glucose control
-- Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
-- Hospitalisation due to diabetes emergency or glucose control (Include Date)
-- Hospitalisation due to diabetes emergency
-- Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
-- hospitalisation due to diabetes emergency or glucose control egdka include date
 patient_id:
 - ID
 - Patient ID
@@ -79,8 +72,6 @@ last_clinic_visit_date:
 - Last Clinic Visit
 - Last Clinic Visit (dd-mmm-yy)
 - last clinic visit date
-latest_complication_screening_date: []
-latest_complication_screening_type: []
 no:
 - No
 patient_name:
@@ -200,6 +191,12 @@ currmonth_hospitalisation_cause:
 - current month hospitalisation dka hypo other dropdown
 currmonth_hospitalisation_date:
 - current month hospitalisation dka hypo other date
+- Last hospitalisation due to diabetes emergency or glucose control
+- Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
+- Hospitalisation due to diabetes emergency or glucose control (Include Date)
+- Hospitalisation due to diabetes emergency
+- Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
+- hospitalisation due to diabetes emergency or glucose control egdka include date
 updated_2022_date:
 - updated 2022 date
 currmonth_complication_screening:
@@ -227,7 +224,7 @@ current_patient_observations:
 - current patient observations
 current_patient_observations_category:
 - current patient observations category
-meterreceiveddate:
+meter_received_date:
 - meter received date
 - isens meter received date
 - wiz meter received date
