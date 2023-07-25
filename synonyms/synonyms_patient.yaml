@@ -208,6 +208,8 @@ currmonth_complication_screening:
 - current month complication screening kidney eye foot dropdown2
 - current month complication screening kidney eye foot dropdown3
 - current month complication screening kidney eye foot dropdown4
+- Current Month Complication Screening (kidney, eye, foot)
+- Complication Screening (select from list)
 currmonth_complication_screening_date:
 - current month complication screening kidney eye foot date
 - complication screening current month testing date mmmyy

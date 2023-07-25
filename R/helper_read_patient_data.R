@@ -70,7 +70,8 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
 
     header_cols <-
-        str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
+        str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
+    # header_cols <- append(NA, zoo::na.locf(header_cols, nw.rm = F, fromLast = F))
     logDebug("Start readxl::read_excel to get patient data.")
     patient_df <- readxl::read_excel(
         path = tracker_data_file,
@@ -86,9 +87,8 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         logInfo("Read in multiline header.")
         header_cols_2 <-
-            str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
+            str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
         # because readxl cannot handle merged cells, we need to copy the header for these cells
-        #
         header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm = F, fromLast = F))
         testit::assert(length(header_cols) == length(header_cols_2))
 
@@ -107,7 +107,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         patient_df %>% select(header_cols[!is.na(header_cols)])
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
-    patient_df <- patient_df %>% distinct()
+    # patient_df <- patient_df %>% distinct()
     # remove empty rows with only NA
     patient_df <-
         patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]

@@ -300,6 +300,20 @@ reading_patient_data_2 <-
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
 
+            # -- if we have duplicate columns, merge them
+            if (any(duplicated(colnames(patient_df)))) {
+                duplicated_cols <- as.vector(colnames(patient_df)[which(duplicated(colnames(patient_df)))])
+                for (col in duplicated_cols) {
+                    cols <- list()
+                    while (col %in% colnames(patient_df)) {
+                        cols <- append(cols, patient_df %>% select(!!col))
+                        patient_df <- patient_df %>% select(-!!col)
+                    }
+                    merged_col <- data.frame(cols) %>% unite(!!col, sep = ",")
+                    patient_df <- patient_df %>% add_column(!!col := pull(merged_col))
+                }
+            }
+
             cc_codes <- extract_country_clinic_code(patient_df)
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
