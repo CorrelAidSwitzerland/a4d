@@ -198,9 +198,9 @@ reading_product_data_step2 <-
             logInfo(paste("Finished processing the following sheet:", sheet_month))
         }
 
-        if(nrow(df_final) > 0){
+        if (nrow(df_final) > 0) {
             return(df_final)
-        }else{
+        } else {
             logDebug(paste("No product data extracted for the following tracker:", df$file_name[1]))
         }
     }
