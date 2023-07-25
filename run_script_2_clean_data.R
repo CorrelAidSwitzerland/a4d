@@ -81,7 +81,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     logfile <- paste0(patient_file_name)
     setup_file_logger(paths$output_root, logfile)
 
-    df_patient_raw <- read_patient_csv(patient_file_path)
+    df_patient_raw <- read_raw_csv(patient_file_path)
 
     if (!"updated_hba1c_date" %in% colnames(df_patient_raw)) {
         logInfo("Column updated_hba1c_date not found. Trying to parse from updated_hba1c.")
