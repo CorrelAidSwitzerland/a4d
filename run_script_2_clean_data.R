@@ -51,11 +51,13 @@ main <- function() {
     logInfo("Finish processing all patient csv files.")
 
     logDebug("Start processing product csv files.")
+    synonyms <- get_synonyms()
+    synonyms_product = synonyms$product
 
     foreach::foreach(product_file = product_data_files) %dopar% {
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
         tryCatch(
-            process_product_file(paths, product_file, product_file_name),
+            process_product_file(paths, product_file, product_file_name, synonyms_product),
             error = function(e) {
                 logError("Could not process ", product_file_name, ". Error = ", e, ".")
             },
@@ -113,7 +115,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
 }
 
 
-process_product_file <- function(paths, product_file, product_file_name) {
+process_product_file <- function(paths, product_file, product_file_name, synonyms_product) {
     product_file_path <-
         file.path(paths$tracker_root, product_file)
     logDebug("Start process_product_file.")
@@ -125,7 +127,9 @@ process_product_file <- function(paths, product_file, product_file_name) {
     logfile <- paste0(product_file_name)
     setup_file_logger(paths$output_root, logfile)
 
-    logInfo("Placeholder...add your procesisng logic here.")
+    df_product_raw <- read_raw_csv(product_file_path)
+
+    df_product_raw <- reading_product_data_step2(df_product_raw, synonyms_product)
 
     unregisterLogger(logfile)
 
