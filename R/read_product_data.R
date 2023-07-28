@@ -67,6 +67,25 @@ reading_product_data_step1 <-
                 }
             )
 
+            # Checking non-processed dates in product_entry_date
+            non_processed_dates <- product_df %>%
+                filter(!is.na(product_entry_date) & !grepl("^[0-9]+$", product_entry_date)) # filter if: no NA and the string is not only numeric.
+            tryCatch(
+                {
+                    if (nrow(non_processed_dates) > 0) {
+                        logInfo(
+                            CurrSheet,
+                            " the number of rows with non-processed dates in product_entry_date is ",
+                            nrow(non_processed_dates), ": ",
+                            paste(non_processed_dates$product_entry_date, collapse = ",")
+                        )
+                    }
+                },
+                error = function(e) {
+                    logError(CurrSheet, " trying with non_processed_dates in product_entry_date. Error: ", e$message)
+                }
+            )
+
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
                 mutate(
