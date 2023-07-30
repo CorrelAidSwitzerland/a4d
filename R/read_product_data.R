@@ -130,6 +130,9 @@ remove_rows_with_na_columns <-
         # Get the row indices where all specified columns are NA
         na_rows <- apply(df[column_names], 1, function(x) all(is.na(x)))
 
+        # log message
+        logInfo(paste(length(na_rows[na_rows == T]), ' rows deleted out of ', nrow(df), ' rows (reason: rows not containing additional info).', sep=''))
+
         # Return the data frame without the NA rows
         return(df[!na_rows, ])
         }
@@ -183,6 +186,11 @@ reading_product_data_step2 <-
             # Remove rows which do not contain any new information
             column_names_check <- c('product_entry_date','product_units_received','product_received_from','product_units_released','product_released_to','product_units_returned','product_returned_by')
             product_df <- remove_rows_with_na_columns(product_df, column_names_check)
+            # jump to next sheet if dataframe empty from here
+            if(nrow(product_df) == 0){
+                logDebug(paste(sheet_month, ' sheet is empty after filtering and skipped', sep=''))
+                next
+            }
 
             # Add row index
             product_df$index <- seq(1, nrow(product_df), 1)
