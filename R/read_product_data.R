@@ -97,6 +97,24 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
 }
 
 
+#' @title Remove Rows with NA Values in Specified Columns.
+#'
+#' @description
+#' This function takes a data frame and a vector of column names as input. It removes rows from the data frame where all the specified columns contain only NA values. If any of the specified columns have at least one non-NA value, the corresponding row will be retained in the output data frame.
+#'
+#' @param df A data frame that contains the data from which rows need to be removed.
+#' @param column_names A character vector specifying the column names to be checked for NA values.
+#'
+#' @return A new data frame with rows removed if all the specified columns in the row contain NA values. The returned data frame will have the same structure as the input data frame, but with rows that satisfy the condition removed.
+remove_rows_with_na_columns <-
+    function(df, column_names) {
+        # Get the row indices where all specified columns are NA
+        na_rows <- apply(df[column_names], 1, function(x) all(is.na(x)))
+
+        # Return the data frame without the NA rows
+        return(df[!na_rows, ])
+        }
+
 
 #' @title Process product data in script 2.
 #'
@@ -142,6 +160,10 @@ reading_product_data_step2 <-
             missing_cols <- which(columns_missing %notin% colnames(product_df))
             missing_cols_names <- unique(columns_missing[missing_cols])
             product_df[missing_cols_names] <- NA
+
+            # Remove rows which do not contain any new information
+            column_names_check <- c('product_entry_date','product_units_received','product_received_from','product_units_released','product_released_to','product_units_returned','product_returned_by')
+            product_df <- remove_rows_with_na_columns(product_df, column_names_check)
 
             # Add row index
             product_df$index <- seq(1, nrow(product_df), 1)
