@@ -351,12 +351,12 @@ reading_patient_data_2 <-
             df_raw <- dplyr::left_join(
                 df_raw,
                 patient_list %>%
-                    dplyr::select(-c(
-                        fbg_baseline,
-                        hba1c_baseline,
-                        name,
-                        updated_2022_date
-                    )),
+                    dplyr::select(-any_of(c(
+                        "fbg_baseline",
+                        "hba1c_baseline",
+                        "name",
+                        "updated_2022_date"
+                    ))),
                 by = "id",
                 relationship = "many-to-one"
             )
