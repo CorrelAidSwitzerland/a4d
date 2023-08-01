@@ -65,7 +65,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
-    testit::assert(row_min < row_max)
+    testit::assert(row_min <= row_max) # <= because there could only be a single patient
 
     logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
 

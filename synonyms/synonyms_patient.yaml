@@ -16,11 +16,6 @@ bmi_date:
   - date of bmi date
   - date of bmi ddmmmyy
 clinic_code: []
-country_code: []
-current_patient_observations:
-  - current patient observations
-current_patient_observations_category:
-  - current patient observations category
 clinic_visit:
   - clinic visit current month
   - clinic visit
@@ -45,26 +40,7 @@ complication_screening_results:
   - complication screening current month testing results
   - complication screening results
   - current month complication screening results
-hospitalisation_cause:
-  - current month hospitalisation dka hypo other dropdown
-hospitalisation_date:
-  - current month hospitalisation dka hypo other date
-  - Last hospitalisation due to diabetes emergency or glucose control
-  - Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
-  - Hospitalisation due to diabetes emergency or glucose control (Include Date)
-  - Hospitalisation due to diabetes emergency
-  - Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
-  - hospitalisation due to diabetes emergency or glucose control egdka include date
-currmonth_remote_followup:
-  - remote follow up current month
-  - remote follow up
-diag_date:
-  - Date of Diagnosis
-  - Date of Diagnosis (mmm-yy)
-dka_diag:
-  - dka at diagnosis yn
-  - dka diagnosis yn
-  - dka diagnosis y or n
+country_code: []
 dm_complication_comment:
   - Comments on other complications
 dm_complication_eye:
@@ -132,44 +108,59 @@ hba1c_updated_date:
   - Updated HbA1c Date
 height:
   - Height (Meters)
+hospitalisation_cause:
+  - current month hospitalisation dka hypo other dropdown
+hospitalisation_date:
+  - current month hospitalisation dka hypo other date
+  - Last hospitalisation due to diabetes emergency or glucose control
+  - Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
+  - Hospitalisation due to diabetes emergency or glucose control (Include Date)
+  - Hospitalisation due to diabetes emergency
+  - Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
+  - hospitalisation due to diabetes emergency or glucose control egdka include date
+id:
+  - ID
+  - Patient ID
+  - Patient ID*
 inactive_reason:
   - Inactive Reason
 insulin_dosage:
   - insulin dosage
   - insulin dosage tdd
-insulin_required_month:
-  - estimated insulin required per month
-  - estimated insulin required per month vial
 insulin_regimen:
   - Insulin Regimen
   - Insuline regime
   - Insulin Regime
   - insulin regimen1
-insulin_required_year:
-  - estimated insulin required per year
+insulin_required_month:
+  - estimated insulin required per month
+  - estimated insulin required per month vial
 insulin_required_product_name:
   - estimated insulin required per year col18
   - Estimated Insulin Required per year col18
   - Estimated Insulin Required per year.1
+insulin_required_year:
+  - estimated insulin required per year
 last_clinic_visit_date:
   - Last Clinic Visit
   - Last Clinic Visit (dd-mmm-yy)
   - last clinic visit date
 last_remote_followup_date:
-  - last remote follow update
+  - last remote follow update date
 latest_complication_screenning:
   - Complication Screening (starting from Q2 2021)
   - Latest Complication Screening (select from list)
   - Latest Complication Screening (dd-mmm-yy)
-lost_age:
-  - Lost/ Deceased  Age
 lost_date:
-  - Lost/ Deceased  Date
+  - Lost Patients Summary Lost Date
 meter_received_date:
   - meter received date
   - isens meter received date
   - wiz meter received date
   - wiz meter received y
+name:
+  - Patient Name
+  - Patient.Name..ANON
 'no':
   - 'No'
 num_admin_hosp_dka:
@@ -182,13 +173,10 @@ num_admin_hosp_other_reason:
   - Reason for Others
 num_admin_hosp_total:
   - total
-patient_id:
-  - ID
-  - Patient ID
-  - Patient ID*
-patient_name:
-  - Patient Name
-  - Patient.Name..ANON
+observations:
+  - current patient observations
+observations_category:
+  - current patient observations category
 province:
   - Province
 qol_survey:
@@ -205,11 +193,16 @@ remarks:
   - Potential additional support or intervention from A4D e.g. complications or family support
   - Complications e.g. (1,3,4)
   - remarks
+remote_followup:
+  - remote follow up current month
+  - remote follow up
 sheet_name: []
-patient_status:
+status:
   - Status
   - patient status
   - patient status select
+status_out:
+  - Lost Patients Summary Status OUT
 support_from_a4d:
   - Support received from A4D
   - Level of Support
@@ -223,6 +216,12 @@ t1d_diagnosis_age:
 t1d_diagnosis_date:
   - date of diagnosis of t1d
   - date of t1d diagnosis ddmmmyyyy
+  - Date of Diagnosis
+  - Date of Diagnosis (mmm-yy)
+t1d_diagnosis_with_dka:
+  - dka at diagnosis yn
+  - dka diagnosis yn
+  - dka diagnosis y or n
 testing_fqr_pday:
   - Testing Frequency (per day)
   - Blood Testing Frequency (per day)
@@ -231,3 +230,8 @@ updated_2022_date:
   - updated 2022 date
 weight:
   - Body Weight (Kg)
+file_name: []
+tracker_month: []
+tracker_year: []
+country_code: []
+clinic_code: []
