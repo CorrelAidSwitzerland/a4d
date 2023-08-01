@@ -115,7 +115,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),
-        # complication_screening_date = date(),
+        # complication_screening_date = as.Date(1),
         # complication_screening_results = character(),
         # dm_complication_comment = character(), # TODO
         # dm_complication_eye = character(), # TODO
@@ -125,54 +125,54 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         # family_support_scale = character(), # TODO
         # inactive_reason = character(),
         # insulin_dosage = character(),
-        # meter_received_date = date(), # TODO
+        # meter_received_date = as.Date(1), # TODO
         # remarks = character(),
         additional_support = character(),
         age = integer(),
         blood_pressure_dias_mmhg = integer(),
         blood_pressure_sys_mmhg = integer(),
         bmi = numeric(),
-        bmi_date = date(),
+        bmi_date = as.Date(1),
         clinic_code = character(),
         country_code = character(),
-        dob = date(),
+        dob = as.Date(1),
         edu_occ = character(),
         fbg_baseline_mg = numeric(),
         fbg_baseline_mmol = numeric(),
         fbg_updated = numeric(),
-        fbg_updated_date = date(),
+        fbg_updated_date = as.Date(1),
         fbg_updated_mg = numeric(),
         fbg_updated_mmol = numeric(),
         file_name = character(),
         gender = character(),
         hb1ac_baseline = numeric(),
         hb1ac_updated = numeric(),
-        hba1c_updated_date = date(),
+        hba1c_updated_date = as.Date(1),
         height = numeric(),
         hospitalisation_cause = character(),
-        hospitalisation_date = date(),
+        hospitalisation_date = as.Date(1),
         id = character(),
         insulin_regimen = character(),
-        last_clinic_visit_date = date(),
-        last_remote_followup_date = date(),
-        lost_date = date(),
+        last_clinic_visit_date = as.Date(1),
+        last_remote_followup_date = as.Date(1),
+        lost_date = as.Date(1),
         name = character(),
         observations = character(),
         observations_category = character(),
         province = character(),
-        recruitment_date = date(),
-        remote_followup = date(),
+        recruitment_date = as.Date(1),
+        remote_followup = as.Date(1),
         sheet_name = character(),
         status = character(),
         status_out = character(),
         support_from_a4d = character(),
         t1d_diagnosis_age = integer(),
-        t1d_diagnosis_date = date(),
+        t1d_diagnosis_date = as.Date(1),
         t1d_diagnosis_with_dka = logical(),
         testing_fqr_pday = integer(),
         tracker_month = character(),
         tracker_year = integer(),
-        updated_2022_date = date(),
+        updated_2022_date = as.Date(1),
         weight = numeric()
     )
 
@@ -206,8 +206,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             ),
             across(
                 schema %>% select(where(is.Date)) %>% names(),
-                # check whether we want lubridate::as.Date() or the one from base
-                ~ base::as.Date(.x)
+                ~ as.Date(.x)
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
