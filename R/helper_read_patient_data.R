@@ -2,14 +2,14 @@
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
     logDebug("Start extract_country_clinic_code.")
-    patient_ids <- patient_data["patient_id"] %>%
-        dplyr::filter(patient_id != "0") %>%
+    patient_ids <- patient_data["id"] %>%
+        dplyr::filter(id != "0") %>%
         drop_na() %>%
         rowwise() %>%
         mutate(
-            country = str_split(patient_id, "_", n = 2, simplify = T)[1],
+            country = str_split(id, "_", n = 2, simplify = T)[1],
             clinic = substr(str_split(
-                patient_id, "_",
+                id, "_",
                 n = 2, simplify = T
             )[2], 0, 2)
         )
