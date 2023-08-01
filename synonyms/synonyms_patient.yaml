@@ -69,6 +69,7 @@ fbg_baseline_mg:
   - FBG (mg/dL) - BASELINE
   - Baseline SMBG or CBG (mg/dL)
   - Baseline FBG (mg/dL)
+  - Baseline FBG* mg/dL
   - Baseline FBG (mg%)
   - Baseline FBG or CBG (mg/dL)
   - baseline fbg m/dl
@@ -100,6 +101,7 @@ gender:
 hba1c_baseline:
   - HbA1c (%) - BASELINE
   - Baseline HbA1c (%)
+  - Baseline HbA1c* %
 hba1c_updated:
   - HbA1c (%) - UPDATED
   - Updated HbA1c (%)
