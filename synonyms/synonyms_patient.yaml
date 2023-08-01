@@ -94,6 +94,7 @@ fbg_updated:
 fbg_updated_date:
   - Updated FBG Date
   - Updated FBG or CBG Date
+file_name: []
 gender:
   - Gender
 hba1c_baseline:
@@ -225,13 +226,9 @@ t1d_diagnosis_with_dka:
 testing_fqr_pday:
   - Testing Frequency (per day)
   - Blood Testing Frequency (per day)
+tracker_month: []
 tracker_year: []
 updated_2022_date:
   - updated 2022 date
 weight:
   - Body Weight (Kg)
-file_name: []
-tracker_month: []
-tracker_year: []
-country_code: []
-clinic_code: []
