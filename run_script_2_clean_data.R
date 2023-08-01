@@ -188,6 +188,33 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
+    # make sure columns have the correct data type defined in "schema"
+    df_patient <-
+        df_patient %>%
+        mutate(
+            across(
+                schema %>% select(where(is.character)) %>% names(),
+                ~ as.character(.x)
+            ),
+            across(
+                schema %>% select(where(is.numeric)) %>% names(),
+                ~ as.numeric(.x)
+            ),
+            across(
+                schema %>% select(where(is.logical)) %>% names(),
+                ~ as.logical(.x)
+            ),
+            across(
+                schema %>% select(where(is.Date)) %>% names(),
+                # check whether we want lubridate::as.Date() or the one from base
+                ~ base::as.Date(.x)
+            ),
+            across(
+                schema %>% select(where(is.integer)) %>% names(),
+                ~ as.integer(.x)
+            )
+        )
+
     unregisterLogger(logfile)
 
     logInfo("Finish process_patient_file.")
