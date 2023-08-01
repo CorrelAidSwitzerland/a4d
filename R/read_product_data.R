@@ -73,7 +73,7 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (nrow(non_processed_dates) > 0) {
-                        logInfo(
+                        logWarn(
                             CurrSheet,
                             " the number of rows with non-processed dates in product_entry_date is ",
                             nrow(non_processed_dates), ": ",
