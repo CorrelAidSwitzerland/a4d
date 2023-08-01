@@ -322,7 +322,7 @@ reading_patient_data_2 <-
             patient_df <- patient_df %>%
                 dplyr::mutate(
                     sheet_name = curr_sheet,
-                    tracker_mo = match(substr(curr_sheet, 1, 3), month.abb),
+                    tracker_month = match(substr(curr_sheet, 1, 3), month.abb),
                     tracker_year = year,
                     country_code = country_code,
                     clinic_code = clinic_code

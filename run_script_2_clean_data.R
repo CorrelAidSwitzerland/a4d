@@ -86,7 +86,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     df_patient_raw <- read_raw_csv(patient_file_path)
 
     # --- TRANSFORMATIONS ---
-
+    # data before 2019 had only one column for updated hba1c and fbg
+    # with date as part of the value
     if (!"updated_hba1c_date" %in% colnames(df_patient_raw)) {
         logInfo("Column updated_hba1c_date not found. Trying to parse from updated_hba1c.")
         df_patient_raw <-
@@ -111,65 +112,85 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     }
 
     # --- META SCHEMA ---
-    standard_df <- tibble::tibble(
+    schema <- tibble::tibble(
+        # clinic_visit = logical(),
+        # complication_screening = character(),
+        # complication_screening_date = date(),
+        # complication_screening_results = character(),
+        # dm_complication_comment = character(), # TODO
+        # dm_complication_eye = character(), # TODO
+        # dm_complication_kidney = character(), # TODO
+        # dm_complication_other = character(), # TODO
+        # est_strips_pmonth = integer(),
+        # family_support_scale = character(), # TODO
+        # inactive_reason = character(),
+        # insulin_dosage = character(),
+        # meter_received_date = date(), # TODO
+        # remarks = character(),
         additional_support = character(),
         age = integer(),
-        baseline_fbg = numeric(),
-        baseline_fbg_unit = character(),
-        baseline_hba1c = numeric(),
-        blood_pressure_sys_mmhg = numeric(),
-        blood_pressure_dias_mmhg = numeric(),
+        blood_pressure_dias_mmhg = integer(),
+        blood_pressure_sys_mmhg = integer(),
         bmi = numeric(),
         bmi_date = date(),
-        clinic_visit_currmonth = logical(),
-        current_patient_observations = character(),
-        current_patient_observations_category = character(),
-        currmonth_complication_screening = character(),
-        currmonth_complication_screening_date = date(),
-        currmonth_complication_screening_results = character(),
-        currmonth_hospitalisation_cause = character(),
-        currmonth_hospitalisation_date = date(),
-        diag_date = date(),
-        dka_diag = logical(),
-        dm_complication_comment = character(), # TODO
-        dm_complication_eye = character(), # TODO
-        dm_complication_kidney = character(), # TODO
-        dm_complication_other = character(), # TODO
+        clinic_code = character(),
+        country_code = character(),
         dob = date(),
         edu_occ = character(),
-        family_support_scale = character(), # TODO
+        fbg_baseline_mg = numeric(),
+        fbg_baseline_mmol = numeric(),
+        fbg_updated = numeric(),
+        fbg_updated_date = date(),
+        fbg_updated_date = date(),
+        fbg_updated_mg = numeric(),
+        fbg_updated_mmol = numeric(),
+        file_name = character(),
         gender = character(),
+        hb1ac_baseline = numeric(),
+        hb1ac_updated = numeric(),
+        hba1c_updated = numeric(),
+        hba1c_updated_date = date(),
+        hba1c_updated_date = date(),
         height = numeric(),
-        inactive_reason = character(),
-        insulin_dosage = character(),
+        hospitalisation_cause = character(),
+        hospitalisation_date = date(),
+        id = character(),
         insulin_regimen = character(),
         last_clinic_visit_date = date(),
-        lost_age = integer(),
+        last_remote_followup_date = date(),
         lost_date = date(),
-        meter_received_date = date(), # TODO
-        patient_id = character(),
-        patient_name = character(),
+        name = character(),
+        observations = character(),
+        observations_category = character(),
         province = character(),
         recruitment_date = date(),
-        remarks = character(),
-        remote_followup_currmonth = date(),
+        remote_followup = date(),
+        sheet_name = character(),
+        sheet_name = character(),
         status = character(),
+        status_out = character(),
         support_from_a4d = character(),
         t1d_diagnosis_age = integer(),
         t1d_diagnosis_date = date(),
+        t1d_diagnosis_with_dka = logical(),
         testing_fqr_pday = integer(),
+        tracker_month = character(),
+        tracker_year = integer(),
         updated_2022_date = date(),
-        updated_fbg = numeric(),
-        updated_fbg_date = date(),
-        updated_hba1c = numeric(),
-        updated_hba1c_date = date(),
         weight = numeric()
     )
 
-    cols_missing <-
-        colnames(standard_df)[!colnames(standard_df) %in% colnames(df_patient_raw)]
-    df[cols_missing] <- NA
+    cols_extra <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
+    logInfo("Extra columns in patient data: ", cols_extra)
 
+    cols_missing <-
+        colnames(schema)[!colnames(schema) %in% colnames(df_patient_raw)]
+    logInfo("Missing columns in patient data: ", cols_missing)
+
+    # add all columns of schema to df_patient_raw
+    # # keep all rows, only append missing cols
+    df_patient <- merge.default(df_patient_raw, schema, all.x = T)
+    df_patient <- df_patient[colnames(schema)]
 
     unregisterLogger(logfile)
 
