@@ -299,7 +299,7 @@ reading_patient_data_2 <-
 
             patient_df <-
                 harmonize_patient_data_columns_2(patient_df, columns_synonyms)
-
+            testit::assert("id" %in% colnames(patient_df))
             # -- if we have duplicate columns, merge them
             if (anyDuplicated(colnames(patient_df)) > 0) {
                 duplicated_cols <- colnames(patient_df) %>%
@@ -352,12 +352,12 @@ reading_patient_data_2 <-
                 df_raw,
                 patient_list %>%
                     dplyr::select(-c(
-                        baseline_fbg,
-                        baseline_hba1c,
-                        patient_name,
+                        fbg_baseline,
+                        hba1c_baseline,
+                        name,
                         updated_2022_date
                     )),
-                by = "patient_id",
+                by = "id",
                 relationship = "many-to-one"
             )
             logDebug("Finish extracting patient list.")
