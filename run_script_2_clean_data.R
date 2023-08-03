@@ -109,7 +109,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mmol" %in% colnames(df_patient_raw)) {
         logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
         df_patient_raw <-
-            extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol.")
+            extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol")
         df_patient_raw <-
             parse_invalid_dates(df_patient_raw, "fbg_updated_date")
         logInfo("Finished parsing dates from fbg_updated_mmol.")
