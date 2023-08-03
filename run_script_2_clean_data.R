@@ -88,22 +88,31 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     # --- TRANSFORMATIONS ---
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value
-    if (!"updated_hba1c_date" %in% colnames(df_patient_raw)) {
-        logInfo("Column updated_hba1c_date not found. Trying to parse from updated_hba1c.")
+    if (!"hba1c_updated_date" %in% colnames(df_patient_raw) && "hba1c_updated" %in% colnames(df_patient_raw)) {
+        logInfo("Column updated_hba1c_date not found. Trying to parse from hba1c_updated.")
         df_patient_raw <-
-            extract_date_from_measurement(df_patient_raw, "updated_hba1c")
+            extract_date_from_measurement(df_patient_raw, "hba1c_updated")
         df_patient_raw <-
-            parse_invalid_dates(df_patient_raw, "updated_hba1c_date")
-        logInfo("Finished parsing dates from updated_hba1c.")
+            parse_invalid_dates(df_patient_raw, "hba1c_updated_date")
+        logInfo("Finished parsing dates from hba1c_updated.")
     }
 
-    if (!"updated_fbg_date" %in% colnames(df_patient_raw)) {
-        logInfo("Column updated_fbg_date not found. Trying to parse from updated_hba1c.")
+    if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mg" %in% colnames(df_patient_raw)) {
+        logInfo("Column updated_fbg_date not found. Trying to parse from fbg_updated_mg.")
         df_patient_raw <-
-            extract_date_from_measurement(df_patient_raw, "updated_fbg")
+            extract_date_from_measurement(df_patient_raw, "fbg_updated_mg")
         df_patient_raw <-
-            parse_invalid_dates(df_patient_raw, "updated_fbg_date")
-        logInfo("Finished parsing dates from updated_fbg.")
+            parse_invalid_dates(df_patient_raw, "fbg_updated_date")
+        logInfo("Finished parsing dates from fbg_updated_mg.")
+    }
+
+    if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mmol" %in% colnames(df_patient_raw)) {
+        logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
+        df_patient_raw <-
+            extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol.")
+        df_patient_raw <-
+            parse_invalid_dates(df_patient_raw, "fbg_updated_date")
+        logInfo("Finished parsing dates from fbg_updated_mmol.")
     }
 
     df_patient_raw <- bmi_fix(df_patient_raw)
@@ -139,14 +148,13 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         edu_occ = character(),
         fbg_baseline_mg = numeric(),
         fbg_baseline_mmol = numeric(),
-        fbg_updated = numeric(),
         fbg_updated_date = as.Date(1),
         fbg_updated_mg = numeric(),
         fbg_updated_mmol = numeric(),
         file_name = character(),
         gender = character(),
-        hb1ac_baseline = numeric(),
-        hb1ac_updated = numeric(),
+        hba1c_baseline = numeric(),
+        hba1c_updated = numeric(),
         hba1c_updated_date = as.Date(1),
         height = numeric(),
         hospitalisation_cause = character(),
@@ -191,27 +199,12 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     # make sure columns have the correct data type defined in "schema"
     df_patient <-
         df_patient %>%
-        mutate(
-            across(
-                schema %>% select(where(is.character)) %>% names(),
-                ~ as.character(.x)
-            ),
-            across(
-                schema %>% select(where(is.numeric)) %>% names(),
-                ~ as.numeric(.x)
-            ),
-            across(
-                schema %>% select(where(is.logical)) %>% names(),
-                ~ as.logical(.x)
-            ),
-            across(
-                schema %>% select(where(is.Date)) %>% names(),
-                ~ as.Date(.x)
-            ),
-            across(
-                schema %>% select(where(is.integer)) %>% names(),
-                ~ as.integer(.x)
-            )
+        hablar::convert(
+            # hablar::chr(schema %>% select(where(is.character)) %>% names()),
+            hablar::num(schema %>% select(where(is.numeric)) %>% names()),
+            hablar::lgl(schema %>% select(where(is.logical)) %>% names()),
+            hablar::dte(schema %>% select(where(is.Date)) %>% names()),
+            hablar::int(schema %>% select(where(is.integer)) %>% names())
         )
 
     unregisterLogger(logfile)

@@ -163,7 +163,7 @@ read_raw_csv <- function(file) {
         file,
         name_repair = "check_unique",
         progress = FALSE,
-        show_col_types = TRUE,
+        show_col_types = FALSE,
         col_types = readr::cols(.default = "c")
     )
     logInfo("Finished loading data from csv.")

@@ -352,7 +352,8 @@ reading_patient_data_2 <-
                 df_raw,
                 patient_list %>%
                     dplyr::select(-any_of(c(
-                        "fbg_baseline",
+                        "fbg_baseline_mg",
+                        "fbg_baseline_mmol",
                         "hba1c_baseline",
                         "name",
                         "updated_2022_date"
