@@ -1001,19 +1001,16 @@ extract_date_from_measurement <-
     function(df, colname) {
         df <- df %>% separate_wider_regex(
             !!colname,
-            c(colname = ".*", "[(]", orig_colname_date = ".*?", "[)]?")
+            c(
+                set_names(".*", colname),
+                "[(]",
+                set_names(".*?", paste0(colname, "_date")),
+                "[)]?"
+            )
         )
 
-        if (colname == "hba1c_updated") {
-            df <- df %>% rename(hba1c_updated = orig_colname, hba1c_updated_date = orig_colname_date)
-        }
-
-        if (colname == "fbg_updated_mg") {
-            df <- df %>% rename(fbg_updated_mg = orig_colname, fbg_updated_date = orig_colname_date)
-        }
-
-        if (colname == "fbg_updated_mmol") {
-            df <- df %>% rename(fbg_updated_mmol = orig_colname, fbg_updated_date = orig_colname_date)
+        if (colname == "fbg_updated_mmol" || colname == "fbg_updated_mg") {
+            df <- df %>% rename_with(~str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
         df
