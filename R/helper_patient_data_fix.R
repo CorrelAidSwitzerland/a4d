@@ -999,7 +999,10 @@ clean_tracker_raw_patient_data <- function(data) {
 #' @return data frame with the original column and a new colname_date column.
 extract_date_from_measurement <-
     function(df, colname) {
-        df <- df %>% separate_wider_regex(!!colname, c(colname = ".*", "[(]", orig_colname_date = ".*?", "[)]?"))
+        df <- df %>% separate_wider_regex(
+            !!colname,
+            c(colname = ".*", "[(]", orig_colname_date = ".*?", "[)]?")
+        )
 
         if (colname == "hba1c_updated") {
             df <- df %>% rename(hba1c_updated = orig_colname, hba1c_updated_date = orig_colname_date)
