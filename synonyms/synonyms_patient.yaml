@@ -79,23 +79,24 @@ fbg_baseline_mg:
   - baseline fbg m/dl
 fbg_baseline_mmol:
   - Baseline FBG (mmol/L)
-fbg_updated:
+fbg_updated_mg:
   - FBG (mg/dL) - UPDATED
   - Updated FBG (mg/dL)
-  - Updated FBG (mmol/L)
-  - updated fbg mmol/dl
   - Updated FBG FBG (mg/dL)
   - updated fbg fbg mg/dl
   - Updated FBG mg/dl
   - Updated FBG ml/dL
   - Updated FBG or CBG mg/dl
-  - Updated FBG or CBG mmol/L
-  - updated fbg or cbg mmol/dl
   - Updated Mean FBG (mg/%)
-  - Updated Mean FBG (mmol/L)
   - Updated Mean FBG (mg/dL)
   - Updated SMBG or CBG (mg/dL) Date
   - Updated SMBG or CBG mg/dL
+fbg_updated_mmol:
+  - Updated FBG (mmol/L)
+  - updated fbg mmol/dl
+  - Updated FBG or CBG mmol/L
+  - updated fbg or cbg mmol/dl
+  - Updated Mean FBG (mmol/L)
 fbg_updated_date:
   - Updated FBG Date
   - Updated FBG or CBG Date
@@ -156,6 +157,7 @@ last_clinic_visit_date:
   - last clinic visit date
 last_remote_followup_date:
   - last remote follow update date
+  - Last Remote Follow Up Date
 latest_complication_screenning:
   - Complication Screening (starting from Q2 2021)
   - Latest Complication Screening (select from list)
