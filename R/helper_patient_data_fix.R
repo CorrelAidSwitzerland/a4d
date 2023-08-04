@@ -33,17 +33,56 @@ convert_to <- function(x, cast_fnc, error_val) {
 }
 
 
-check_numeric_borders <- function(vector,
-                                  max,
-                                  min) {
-    vector <- as.numeric(vector)
-    vector <- ifelse(vector > max,
-        NA,
-        vector
+#' @title Fix age column.
+#'
+#' @description
+#' Based on date of birth calculate the current age of the patient.
+#' If this age is different than the given patient age, we take the calculated one.
+#'
+#'
+#' @param age patient age.
+#' @param dob patient date of birth.
+#' @param tracker_year year the tracker was filled out.
+#' @param tracker_month month the tracker was filled out.
+#'
+#' @return fixed age.
+#' @export
+fix_age <- function(age, dob, tracker_year, tracker_month) {
+    calc_age <- age
+
+    if (!is.na(dob)) {
+        dob <- as.Date(dob)
+        calc_age <- tracker_year - lubridate::year(dob)
+        delta_month <- tracker_month - lubridate::month(dob)
+        if (delta_month < 0) {
+            calc_age <- calc_age - 1
+        }
+
+        if (calc_age != age) {
+            logInfo("Age ", age, " is different from calculated age ", calc_age, ". Using calculated age instead of original age.")
+        }
+
+        if (calc_age < 0) {
+            logInfo("Calculated age is negative. Something went wrong.")
+            calc_age <- 999999
+        }
+    }
+
+    calc_age
+}
+
+
+check_numeric_borders <- function(x,
+                                  min,
+                                  max) {
+    x <- as.numeric(x)
+    x <- ifelse(x > max,
+        NA_real_,
+        x
     )
-    vector <- ifelse(vector < min,
-        NA,
-        vector
+    x <- ifelse(x < min,
+        NA_real_,
+        x
     )
 }
 
@@ -77,19 +116,6 @@ fix_gender <- function(d) {
 }
 
 
-
-
-# age ####
-# ______________________________________________
-# TODO: Double check age by taking dif between birth date & last visit date
-
-fix_age <- function(d) {
-    d <- try(as.numeric(d), silent = TRUE)
-    if (class(d) == "try-error") {
-        d <- 999999
-    }
-    return(d)
-}
 
 
 # age_diagnosis ####
@@ -683,23 +709,28 @@ fix_height <- function(d) {
 
 # "bmi" ####
 # ______________________________________________
-par_max_bmi <- 60
-par_min_bmi <- 4
+bmi_upper_limit <- 60
+bmi_lower_limit <- 4
 
 
-fix_bmi <- function(d, par_max_bmi, par_min_bmi) {
-    if (!is.na(d)) {
-        d <- try(check_numeric_borders(d, par_max_bmi, par_min_bmi),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
+#' @title Check valid values for bmi.
+#'
+#' @description
+#' Check if bmi is between 60 and 4, set NA otherwise.
+#' Set bmi to NA if either weight or height is NA.
+#'
+#' @param bmi bmi value.
+#' @param height height value.
+#' @param weight weight value.
+#'
+#' @return data frame with corrected bmi column.
+fix_bmi <- function(bmi, height, weight) {
+    if (is.na(weight) | is.na(height)) {
+        logInfo("Found rows with either height or weight values missing. Setting bmi to NA.")
+        bmi <- NA_real_
     }
 
-    return(d)
+    bmi <- check_numeric_borders(bmi, min = bmi_lower_limit, max = bmi_upper_limit)
 }
 
 
@@ -735,17 +766,6 @@ fix_hospitalisation <- function(d) {
 }
 
 
-# "additional_support"
-# ______________________________________________
-
-fix_additional_support <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
 # "id" ####
 # ______________________________________________
 fix_id <- function(d) {
@@ -903,116 +923,6 @@ fix_dka_diag <- function(d) {
     return(d)
 }
 
-# "family_support_scale" ####
-# NO IDEA WHAT THAT IS
-
-
-
-
-
-
-# MAIN/WRAPPER FUNCTION ---------------------------------------------------
-
-
-# Output 1: Cleaned data table
-# TODO Output 2: Table containing data checklist
-
-clean_tracker_raw_patient_data <- function(data) {
-    data_c <- data %>%
-        rowwise() %>%
-        mutate(
-            id = fix_id(id),
-            gender = fix_gender(gender),
-            age = fix_age(age),
-            age_diagnosis = fix_age_diagnosis(age_diagnosis),
-            recruitment_date = fix_date_cols(recruitment_date),
-            baseline_hba1c_prc = fix_hba1c(baseline_hba1c_prc),
-            updated_hba1c_date = fix_date_cols(updated_hba1c_date),
-            updated_hba1c_prc = fix_hba1c(updated_hba1c_prc),
-            updated_fbg_date = fix_date_cols(updated_fbg_date),
-            baseline_fbg_mgdl = fbg_fix(
-                baseline_fbg_mgdl,
-                country = unique(data$country_code),
-                hospital = unique(data$clinic_code)
-            ),
-            # NOT FIXING FOR NOW
-            updated_fbg_mgdl = fbg_fix(
-                updated_fbg_mgdl,
-                country = unique(data$country_code),
-                hospital = unique(data$clinic_code)
-            ),
-            # NOT FIXING FOR NOW
-            support_from_a4d = fix_additional_support(support_from_a4d),
-            insulin_regimen = fix_insulin_reg(insulin_regimen),
-            # insulin_dosage = fix_insulin_dos(insulin_dosage),
-            testing_fqr_pday = fix_testfqr(testing_fqr_pday),
-            # required_insulin = fix_required_insulin(required_insulin),
-            # required_insulin_product_name = fix_required_insulin_name(required_insulin_product_name),
-            est_strips_pmoth = fix_est_strips_pmoth(est_strips_pmoth),
-            status = fix_status(status),
-            patient_name = patient_name,
-            province = province,
-            dob = dob,
-            edu_occ = edu_occ,
-            sheet_name = sheet_name,
-            tracker_mo = tracker_mo,
-            tracker_year = tracker_year,
-            country_code = country_code,
-            clinic_code = clinic_code,
-            testing_fqr = as.numeric(testing_fqr),
-            # NEED TO REMOVE
-            updated_fbg_sample = fix_fbg_sample(updated_fbg_sample),
-            # POTENTIALLY NEED TO CHECK AT EXTRACTION PHASE
-            blood_pressure_sys_mmhg = fix_blood_pressure_sys(blood_pressure_sys_mmhg),
-            blood_pressure_dias_mmhg = fix_blood_pressure_dias(blood_pressure_dias_mmhg),
-            weight = fix_weight(weight),
-            height = fix_height(height),
-            bmi = fix_bmi(bmi),
-            bmi_date = fix_date_cols(bmi_date),
-            hospitalisation = fix_hospitalisation(hospitalisation),
-            last_clinic_visit_date = fix_date_cols(last_clinic_visit_date),
-            additional_support = fix_additional_support(additional_support),
-            latest_complication_screening_type = fix_latest_complic(latest_complication_screening_type),
-            remarks = fix_remarks(remarks),
-            dm_complication_comment = fix_complication_comment(dm_complication_comment),
-            dm_complication_other = fix_complication(dm_complication_other),
-            dm_complication_kidney = fix_complication(dm_complication_kidney),
-            dm_complication_eye = fix_complication(dm_complication_eye),
-            num_admin_hosp_total = fix_num_hosp(num_admin_hosp_total),
-            num_admin_hosp_dka = fix_num_hosp(num_admin_hosp_dka),
-            num_admin_hosp_hypo = fix_num_hosp(num_admin_hosp_hypo),
-            num_admin_hosp_other = fix_num_hosp(num_admin_hosp_other),
-            num_admin_hosp_other_reason = fix_admin_hosp(num_admin_hosp_other_reason),
-            inactive_reason = fix_inactive_reason(inactive_reason),
-            lost_date = fix_date_cols(lost_date),
-            lost_age = fix_lost_age(lost_age),
-            diag_date = fix_date_cols(diag_date),
-            dka_diag = fix_dka_diag(dka_diag)
-            # family_support_scale = family_support_scale  # NOT FIXING FOR NOW
-        ) %>%
-        ungroup()
-    # %>% select(id:family_support_scale)
-
-    data_c %>% mutate(
-        across(
-            c(
-                recruitment_date,
-                updated_hba1c_date,
-                updated_fbg_date,
-                bmi_date,
-                last_clinic_visit_date,
-                lost_date,
-                diag_date
-            ),
-            as.Date
-        )
-    )
-
-    data_c <- as.data.frame(data_c)
-
-    return(data_c)
-}
-
 
 #' @title Split a column value into value and date.
 #'
@@ -1045,25 +955,6 @@ extract_date_from_measurement <-
         df
     }
 
-
-
-#' @title Set bmi value to NA if height or weight is not available.
-#'
-#' @param df data frame with patient data.
-#'
-#' @return data frame with corrected bmi column.
-fix_bmi <- function(df) {
-    if ("height" %in% colnames(df) &
-        "weight" %in% colnames(df)) {
-        if (any(is.na(df$weight)) | any(is.na(df$height))) {
-            logInfo("Found rows with either height or weight values missing. Setting bmi to NA.")
-            df <- df %>%
-                mutate(bmi = if_else(is.na(height) |
-                    is.na(weight), NA_real_, bmi))
-        }
-    }
-    df
-}
 
 
 
