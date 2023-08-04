@@ -204,7 +204,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         df_patient %>%
         rowwise() %>%
         mutate(
-            bmi = fix_bmi(bmi)
+            bmi = fix_bmi(bmi, height, weight),
+            age = fix_age(age, dob, tracker_year, tracker_month) # fix DOB first!
         ) %>%
         mutate(
             across(

@@ -1,17 +1,17 @@
 test_that("check_numeric_borders works", {
     test_vec <- c(1, 2, 3.4)
-    expect_equal(check_numeric_borders(test_vec, 5, 0), test_vec)
-    expect_equal(check_numeric_borders(test_vec, 3.4, 1), test_vec)
-    expect_equal(check_numeric_borders(test_vec, 3, 0), c(1, 2, NA))
-    expect_equal(check_numeric_borders(test_vec, 5, 2), c(NA, 2, 3.4))
-    expect_equal(check_numeric_borders(test_vec, 3, 3), c(NA, NA, NA))
+    expect_equal(check_numeric_borders(test_vec, min = 0, max = 5), test_vec)
+    expect_equal(check_numeric_borders(test_vec, max = 3.4, min = 1), test_vec)
+    expect_equal(check_numeric_borders(test_vec, max = 3, min = 0), c(1, 2, NA))
+    expect_equal(check_numeric_borders(test_vec, max = 5, min = 2), c(NA, 2, 3.4))
+    expect_equal(check_numeric_borders(test_vec, max = 3, min = 3), as.numeric(c(NA, NA, NA)))
 })
 
 
-test_that("bmi_fix works", {
-    test_df <- data.frame(weight = c(1, NA, 3, NA), height = c(1, 2, NA, NA), bmi = c(1, 2, 3, 4))
-    expected_df <- data.frame(weight = c(1, NA, 3, NA), height = c(1, 2, NA, NA), bmi = c(1, NA, NA, NA))
-    expect_equal(bmi_fix(test_df), expected_df)
+test_that("fix_bmi works", {
+    test_df <- data.frame(weight = c(1, NA, 3, NA), height = c(1, 2, NA, NA), bmi = c(5, 2, 3, 4))
+    expected_bmi <- c(5, NA, NA, NA)
+    expect_equal(test_df %>% rowwise() %>% mutate(across(bmi, \(x) fix_bmi(x, height, weight))) %>% select(bmi) %>% pull(), expected_bmi)
 })
 
 
@@ -66,4 +66,11 @@ test_that("convert_to works", {
     expect_equal(convert_to("2023", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
     expect_equal(convert_to("45007", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
     expect_true(is.na(convert_to("", as.Date, "9999-01-01")))
+})
+
+
+test_that("fix_age works", {
+    dob <- "2010-05-01"
+    expect_equal(fix_age(10, dob, 2020, 6), 10)
+    expect_equal(fix_age(10, dob, 2020, 4), 9)
 })
