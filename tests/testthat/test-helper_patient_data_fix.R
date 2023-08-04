@@ -14,8 +14,56 @@ test_that("bmi_fix works", {
     expect_equal(bmi_fix(test_df), expected_df)
 })
 
+
 test_that("split_bp_in_sys_and_dias works", {
     test_df <- data.frame(blood_pressure_mmhg = c("96/55", "101/57", NA))
     expected_df <- tibble(blood_pressure_sys_mmhg = c("96", "101", NA), blood_pressure_dias_mmhg = c("55", "57", NA))
     expect_equal(split_bp_in_sys_and_dias(test_df), expected_df)
+})
+
+
+test_that("convert_to works", {
+    # numeric
+    expect_equal(convert_to(1, as.numeric, 999999), 1)
+    expect_equal(convert_to(123.123, as.numeric, 999999), 123.123)
+    expect_equal(convert_to(0, as.numeric, 999999), 0)
+    expect_equal(convert_to(-0.01, as.numeric, 999999), -0.01)
+    expect_equal(convert_to("1234", as.numeric, 999999), 1234)
+    expect_equal(convert_to(".123", as.numeric, 999999), .123)
+    expect_equal(convert_to("a", as.numeric, 999999), 999999)
+    expect_true(is.na(convert_to(NA, as.numeric, 999999)))
+
+    # logical
+    expect_true(convert_to(1, as.logical, FALSE))
+    expect_false(convert_to(0, as.logical, FALSE))
+    expect_true(convert_to(123154, as.logical, FALSE))
+    expect_true(convert_to(-.123, as.logical, FALSE))
+    expect_true(convert_to("true", as.logical, FALSE))
+    expect_true(convert_to("TRUE", as.logical, FALSE))
+    expect_true(convert_to("T", as.logical, FALSE))
+    expect_false(convert_to("false", as.logical, FALSE))
+    expect_false(convert_to("FALSE", as.logical, FALSE))
+    expect_false(convert_to("F", as.logical, FALSE))
+    expect_true(is.na(convert_to("", as.logical, FALSE)))
+    expect_true(is.na(convert_to(NA, as.logical, FALSE)))
+    expect_false(convert_to(c(), as.logical, FALSE))
+
+    # integer
+    expect_equal(convert_to(1, as.integer, 999999), 1)
+    expect_equal(convert_to(123, as.integer, 999999), 123)
+    expect_equal(convert_to(-1, as.integer, 999999), -1)
+    expect_equal(convert_to(.1, as.integer, 999999), 0)
+    expect_equal(convert_to(-.1, as.integer, 999999), 0)
+    expect_equal(convert_to(123.123, as.integer, 999999), 123)
+    expect_equal(convert_to("1", as.integer, 999999), 1)
+    expect_equal(convert_to("1.5", as.integer, 999999), 1)
+    expect_true(is.na(convert_to("", as.integer, 999999)))
+    expect_equal(convert_to(c(), as.integer, 999999), 999999)
+    expect_equal(convert_to(T, as.integer, 999999), 1)
+
+    # date
+    expect_equal(convert_to("2023-01-01", as.Date, "9999-01-01"), as.Date("2023-01-01"))
+    expect_equal(convert_to("2023", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
+    expect_equal(convert_to("45007", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
+    expect_true(is.na(convert_to("", as.Date, "9999-01-01")))
 })
