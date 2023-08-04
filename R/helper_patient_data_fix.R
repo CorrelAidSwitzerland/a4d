@@ -5,6 +5,34 @@
 
 # Base Functions ####
 
+#' @title Try to convert x into a target type.
+#'
+#' @description
+#' Use cast_fnc to cast x to target type.
+#' If that cast fails, output error_val instead.
+#' If x is already NA, output NA
+#'
+#' @param x value to convert to numeric
+#' @param cast_fnc function to use to cast x
+#' @param error_val error value to use when as.numeric fails
+#'
+#' @return converted x
+#' @export
+convert_to <- function(x, cast_fnc, error_val) {
+    x <- tryCatch(
+        cast_fnc(x),
+        error = function(e) x <- error_val,
+        warning = function(w) x <- error_val
+    )
+
+    if (length(x) == 0) {
+        x <- error_val
+    }
+
+    x
+}
+
+
 check_numeric_borders <- function(vector,
                                   max,
                                   min) {
@@ -1006,11 +1034,12 @@ extract_date_from_measurement <-
                 "[(]",
                 set_names(".*?", paste0(colname, "_date")),
                 "[)]?"
-            )
+            ),
+            too_few = "align_start"
         )
 
         if (colname == "fbg_updated_mmol" || colname == "fbg_updated_mg") {
-            df <- df %>% rename_with(~str_replace(.x, "_mmol_date|_mg_date", "_date"))
+            df <- df %>% rename_with(~ str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
         df
@@ -1023,7 +1052,7 @@ extract_date_from_measurement <-
 #' @param df data frame with patient data.
 #'
 #' @return data frame with corrected bmi column.
-bmi_fix <- function(df) {
+fix_bmi <- function(df) {
     if ("height" %in% colnames(df) &
         "weight" %in% colnames(df)) {
         if (any(is.na(df$weight)) | any(is.na(df$height))) {

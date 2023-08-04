@@ -196,15 +196,33 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
+    # apply custom fix functions, see
+
+
     # make sure columns have the correct data type defined in "schema"
     df_patient <-
         df_patient %>%
-        hablar::convert(
-            # hablar::chr(schema %>% select(where(is.character)) %>% names()),
-            hablar::num(schema %>% select(where(is.numeric)) %>% names()),
-            hablar::lgl(schema %>% select(where(is.logical)) %>% names()),
-            hablar::dte(schema %>% select(where(is.Date)) %>% names()),
-            hablar::int(schema %>% select(where(is.integer)) %>% names())
+        rowwise() %>%
+        mutate(
+            bmi = fix_bmi(bmi)
+        ) %>%
+        mutate(
+            across(
+                schema %>% select(where(is.numeric)) %>% names(),
+                \(x) convert_to(x, as.numeric, 999999)
+            ),
+            across(
+                schema %>% select(where(is.logical)) %>% names(),
+                \(x) convert_to(x, as.logical, FALSE)
+            ),
+            across(
+                schema %>% select(where(is.Date)) %>% names(),
+                \(x) convert_to(x, as.Date, as.Date("9999-01-01"))
+            ),
+            across(
+                schema %>% select(where(is.integer)) %>% names(),
+                \(x) convert_to(x, as.integer, 999999)
+            )
         )
 
     unregisterLogger(logfile)
