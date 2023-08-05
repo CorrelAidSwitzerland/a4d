@@ -522,7 +522,17 @@ fix_insulin_reg <- function(d) {
                 "Premixed 30/70 BD",
                 "Modified conventional TID",
                 "NPH ",
-                "Others"
+                "Others",
+                "basal",
+                "premixed bd + bolus",
+                "premixed bd + glaridus",
+                "glargine",
+                "basal bolus",
+                "self-mixed bd",
+                "modified conventional",
+                "premixed 30/70",
+                "basal-bolus mdi (an)",
+                "other"
             )
         )) {
             d <- "999999"
