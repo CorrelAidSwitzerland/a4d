@@ -3,7 +3,7 @@
 # This function cleans the output of the "tidy" function by reformatting certain columns.
 # Basic functions are created and then applied to each piece of data available in one row.
 
-# Base Functions ####
+#### Base Functions ####
 
 #' @title Try to convert x into a target type.
 #'
@@ -33,6 +33,24 @@ convert_to <- function(x, cast_fnc, error_val) {
 }
 
 
+#' @title If x is outside its allowed range, return error value.
+#'
+#' @param x numeric value to check.
+#' @param min lower bound.
+#' @param max upper bound.
+#'
+#' @return either x or error value.
+#' @export
+cut_numeric_value <- function(x,
+                              min,
+                              max) {
+    x <- ifelse(x > max, ERROR_VAL_NUMERIC, x)
+    x <- ifelse(x < min, ERROR_VAL_NUMERIC, x)
+    x
+}
+
+#### age ####
+
 #' @title Fix age column.
 #'
 #' @description
@@ -44,10 +62,11 @@ convert_to <- function(x, cast_fnc, error_val) {
 #' @param dob patient date of birth.
 #' @param tracker_year year the tracker was filled out.
 #' @param tracker_month month the tracker was filled out.
+#' @param id patient id.
 #'
 #' @return fixed age.
 #' @export
-fix_age <- function(age, dob, tracker_year, tracker_month) {
+fix_age <- function(age, dob, tracker_year, tracker_month, id) {
     calc_age <- age
 
     if (!is.na(dob)) {
@@ -59,32 +78,52 @@ fix_age <- function(age, dob, tracker_year, tracker_month) {
         }
 
         if (calc_age != age) {
-            logInfo("Age ", age, " is different from calculated age ", calc_age, ". Using calculated age instead of original age.")
+            logInfo(
+                "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
+                "Using calculated age instead of original age."
+            )
         }
 
         if (calc_age < 0) {
-            logInfo("Calculated age is negative. Something went wrong.")
-            calc_age <- 999999
+            logInfo("Patient ", id, ": calculated age is negative. Something went wrong.")
+            calc_age <- ERROR_VAL_NUMERIC
         }
     }
 
     calc_age
 }
 
+#### bmi ####
+# ______________________________________________
+bmi_upper_limit <- 60
+bmi_lower_limit <- 4
 
-check_numeric_borders <- function(x,
-                                  min,
-                                  max) {
-    x <- as.numeric(x)
-    x <- ifelse(x > max,
-        NA_real_,
-        x
-    )
-    x <- ifelse(x < min,
-        NA_real_,
-        x
-    )
+
+#' @title Only accept value for bmi if there is also a weight and height.
+#'
+#' @description
+#' Set bmi to error val if either weight or height is NA.
+#'
+#' @param bmi numeric bmi value.
+#' @param weight numeric weight value.
+#' @param height numeric height value.
+#' @param id patient id.
+#'
+#' @return corrected bmi value
+#' @export
+fix_bmi <- function(bmi, weight, height, id) {
+    if (is.na(bmi)) {
+        return(NA_real_)
+    }
+
+    if (is.na(weight) || is.na(height)) {
+        logInfo("Patient ", id, ": height or weight value is missing. Setting bmi to error value.")
+        bmi <- ERROR_VAL_NUMERIC
+    }
+
+    bmi
 }
+
 
 replace_empty_string_with_NA <- function(string_vector) {
     output <- ifelse(string_vector == "", NA, string_vector)
@@ -618,7 +657,7 @@ par_lowest_blood_pressure_sys <- 20
 fix_blood_pressure_sys <- function(d) {
     if (!is.na(d)) {
         d <- try(
-            check_numeric_borders(
+            cut_numeric_value(
                 d,
                 par_highest_blood_pressure_sys,
                 par_lowest_blood_pressure_sys
@@ -645,7 +684,7 @@ par_lowest_blood_pressure_dias <- 20
 fix_blood_pressure_dias <- function(d) {
     if (!is.na(d)) {
         d <- try(
-            check_numeric_borders(
+            cut_numeric_value(
                 d,
                 par_highest_blood_pressure_dias,
                 par_lowest_blood_pressure_dias
@@ -670,7 +709,7 @@ par_min_weight_kg <- 0
 fix_weight <- function(d) {
     if (!is.na(d)) {
         d <-
-            try(check_numeric_borders(d, par_max_weight_kg, par_min_weight_kg),
+            try(cut_numeric_value(d, par_max_weight_kg, par_min_weight_kg),
                 silent = TRUE
             )
         if (class(d) == "try-error") {
@@ -701,7 +740,7 @@ transform_cm_to_m <- function(height) {
 fix_height <- function(d) {
     if (!is.na(d)) {
         d <- try(
-            check_numeric_borders(
+            cut_numeric_value(
                 transform_cm_to_m(d),
                 par_max_height, par_min_height
             ),
@@ -715,32 +754,6 @@ fix_height <- function(d) {
     }
 
     return(d)
-}
-
-# "bmi" ####
-# ______________________________________________
-bmi_upper_limit <- 60
-bmi_lower_limit <- 4
-
-
-#' @title Check valid values for bmi.
-#'
-#' @description
-#' Check if bmi is between 60 and 4, set NA otherwise.
-#' Set bmi to NA if either weight or height is NA.
-#'
-#' @param bmi bmi value.
-#' @param height height value.
-#' @param weight weight value.
-#'
-#' @return data frame with corrected bmi column.
-fix_bmi <- function(bmi, height, weight) {
-    if (is.na(weight) | is.na(height)) {
-        logInfo("Found rows with either height or weight values missing. Setting bmi to NA.")
-        bmi <- NA_real_
-    }
-
-    bmi <- check_numeric_borders(bmi, min = bmi_lower_limit, max = bmi_upper_limit)
 }
 
 
