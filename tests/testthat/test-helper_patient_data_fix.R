@@ -76,3 +76,63 @@ test_that("fix_age works", {
     expect_equal(fix_age(age = 10, dob = dob, tracker_year = 2020, tracker_month = 6, id = "1"), 10)
     expect_equal(fix_age(age = 10, dob = dob, tracker_year = 2020, tracker_month = 4, id = "1"), 9)
 })
+
+
+test_that("fix_gender returns the correct gender codes", {
+    # Test case 1: Test with a female gender
+    gender1 <- "female"
+    id1 <- "1"
+    expected1 <- "F"
+    result1 <- fix_gender(gender1, id1)
+    expect_equal(result1, expected1,
+        info = "For gender 'female', expected 'F'"
+    )
+
+    # Test case 2: Test with a male gender
+    gender2 <- "man"
+    id2 <- "2"
+    expected2 <- "M"
+    result2 <- fix_gender(gender2, id2)
+    expect_equal(result2, expected2,
+        info = "For gender 'man', expected 'M'"
+    )
+
+    # Test case 3: Test with an empty gender
+    gender3 <- ""
+    id3 <- "3"
+    expected3 <- NA_character_
+    result3 <- fix_gender(gender3, id3)
+    expect_equal(result3, expected3,
+        info = "For empty gender, expected NA"
+    )
+
+    # Test case 4: Test with another# gender not in the synonyms list
+    gender4 <- "unknown"
+    id4 <- "4"
+    expected4 <- "Other"
+    result4 <- fix_gender(gender4, id4)
+    expect_equal(result4, expected4,
+        info = "For gender 'unknown', expected 'Other'"
+    )
+})
+
+test_that("fix_gender log info for 'Other' gender", {
+    # Test case 1: Test with a valid gender
+    gender1 <- "female"
+    id1 <- "1"
+    expected1 <- ""
+    expect_equal(capture_output(fix_gender(gender1, id1)), expected1,
+        info = "For valid gender, expect no log info"
+    )
+
+    # Test case 2: Test with an 'Other' gender
+    gender2 <- "unknown"
+    id2 <- "2"
+    expected2 <- paste0(
+        "Patient ", id2, ": gender ", gender2,
+        " is not in the list of synonyms. Replacing it with Other."
+    )
+    expect_equal(capture_output(fix_gender(gender2, id2)), expected2,
+        info = "For 'Other' gender, expect log info"
+    )
+})
