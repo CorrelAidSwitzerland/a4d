@@ -94,10 +94,6 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
 }
 
 #### bmi ####
-# ______________________________________________
-bmi_upper_limit <- 60
-bmi_lower_limit <- 4
-
 
 #' @title Only accept value for bmi if there is also a weight and height.
 #'
@@ -129,31 +125,31 @@ replace_empty_string_with_NA <- function(string_vector) {
     output <- ifelse(string_vector == "", NA, string_vector)
 }
 
-# gender ####
+#### gender ####
 
-## Synonyms for gender
-par_synonyms_lower_female <-
-    c("female", "girl", "woman", "fem", "feminine", "f")
-par_synonyms_lower_male <- c("male", "boy", "man", "masculine", "m")
+#' @title Replace gender synonyms with either M, F or Other.
+#'
+#' @param gender patient gender.
+#' @param id patient id.
+#'
+#' @return Either M, F or Other.
+#' @export
+fix_gender <- function(gender, id) {
+    synonyms_female <- c("female", "girl", "woman", "fem", "feminine", "f")
+    synonyms_male <- c("male", "boy", "man", "masculine", "m")
 
-replace_gender_synonyms <- function(d,
-                                    synonyms_f = par_synonyms_lower_female,
-                                    synonyms_m = par_synonyms_lower_male) {
-    y <- case_when(
-        tolower(d) %in% synonyms_f ~ "F",
-        tolower(d) %in% synonyms_m ~ "M",
-        TRUE ~ "Other"
+    fixed_gender <- case_when(
+        tolower(gender) %in% synonyms_female ~ "F",
+        tolower(gender) %in% synonyms_male ~ "M",
+        is.na(gender) | gender == "" ~ NA_character_,
+        .default = "Other"
     )
-}
 
-fix_gender <- function(d) {
-    cleaned_gender <- try(replace_gender_synonyms(d), silent = TRUE)
-    if (class(cleaned_gender) == "try-error") {
-        cleaned_gender <- 999999
+    if (!is.na(fixed_gender) && fixed_gender == "Other") {
+        logInfo("Patient ", id, ": gender ", gender, " is not in the list of synonyms. Replacing it with ", fixed_gender, ".")
     }
-    return(cleaned_gender)
+    fixed_gender
 }
-
 
 
 

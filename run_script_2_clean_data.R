@@ -206,6 +206,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     # 1. make sure we fix any known problems in the raw character columns
     df_patient <-
         df_patient %>%
+        rowwise() %>%
         # 1. handle known problems before converting to target type
         mutate()
 
@@ -237,8 +238,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         rowwise() %>%
         # 3. fix remaining problems in the target data type
         mutate(
-            bmi = fix_bmi(bmi, weight, height, id),
-            age = fix_age(age, dob, tracker_year, tracker_month, id) # fix DOB first!
+            bmi = cut_numeric_value(fix_bmi(bmi, weight, height, id), min = 4, max = 60),
+            age = fix_age(age, dob, tracker_year, tracker_month, id), # fix DOB first!
+            gender = fix_gender(gender, id)
         ) %>%
         ungroup()
 
