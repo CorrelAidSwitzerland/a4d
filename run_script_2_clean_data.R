@@ -1,5 +1,8 @@
 options(readxl.show_progress = FALSE)
 options(future.rng.onMisuse = "ignore")
+ERROR_VAL_NUMERIC <<- 999999
+ERROR_VAL_CHARACTER <<- "999999"
+ERROR_VAL_DATE <<- "9999-09-09"
 
 `%dopar%` <- foreach::`%dopar%`
 
@@ -115,12 +118,15 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         logInfo("Finished parsing dates from fbg_updated_mmol.")
     }
 
-    df_patient_raw <- bmi_fix(df_patient_raw)
+    # blood pressure is given as sys/dias value pair,
+    # so we split this column in two separate columns
     if ("blood_pressure_mmhg" %in% colnames(df_patient_raw)) {
         df_patient_raw <- split_bp_in_sys_and_dias(df_patient_raw)
     }
 
     # --- META SCHEMA ---
+    # meta schema has all final columns for the database
+    # along with their corresponding data types
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),
@@ -178,39 +184,38 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         t1d_diagnosis_date = as.Date(1),
         t1d_diagnosis_with_dka = logical(),
         testing_fqr_pday = integer(),
-        tracker_month = character(),
+        tracker_month = integer(),
         tracker_year = integer(),
         updated_2022_date = as.Date(1),
         weight = numeric()
     )
 
     cols_extra <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
-    logInfo("Extra columns in patient data: ", cols_extra)
+    logInfo("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
 
     cols_missing <-
         colnames(schema)[!colnames(schema) %in% colnames(df_patient_raw)]
-    logInfo("Missing columns in patient data: ", cols_missing)
+    logInfo("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
 
     # add all columns of schema to df_patient_raw
-    # # keep all rows, only append missing cols
+    # keep all rows, only append missing cols
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
-    # apply custom fix functions, see
-
-
-    # make sure columns have the correct data type defined in "schema"
+    # the cleaning, fixing and validating happens in three major steps:
+    # 1. make sure we fix any known problems in the raw character columns
     df_patient <-
         df_patient %>%
-        rowwise() %>%
-        mutate(
-            bmi = fix_bmi(bmi, height, weight),
-            age = fix_age(age, dob, tracker_year, tracker_month) # fix DOB first!
-        ) %>%
+        # 1. handle known problems before converting to target type
+        mutate()
+
+    # 2. convert the refined character columns into the target data type
+    df_patient <-
+        df_patient %>%
         mutate(
             across(
                 schema %>% select(where(is.numeric)) %>% names(),
-                \(x) convert_to(x, as.numeric, 999999)
+                \(x) convert_to(x, as.numeric, ERROR_VAL_DATE)
             ),
             across(
                 schema %>% select(where(is.logical)) %>% names(),
@@ -218,13 +223,24 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             ),
             across(
                 schema %>% select(where(is.Date)) %>% names(),
-                \(x) convert_to(x, as.Date, as.Date("9999-01-01"))
+                \(x) convert_to(x, as.Date, as.Date(ERROR_VAL_DATE))
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
-                \(x) convert_to(x, as.integer, 999999)
+                \(x) convert_to(x, as.integer, ERROR_VAL_NUMERIC)
             )
         )
+
+    # 3. fix any remaining issues in the target data type
+    df_patient <-
+        df_patient %>%
+        rowwise() %>%
+        # 3. fix remaining problems in the target data type
+        mutate(
+            bmi = fix_bmi(bmi, weight, height, id),
+            age = fix_age(age, dob, tracker_year, tracker_month, id) # fix DOB first!
+        ) %>%
+        ungroup()
 
     unregisterLogger(logfile)
 
