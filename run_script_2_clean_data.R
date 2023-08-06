@@ -124,6 +124,16 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         df_patient_raw <- split_bp_in_sys_and_dias(df_patient_raw)
     }
 
+    # The maximum value available for hba1c will be around 14% - 18%,
+    # depending on the equipment being used.
+    # If the reading is above the maximum available value the > sign is used -
+    # we would prefer to retain this character in the database as it is important for data analysis.
+    df_patient_raw <- df_patient_raw %>%
+        mutate(
+            hba1c_baseline_exceeds = ifelse(grepl(">|<", hba1c_baseline), TRUE, FALSE),
+            hba1c_updated_exceeds = ifelse(grepl(">|<", hba1c_updated), TRUE, FALSE)
+        )
+
     # --- META SCHEMA ---
     # meta schema has all final columns for the database
     # along with their corresponding data types
@@ -160,7 +170,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         file_name = character(),
         gender = character(),
         hba1c_baseline = numeric(),
+        hba1c_baseline_exceeds = logical(),
         hba1c_updated = numeric(),
+        hba1c_updated_exceeds = logical(),
         hba1c_updated_date = as.Date(1),
         height = numeric(),
         hospitalisation_cause = character(),
@@ -209,7 +221,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         rowwise() %>%
         # 1. handle known problems before converting to target type
         mutate(
-            t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id)
+            t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id),
+            hba1c_baseline = str_replace(hba1c_baseline, "<|>", ""),
+            hba1c_updated = str_replace(hba1c_updated, "<|>", "")
         )
 
     # 2. convert the refined character columns into the target data type
@@ -218,7 +232,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         mutate(
             across(
                 schema %>% select(where(is.numeric)) %>% names(),
-                \(x) convert_to(x, as.numeric, ERROR_VAL_DATE)
+                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_DATE)
             ),
             across(
                 schema %>% select(where(is.logical)) %>% names(),
@@ -242,7 +256,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         mutate(
             bmi = cut_numeric_value(fix_bmi(bmi, weight, height, id), min = 4, max = 60),
             age = fix_age(age, dob, tracker_year, tracker_month, id), # fix DOB first!
-            gender = fix_gender(gender, id)
+            gender = fix_gender(gender, id),
+            hba1c_baseline = cut_numeric_value(hba1c_baseline, 4, 18)
         ) %>%
         ungroup()
 
