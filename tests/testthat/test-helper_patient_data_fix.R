@@ -80,59 +80,70 @@ test_that("fix_age works", {
 
 test_that("fix_gender returns the correct gender codes", {
     # Test case 1: Test with a female gender
-    gender1 <- "female"
-    id1 <- "1"
-    expected1 <- "F"
-    result1 <- fix_gender(gender1, id1)
-    expect_equal(result1, expected1,
+    expect_equal(fix_gender("female", "1"), "F",
         info = "For gender 'female', expected 'F'"
     )
 
     # Test case 2: Test with a male gender
-    gender2 <- "man"
-    id2 <- "2"
-    expected2 <- "M"
-    result2 <- fix_gender(gender2, id2)
-    expect_equal(result2, expected2,
+    expect_equal(fix_gender("man", "2"), "M",
         info = "For gender 'man', expected 'M'"
     )
 
     # Test case 3: Test with an empty gender
-    gender3 <- ""
-    id3 <- "3"
-    expected3 <- NA_character_
-    result3 <- fix_gender(gender3, id3)
-    expect_equal(result3, expected3,
+    expect_true(is.na(fix_gender("", "3")),
         info = "For empty gender, expected NA"
     )
 
     # Test case 4: Test with another# gender not in the synonyms list
-    gender4 <- "unknown"
-    id4 <- "4"
-    expected4 <- "Other"
-    result4 <- fix_gender(gender4, id4)
-    expect_equal(result4, expected4,
+    expect_equal(fix_gender("unknown", "4"), "Other",
         info = "For gender 'unknown', expected 'Other'"
     )
 })
 
-test_that("fix_gender log info for 'Other' gender", {
-    # Test case 1: Test with a valid gender
-    gender1 <- "female"
-    id1 <- "1"
-    expected1 <- ""
-    expect_equal(capture_output(fix_gender(gender1, id1)), expected1,
-        info = "For valid gender, expect no log info"
-    )
 
-    # Test case 2: Test with an 'Other' gender
-    gender2 <- "unknown"
-    id2 <- "2"
-    expected2 <- paste0(
-        "Patient ", id2, ": gender ", gender2,
-        " is not in the list of synonyms. Replacing it with Other."
-    )
-    expect_equal(capture_output(fix_gender(gender2, id2)), expected2,
-        info = "For 'Other' gender, expect log info"
-    )
+test_that("replace_empty_string_with_NA works", {
+    expect_equal(replace_empty_string_with_NA(c("a", "", "NA", NA, "b")), c("a", NA, "NA", NA, "b"))
+})
+
+
+test_that("extract_year_from_age works", {
+    expect_equal(extract_year_from_age("2y9m"), "2")
+    expect_equal(extract_year_from_age("10y10m"), "10")
+    expect_equal(extract_year_from_age("7y6m"), "7")
+})
+
+
+# Test case for detecting 'birth' in t1d_diagnosis_age
+test_that("Test for detecting 'birth' in t1d_diagnosis_age", {
+    expect_equal(fix_t1d_diagnosis_age("birth", "2000-01-01", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("At birth", "2000-01-01", "1"), "0")
+})
+
+# Test case for detecting 'born' in t1d_diagnosis_age
+test_that("Test for detecting 'born' in t1d_diagnosis_age", {
+    expect_equal(fix_t1d_diagnosis_age("born", "2020-01-01", "1"), "0")
+})
+
+# Test case for detecting 'month' in t1d_diagnosis_age
+
+test_that("Test for detecting 'month' in t1d_diagnosis_age", {
+    expect_equal(fix_t1d_diagnosis_age("4 months", "2020-01-01", "1"), "0")
+})
+
+# Test case for detecting 'y' in t1d_diagnosis_age
+test_that("Test for detecting 'y' in t1d_diagnosis_age", {
+    expect_equal(fix_t1d_diagnosis_age("5y", "2020-01-01", "1"), "5")
+    expect_equal(fix_t1d_diagnosis_age("10y10m", "2020-01-02", "2"), "10")
+})
+
+# Test case for handling NA values in t1d_diagnosis_age
+test_that("Test for handling NA values in t1d_diagnosis_age", {
+    expect_true(is.na(fix_t1d_diagnosis_age(NA, "2020-01-01", "1")))
+})
+
+# Test case for default case
+test_that("Test for default case in fix_t1d_diagnosis_age", {
+    expect_equal(fix_t1d_diagnosis_age("10", "2020-01-01", "1"), "10")
+    expect_equal(fix_t1d_diagnosis_age("0", "2020-01-01", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("1", "2020-01-01", "1"), "1")
 })

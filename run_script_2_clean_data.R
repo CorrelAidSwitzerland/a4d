@@ -208,7 +208,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         df_patient %>%
         rowwise() %>%
         # 1. handle known problems before converting to target type
-        mutate()
+        mutate(
+            t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id)
+        )
 
     # 2. convert the refined character columns into the target data type
     df_patient <-

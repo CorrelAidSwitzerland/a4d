@@ -49,6 +49,17 @@ cut_numeric_value <- function(x,
     x
 }
 
+
+#' @title replace empty strings with NA.
+#'
+#' @param string_vector character vector containing empty strings.
+#'
+#' @return
+#' @export
+replace_empty_string_with_NA <- function(string_vector) {
+    ifelse(string_vector == "", NA_character_, string_vector)
+}
+
 #### age ####
 
 #' @title Fix age column.
@@ -78,14 +89,14 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
         }
 
         if (calc_age != age) {
-            logInfo(
+            logWarn(
                 "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
-                "Using calculated age instead of original age."
+                ". Using calculated age instead of original age."
             )
         }
 
         if (calc_age < 0) {
-            logInfo("Patient ", id, ": calculated age is negative. Something went wrong.")
+            logWarn("Patient ", id, ": calculated age is negative. Something went wrong.")
             calc_age <- ERROR_VAL_NUMERIC
         }
     }
@@ -113,17 +124,13 @@ fix_bmi <- function(bmi, weight, height, id) {
     }
 
     if (is.na(weight) || is.na(height)) {
-        logInfo("Patient ", id, ": height or weight value is missing. Setting bmi to error value.")
+        logWarn("Patient ", id, ": height or weight value is missing. Setting bmi to error value.")
         bmi <- ERROR_VAL_NUMERIC
     }
 
     bmi
 }
 
-
-replace_empty_string_with_NA <- function(string_vector) {
-    output <- ifelse(string_vector == "", NA, string_vector)
-}
 
 #### gender ####
 
@@ -139,71 +146,56 @@ fix_gender <- function(gender, id) {
     synonyms_male <- c("male", "boy", "man", "masculine", "m")
 
     fixed_gender <- case_when(
+        is.na(gender) | gender == "" ~ NA_character_,
         tolower(gender) %in% synonyms_female ~ "F",
         tolower(gender) %in% synonyms_male ~ "M",
-        is.na(gender) | gender == "" ~ NA_character_,
         .default = "Other"
     )
 
     if (!is.na(fixed_gender) && fixed_gender == "Other") {
-        logInfo("Patient ", id, ": gender ", gender, " is not in the list of synonyms. Replacing it with ", fixed_gender, ".")
+        logWarn("Patient ", id, ": gender ", gender, " is not in the list of synonyms. Replacing it with ", fixed_gender, ".")
     }
     fixed_gender
 }
 
 
 
-# age_diagnosis ####
-# ______________________________________________
+#### t1d_diagnosis_age ####
 
 
-# Description: Transforms "1 y 6m" to "1.5" age, if not possible return NA
-extract_age_from_y_m <- function(age) {
-    final_age <- NA_real_
-    suppressWarnings(if (is.na(as.numeric(age))) {
-        age_str <- str_split(age, " |y|m") %>%
-            unlist()
-        age_str <- subset(age_str, age_str != "")
-
-        if (length(age_str) > 1) {
-            years <- as.numeric(age_str[1])
-            months <- mean(as.numeric(age_str[-1]))
-        } else {
-            years <- age_str
-            months <- 0
-        }
-
-        final_age <- years + (round(months / 12, 1))
-    })
-    return(final_age)
-}
-
-# @Description: Checks different possibilities for age of birth and transforms it into numeric age
-handle_age_diagnosis <- function(age_x) {
-    suppressWarnings(age_corrected <- ifelse(
-        grepl("birth|born", tolower(age_x)),
-        0,
-        ifelse(
-            !is.na(as.numeric(age_x)),
-            as.numeric(age_x),
-            extract_age_from_y_m(age_x)
-        )
-    ))
-    return(age_corrected)
-}
-
-# @Description: Try to transform age of diagnosis. If error occur give out 99999
-fix_age_diagnosis <- function(d) {
-    if (!is.na(d)) {
-        d <- try(handle_age_diagnosis(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- 99999
-        }
-    } else {
-        d <- NA
+#' @title Extract year from age descriptions like "10y5m"
+#'
+#' @description
+#' Example: "1y5m" -> "1"
+#'
+#' @param age text representation of diagnosis age
+#'
+#' @return year of given age as character.
+#' @export
+extract_year_from_age <- function(age) {
+    if (is.na(age)) {
+        return(age)
     }
+    unlist(strsplit(age, "y", fixed = T))[1]
+}
 
-    return(d)
+#' @title Try to replace text descriptions for age with proper numerical values.
+#'
+#' @param t1d_diagnosis_age patient age when diagnosed with T1D.
+#' @param t1d_diagnosis_date date when diagnosed with T1D.
+#' @param id patient id
+#'
+#' @return
+#' @export
+fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
+    age_corrected <- case_when(
+        is.na(t1d_diagnosis_age) ~ NA_character_,
+        grepl("birth|born|month", tolower(t1d_diagnosis_age)) ~ "0",
+        grepl("y", tolower(t1d_diagnosis_age)) ~ extract_year_from_age(t1d_diagnosis_age),
+        .default = t1d_diagnosis_age
+    )
+
+    age_corrected
 }
 
 
