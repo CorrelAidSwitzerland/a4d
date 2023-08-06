@@ -21,8 +21,14 @@
 convert_to <- function(x, cast_fnc, error_val) {
     x <- tryCatch(
         cast_fnc(x),
-        error = function(e) x <- error_val,
-        warning = function(w) x <- error_val
+        error = function(e) {
+            logError("Could not convert ", x, " with ", as.character(substitute(cast_fnc)))
+            x <- error_val
+        },
+        warning = function(w) {
+            logWarn("Could not convert ", x, " with ", as.character(substitute(cast_fnc)))
+            x <- error_val
+        }
     )
 
     if (length(x) == 0) {
@@ -58,6 +64,17 @@ cut_numeric_value <- function(x,
 #' @export
 replace_empty_string_with_NA <- function(string_vector) {
     ifelse(string_vector == "", NA_character_, string_vector)
+}
+
+
+#' @title Correct decimal sign.
+#'
+#' @param x character representation of a number.
+#'
+#' @return character representation with a correct decimal sign.
+#' @export
+correct_decimal_sign <- function(x) {
+    str_replace(x, ",", ".")
 }
 
 #### age ####
@@ -199,44 +216,9 @@ fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
 }
 
 
-# hba1c_prc ####
-# ______________________________________________
+#### hba1c ####
 
-# TODO Operationalization: Show where NA values exist DONE!
 
-# Set realistic hb1c values [%]
-par_lower_hb1c <- 2
-par_upper_hb1c <- 30
-
-# Functions for replacement
-exclude_unrealistic_hba1c <- function(x,
-                                      lower_hb1c,
-                                      upper_hb1c) {
-    # cases where there is a comma and not a dot
-    x <- str_replace(x, ",", ".")
-    # cases with signs
-    x <- ifelse(grepl(c("<|>"), x), "999999", x)
-    x <- as.numeric(x)
-    d <- ifelse((x < lower_hb1c | x > upper_hb1c), 999999, x)
-
-    return(d)
-}
-
-fix_hba1c <- function(d) {
-    if (!is.na(d)) {
-        d <-
-            try(exclude_unrealistic_hba1c(d, par_lower_hb1c, par_upper_hb1c),
-                silent = TRUE
-            )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
 
 
 # [12, 13] "fbg_mldl" ####

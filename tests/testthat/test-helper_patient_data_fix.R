@@ -147,3 +147,8 @@ test_that("Test for default case in fix_t1d_diagnosis_age", {
     expect_equal(fix_t1d_diagnosis_age("0", "2020-01-01", "1"), "0")
     expect_equal(fix_t1d_diagnosis_age("1", "2020-01-01", "1"), "1")
 })
+
+
+test_that("correct_decimal_sign works", {
+    expect_equal(correct_decimal_sign("12,2"), "12.2")
+})
