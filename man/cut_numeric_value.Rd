@@ -4,7 +4,7 @@
 \alias{cut_numeric_value}
 \title{If x is outside its allowed range, return error value.}
 \usage{
-cut_numeric_value(x, min, max)
+cut_numeric_value(x, min, max, col_name = "")
 }
 \arguments{
 \item{x}{numeric value to check.}
@@ -12,6 +12,8 @@ cut_numeric_value(x, min, max)
 \item{min}{lower bound.}
 
 \item{max}{upper bound.}
+
+\item{col_name}{column name if used with mutate/across.}
 }
 \value{
 either x or error value.

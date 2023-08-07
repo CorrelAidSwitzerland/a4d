@@ -152,3 +152,29 @@ test_that("Test for default case in fix_t1d_diagnosis_age", {
 test_that("correct_decimal_sign works", {
     expect_equal(correct_decimal_sign("12,2"), "12.2")
 })
+
+
+test_that("Replaces high textual description with numeric value 200", {
+    expect_equal(fix_fbg("High"), "200")
+    expect_equal(fix_fbg("Bad"), "200")
+    expect_equal(fix_fbg("Hi"), "200")
+})
+
+test_that("Replaces medium textual description with numeric value 170", {
+    expect_equal(fix_fbg("Medium"), "170")
+    expect_equal(fix_fbg("Med"), "170")
+})
+
+test_that("Replaces low textual description with numeric value 140", {
+    expect_equal(fix_fbg("Low"), "140")
+    expect_equal(fix_fbg("Good"), "140")
+    expect_equal(fix_fbg("Okay"), "140")
+})
+
+
+test_that("Does not replace other descriptions", {
+    fbg <- "123 (DKA)"
+    expected <- "123"
+    result <- fix_fbg(fbg)
+    expect_equal(result, expected)
+})

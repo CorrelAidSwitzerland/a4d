@@ -41,14 +41,26 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "") {
 #' @param x numeric value to check.
 #' @param min lower bound.
 #' @param max upper bound.
+#' @param col_name column name if used with mutate/across.
 #'
 #' @return either x or error value.
 #' @export
 cut_numeric_value <- function(x,
                               min,
-                              max) {
+                              max,
+                              col_name = "") {
+    old_error_count <- length(which(x == ERROR_VAL_NUMERIC))
     x <- ifelse(x > max, ERROR_VAL_NUMERIC, x)
     x <- ifelse(x < min, ERROR_VAL_NUMERIC, x)
+
+    if (ERROR_VAL_NUMERIC %in% x) {
+        new_error_count <- length(which(x == ERROR_VAL_NUMERIC)) - old_error_count
+        logWarn(
+            "Column ", col_name, " contains invalid values outside [", min, ", ", max, "]. ",
+            new_error_count, " values were replaced with ", ERROR_VAL_NUMERIC, "."
+        )
+    }
+
     x
 }
 
@@ -213,78 +225,8 @@ fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
 }
 
 
-#### hba1c ####
+#### fbg ####
 
-
-
-
-# [12, 13] "fbg_mldl" ####
-# ______________________________________________
-# Apply to baseline and updated values
-
-#### FBG
-# TODO Operationalization: Show where NA values exist
-
-
-# @TODO when loading real data:
-# Before running the code you need to assign the hospitals and countries
-# which use mmol or mg.
-# Go through the data and check the column headers of the respective columns.
-# Since we don't have all the real data yet, this needs to be configured.
-
-
-# Assign countries & hospitals to unit of fbg measurement
-# These info are done for the fake data only.
-mmol_countries <- c()
-mmol_hospitals <-
-    c("Clinic_LU", "Clinic_PE", "Clinic_YA", "Clinic_PU")
-mg_countries <- c("Country_1", "Country_2", "Country_3")
-mg_hospitals <- c(
-    "Clinic_DW",
-    "Clinic_TN",
-    "Clinic_EO",
-    "Clinic_VF",
-    "Clinic_BR",
-    "Clinic_KH",
-    "Clinic_XD",
-    "Clinic_QG",
-    "Clinic_YB",
-    "Clinic_FY",
-    "Clinic_CJ",
-    "Clinic_VW",
-    "Clinic_IX",
-    "Clinic_YA",
-    "Clinic_ZB",
-    "Clinic_EU",
-    "Clinic_IH"
-)
-
-# @Description: For a given country/hospital the fbg unit is returned
-# @country_id: ID of the country where patient values were taken
-# @hospital_id: ID of the hospital where patient values were taken
-# @Output: String with fbg unit "mg/dL", "mmol/L" or NA
-assign_fbg_unit_per_hospital <- function(hospital_id,
-                                         country_id,
-                                         mmol_ct = mmol_countries,
-                                         mmol_hos = mmol_hospitals,
-                                         mg_ct = mg_countries,
-                                         mg_hos = mg_hospitals) {
-    returned_unit <- case_when(
-        is.na(hospital_id) & is.na(country_id) ~ NA_character_,
-        hospital_id %in% mg_hos ~ "mg/dL",
-        country_id %in% mg_ct ~ "mg/dL",
-        hospital_id %in% mmol_hos ~ "mmol/L",
-        country_id %in% mmol_ct ~ "mmol/L",
-        TRUE ~ NA_character_
-    )
-
-    if (is.na(returned_unit)) {
-        warning(
-            "FBG unit used by hospital could not be matched ~ Assumed to be mmol/L. Check if allocation of real hospitals to mg/mmol unit was performed within the code (See 02_a4d_patient_tracker_format.R fbg_mgdl."
-        )
-    }
-    return(returned_unit)
-}
 
 # @Description: Makes sure FBG values are in mmol/L
 # @fbg: Any fbg value in mg/dL or mmol/L
@@ -311,72 +253,24 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
 }
 
 
-fbg_mmol_lower_bound <- 0
-fbg_mmol_upper_bound <-
-    136.5 # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
-
-# @Description: Check if FBG value is realistic
-# @fbg_mmol: FBG value in mmol/L
-# @fbg_min, fbg_max: Lower and upper bound of realistic fbg values
-# @Output: FBG mmol value if no error. Otherwise raised error & NA
-sanity_check_fbg_mmol <-
-    function(fbg_mmol,
-             min_fbg = fbg_mmol_lower_bound,
-             max_fbg = fbg_mmol_upper_bound) {
-        fbg_result <- case_when(
-            fbg_mmol >= min_fbg &
-                fbg_mmol <= max_fbg ~ fbg_mmol,
-            TRUE ~ NA_real_
-        )
-
-        if (is.na(fbg_result)) {
-            stop("ERROR: FBG value outside realistic scale")
-        }
-
-        return(fbg_result)
-    }
-
-# @Description: FBG input is often a range (200-300) but functions only
-# work with unique values. This wrapper hence loops the range through
-# the functions.
-# @hid: Hospital ID
-# @cid: country ID
-fbg_wrapper <- function(fbg_range, hid, cid) {
+#' @title Replace common textual descriptions with numeric values
+#'
+#' @param fbg character value.
+#'
+#' @return fbg transformed value.
+#' @export
+fix_fbg <- function(fbg) {
     # Source for levels: https://www.cdc.gov/diabetes/basics/getting-tested.html
-    fbg_range <- case_when(
-        grepl("high|bad|hi", tolower(fbg_range)) ~ "200",
-        grepl("med|medium", tolower(fbg_range)) ~ "140-199",
-        grepl("low|good|okay", tolower(fbg_range)) ~ "140",
-        TRUE ~ fbg_range
+    fbg <- case_when(
+        grepl("high|bad|hi", tolower(fbg)) ~ "200",
+        grepl("med|medium", tolower(fbg)) ~ "170",
+        grepl("low|good|okay", tolower(fbg)) ~ "140",
+        TRUE ~ fbg
     ) %>%
-        gsub(pattern = "(DKA)", replacement = "", fixed = T)
+        gsub(pattern = "(DKA)", replacement = "", fixed = T) %>%
+        trimws()
 
-
-    lower_upper_fbg <- fbg_range %>%
-        str_split("-") %>%
-        unlist() %>%
-        as.numeric()
-
-    for (i in 1:length(lower_upper_fbg)) {
-        lower_upper_fbg[i] <- sanity_check_fbg_mmol(transform_fbg_in_mmol(
-            lower_upper_fbg[i],
-            country_id = cid,
-            hospital_id = hid
-        ))
-    }
-
-    final <- paste(lower_upper_fbg, collapse = "-")
-}
-
-
-fbg_fix <- function(fbg, country, hospital) {
-    d <- try(fbg_wrapper(fbg, cid = country, hid = hospital),
-        silent = TRUE
-    )
-    if (class(d) == "try-error") {
-        d <- "999999"
-    }
-    return(d)
+    fbg
 }
 
 

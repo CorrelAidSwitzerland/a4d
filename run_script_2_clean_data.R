@@ -223,7 +223,11 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         mutate(
             t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id),
             hba1c_baseline = str_replace(hba1c_baseline, "<|>", ""),
-            hba1c_updated = str_replace(hba1c_updated, "<|>", "")
+            hba1c_updated = str_replace(hba1c_updated, "<|>", ""),
+            fbg_baseline_mg = fix_fbg(fbg_baseline_mg),
+            fbg_baseline_mmol = fix_fbg(fbg_baseline_mmol),
+            fbg_updated_mg = fix_fbg(fbg_updated_mg),
+            fbg_updated_mmol = fix_fbg(fbg_updated_mmol)
         ) %>%
         ungroup()
 
@@ -260,7 +264,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             bmi = cut_numeric_value(fix_bmi(bmi, weight, height, id), min = 4, max = 60),
             age = fix_age(age, dob, tracker_year, tracker_month, id), # fix DOB first!
             gender = fix_gender(gender, id),
-            hba1c_baseline = cut_numeric_value(hba1c_baseline, 4, 18)
+            hba1c_baseline = cut_numeric_value(hba1c_baseline, 4, 18, cur_column()),
+            fbg_baseline_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, cur_column()), # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
+            fbg_updated_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, cur_column()) # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
         ) %>%
         ungroup()
 
