@@ -59,7 +59,7 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (num_na_rows > 0) {
-                        logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+                        logInfo(CurrSheet, " number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
                     }
                 },
                 error = function(e) {
@@ -75,9 +75,9 @@ reading_product_data_step1 <-
                     if (nrow(non_processed_dates) > 0) {
                         logWarn(
                             CurrSheet,
-                            " the number of rows with non-processed dates in product_entry_date is ",
+                            " number of rows with non-processed dates in product_entry_date is ",
                             nrow(non_processed_dates), ": ",
-                            paste(non_processed_dates$product_entry_date, collapse = ",")
+                            paste(non_processed_dates$product_entry_date, collapse = ", ")
                         )
                     }
                 },
@@ -94,6 +94,9 @@ reading_product_data_step1 <-
                     product_sheet_name = CurrSheet
                 )
 
+            # Check if the entry dates for the balance match the month/year on the sheet
+            check_entry_dates(product_df, CurrSheet)
+
             # combine all months
             if (!exists("df_final")) {
                 df_final <- product_df
@@ -109,12 +112,36 @@ reading_product_data_step1 <-
         logDebug("Finish reading_product_data_step1.")
     }
 
-# function for checking if the patient's name is missing next to the released units
+# Check if the patient's name is missing next to the released units
 count_na_rows <- function(df, units_released_col, released_to_col) {
     na_rows <- df[is.na(df[[released_to_col]]) & !is.na(df[[units_released_col]]), ]
     nrow(na_rows)
 }
 
+check_entry_dates <- function(df, Sheet) {
+    # Check if the entry dates for the balance match the month/year on the sheet
+    entry_dates_df <- df %>% filter(grepl("^[0-9]+$", product_entry_date))
+
+    entry_dates_df$product_entry_date <- as.numeric(entry_dates_df$product_entry_date)
+    entry_dates_df$product_table_month <- as.numeric(entry_dates_df$product_table_month)
+
+    # Extract month and year from product_entry_date column
+    entry_dates_df$ed_date <- as.Date(entry_dates_df$product_entry_date, origin = "1899-12-30")
+    entry_dates_df$ed_month <- as.numeric(format(entry_dates_df$ed_date, "%m"))
+    entry_dates_df$ed_year <- as.numeric(format(entry_dates_df$ed_date, "%Y"))
+
+    # Compare month and year with product_table_month and product_table_year
+    not_same <- entry_dates_df[entry_dates_df$ed_month != entry_dates_df$product_table_month |
+        entry_dates_df$ed_year != entry_dates_df$product_table_year, ]
+    if (nrow(not_same) > 0) {
+        logWarn(
+            Sheet,
+            " number of dates in product_entry_date that don't match the month/year on the sheet is ",
+            nrow(not_same), ": ",
+            paste(not_same$ed_date, collapse = ", ")
+        )
+    }
+}
 
 #' @title Remove Rows with NA Values in Specified Columns.
 #'
