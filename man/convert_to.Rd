@@ -2,22 +2,24 @@
 % Please edit documentation in R/helper_patient_data_fix.R
 \name{convert_to}
 \alias{convert_to}
-\title{Try to convert x into a target type.}
+\title{Try to convert character x into a value of target type.}
 \usage{
-convert_to(x, cast_fnc, error_val)
+convert_to(x, cast_fnc, error_val, col_name = "")
 }
 \arguments{
-\item{x}{value to convert to numeric}
+\item{x}{character value.}
 
-\item{cast_fnc}{function to use to cast x}
+\item{cast_fnc}{function used to convert character values into target type.}
 
-\item{error_val}{error value to use when as.numeric fails}
+\item{error_val}{error value to use when cast_fnc fails.}
+
+\item{col_name}{column name if used with across.}
 }
 \value{
-converted x
+converted value
 }
 \description{
 Use cast_fnc to cast x to target type.
 If that cast fails, output error_val instead.
-If x is already NA, output NA
+If x is already NA, output NA.
 }
