@@ -48,7 +48,6 @@ test_that("convert_to works", {
     expect_false(convert_to("F", as.logical, FALSE))
     expect_true(is.na(convert_to("", as.logical, FALSE)))
     expect_true(is.na(convert_to(NA, as.logical, FALSE)))
-    expect_false(convert_to(c(), as.logical, FALSE))
 
     # integer
     expect_equal(convert_to(1, as.integer, 999999), 1)
@@ -60,14 +59,15 @@ test_that("convert_to works", {
     expect_equal(convert_to("1", as.integer, 999999), 1)
     expect_equal(convert_to("1.5", as.integer, 999999), 1)
     expect_true(is.na(convert_to("", as.integer, 999999)))
-    expect_equal(convert_to(c(), as.integer, 999999), 999999)
     expect_equal(convert_to(T, as.integer, 999999), 1)
+    expect_true(is.na(convert_to(NA, as.integer, 999999)))
 
     # date
-    expect_equal(convert_to("2023-01-01", as.Date, "9999-01-01"), as.Date("2023-01-01"))
-    expect_equal(convert_to("2023", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
-    expect_equal(convert_to("45007", as.Date, as.Date("9999-01-01")), as.Date("9999-01-01"))
-    expect_true(is.na(convert_to("", as.Date, "9999-01-01")))
+    expect_equal(convert_to("2023-01-01", lubridate::as_date, as.Date("9999-01-01")), as.Date("2023-01-01"))
+    expect_equal(convert_to("2023", lubridate::as_date, as.Date("9999-01-01")), as.Date("9999-01-01"))
+    expect_equal(convert_to("45007", lubridate::as_date, as.Date("9999-01-01")), as.Date("9999-01-01"))
+    expect_true(is.na(convert_to("", lubridate::as_date, "9999-01-01")))
+    expect_true(is.na(convert_to(NA, lubridate::as_date, "9999-01-01")))
 })
 
 

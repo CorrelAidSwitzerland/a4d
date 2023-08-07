@@ -224,29 +224,32 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id),
             hba1c_baseline = str_replace(hba1c_baseline, "<|>", ""),
             hba1c_updated = str_replace(hba1c_updated, "<|>", "")
-        )
+        ) %>%
+        ungroup()
 
     # 2. convert the refined character columns into the target data type
     df_patient <-
         df_patient %>%
+        rowwise() %>%
         mutate(
             across(
                 schema %>% select(where(is.numeric)) %>% names(),
-                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_DATE)
+                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, cur_column())
             ),
             across(
                 schema %>% select(where(is.logical)) %>% names(),
-                \(x) convert_to(x, as.logical, FALSE)
+                \(x) convert_to(x, as.logical, FALSE, cur_column())
             ),
             across(
                 schema %>% select(where(is.Date)) %>% names(),
-                \(x) convert_to(x, as.Date, as.Date(ERROR_VAL_DATE))
+                \(x) convert_to(x, lubridate::as_date, as.Date(ERROR_VAL_DATE), cur_column())
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
-                \(x) convert_to(x, as.integer, ERROR_VAL_NUMERIC)
+                \(x) convert_to(x, as.integer, ERROR_VAL_NUMERIC, cur_column())
             )
-        )
+        ) %>%
+        ungroup()
 
     # 3. fix any remaining issues in the target data type
     df_patient <-

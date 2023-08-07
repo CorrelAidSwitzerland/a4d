@@ -5,35 +5,32 @@
 
 #### Base Functions ####
 
-#' @title Try to convert x into a target type.
+#' @title Try to convert character x into a value of target type.
 #'
 #' @description
 #' Use cast_fnc to cast x to target type.
 #' If that cast fails, output error_val instead.
-#' If x is already NA, output NA
+#' If x is already NA, output NA.
 #'
-#' @param x value to convert to numeric
-#' @param cast_fnc function to use to cast x
-#' @param error_val error value to use when as.numeric fails
+#' @param x character value.
+#' @param cast_fnc function used to convert character values into target type.
+#' @param error_val error value to use when cast_fnc fails.
+#' @param col_name column name if used with across.
 #'
-#' @return converted x
+#' @return converted value
 #' @export
-convert_to <- function(x, cast_fnc, error_val) {
+convert_to <- function(x, cast_fnc, error_val, col_name = "") {
     x <- tryCatch(
         cast_fnc(x),
         error = function(e) {
-            logError("Could not convert ", x, " with ", as.character(substitute(cast_fnc)))
+            logError("Could not convert value ", x, " in column ", col_name)
             x <- error_val
         },
         warning = function(w) {
-            logWarn("Could not convert ", x, " with ", as.character(substitute(cast_fnc)))
+            logWarn("Could not convert value ", x, " in column ", col_name)
             x <- error_val
         }
     )
-
-    if (length(x) == 0) {
-        x <- error_val
-    }
 
     x
 }
