@@ -1,8 +1,8 @@
-tracker_root_path <- select_A4D_directory(T)
+tracker_root_path <- select_A4D_directory()
 input_root <- file.path(
     tracker_root_path,
     "output",
-    "patient_and_product_data_raw"
+    "patient_data_raw"
 )
 
 output_root <- file.path(
@@ -40,7 +40,7 @@ static_patient_columns <-
         "t1d_diagnosis_age",
         "recruitment_date",
         "edu_occ",
-        "tracker_mo",
+        "tracker_month",
         "file_name",
         "tracker_year",
         "status",
@@ -58,7 +58,7 @@ for (i in extracted_patient_files) {
     tryCatch(
         {
             latest_static_patient_data <- extracted_patient_file %>%
-                arrange(tracker_mo) %>%
+                arrange(tracker_month) %>%
                 select(any_of(static_patient_columns))
 
             # later we should not have this problem as this should be run AFTER cleaning the data
