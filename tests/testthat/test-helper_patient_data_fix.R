@@ -178,3 +178,10 @@ test_that("Does not replace other descriptions", {
     result <- fix_fbg(fbg)
     expect_equal(result, expected)
 })
+
+
+test_that("Test date_as_fivedigit_number_fix()", {
+    expect_equal(date_as_fivedigit_number_fix(44693), "2022-05-12")
+    expect_equal(date_as_fivedigit_number_fix("44693"), "2022-05-12")
+    expect_equal(date_as_fivedigit_number_fix("2021-05-12"), "2021-05-12")
+})
