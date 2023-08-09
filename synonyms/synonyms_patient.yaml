@@ -237,7 +237,7 @@ t1d_diagnosis_with_dka:
   - dka at diagnosis yn
   - dka diagnosis yn
   - dka diagnosis y or n
-testing_fqr_pday:
+testing_frequency:
   - Testing Frequency (per day)
   - Blood Testing Frequency (per day)
   - Recommended Testing Frequency (per day)

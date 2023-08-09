@@ -21,5 +21,5 @@ date_as_fivedigit_number_fix("44939") # res in "2023-01-13"
 }
 \seealso{
 https://stackoverflow.com/a/50274507: depending on whether read in
-file was created on Mac or Windows, the origin date might need to be adjusted
+file was created on Mac or Windows, the origin date might need to be adjusted.
 }

@@ -175,10 +175,10 @@ fix_gender <- function(gender, id) {
         is.na(gender) | gender == "" ~ NA_character_,
         tolower(gender) %in% synonyms_female ~ "F",
         tolower(gender) %in% synonyms_male ~ "M",
-        .default = "Other"
+        .default = ERROR_VAL_CHARACTER
     )
 
-    if (!is.na(fixed_gender) && fixed_gender == "Other") {
+    if (!is.na(fixed_gender) && fixed_gender == ERROR_VAL_CHARACTER) {
         logWarn("Patient ", id, ": gender ", gender, " is not in the list of synonyms. Replacing it with ", fixed_gender, ".")
     }
     fixed_gender
@@ -260,6 +260,10 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
 #' @return fbg transformed value.
 #' @export
 fix_fbg <- function(fbg) {
+    if (is.na(fbg) || fbg == "") {
+        return(NA_character_)
+    }
+
     # Source for levels: https://www.cdc.gov/diabetes/basics/getting-tested.html
     fbg <- case_when(
         grepl("high|bad|hi", tolower(fbg)) ~ "200",
@@ -276,43 +280,69 @@ fix_fbg <- function(fbg) {
 
 ##### support_from_a4d ####
 
-support_a4d_fix <- function(d) {
-    d <- try(as.character(d), silent = TRUE)
-    if (!d %in% c(
+#' @title Fix invalid values for support a4d.
+#'
+#' @param support text
+#' @param id patient id
+#'
+#' @return valid character value for support a4d.
+#' @export
+fix_support_a4d <- function(support, id) {
+    if (is.na(support) || support == "") {
+        return(NA_character_)
+    }
+
+    valid_support_values <- c(
+        "Standard",
         "Partial",
+        "Semi-Partial",
         "SAC",
-        "Full",
-        "Insulin, SMBG, HbA1c & Transportation",
-        "Insulin, SMBG & HbA1c",
-        "Sponsor A Child",
-        "Standard"
-    )) {
-        d <- "999999"
+        "Monitoring"
+    )
+
+    if (!tolower(support) %in% tolower(valid_support_values)) {
+        logWarn(
+            "Patient ", id, ": A4D support ", support, " is not in the list of allowed values. ",
+            "Replacing it with ", ERROR_VAL_CHARACTER, "."
+        )
+        support <- ERROR_VAL_CHARACTER
     }
-    return(d)
+
+    support
 }
 
 
-# "testing_fqr_pday" ####
-# ______________________________________________
-#### TESTING FQR
+#### testing_fqr_pday ####
 
-# If ranges, take mean
-replace_testfqr_strings_mean <- function(x) {
-    y <- unlist(map(
-        str_split(x, pattern = "-"),
-        function(z) {
-            mean(as.numeric(z))
-        }
-    ))
+#' @title Fix problems with ranges and decimal numbers in testing_frequency.
+#'
+#' @param test_frq character value for testing frequency
+#'
+#' @return validated test_frq value
+#' @export
+fix_testing_frequency <- function(test_frq) {
+    if (is.na(test_frq) || test_frq == "") {
+        return(NA_character_)
+    }
+
+    if (grepl("-", test_frq, fixed = TRUE)) {
+        logInfo("Found a range for testing_frequency. Replacing it with the mean.")
+        test_frq <- try(as.character(replace_range_with_mean(test_frq), silent = TRUE))
+    }
+
+    test_frq
 }
 
-fix_testfqr <- function(d) {
-    d <- try(replace_testfqr_strings_mean(d), silent = TRUE)
-    if (class(d) == "try-error") {
-        d <- 999999
-    }
-    return(d)
+#' @title Replace a range with mean.
+#'
+#' @description
+#' A range like "0-2" will be replaced with the mean(c(0,2)).
+#'
+#' @param x range as text..
+#'
+#' @return mean of that range
+replace_range_with_mean <- function(x) {
+    mean(as.numeric(unlist(str_split(x, "-"))))
 }
 
 
@@ -950,13 +980,12 @@ split_bp_in_sys_and_dias <- function(df) {
 #' date_as_fivedigit_number_fix("44939") # res in "2023-01-13"
 #'
 date_as_fivedigit_number_fix <-
-    function(d){
-
-    if (str_detect(string = d, pattern = "^[:digit:]{5}$")){
-        d <- as.character(openxlsx::convertToDate(d))
+    function(d) {
+        if (str_detect(string = d, pattern = "^[:digit:]{5}$")) {
+            d <- as.character(openxlsx::convertToDate(d))
+        }
+        d
     }
-    d
-}
 
 
 # TEST --------------------------------------------------------------------
