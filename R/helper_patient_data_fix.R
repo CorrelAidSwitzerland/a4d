@@ -937,6 +937,28 @@ split_bp_in_sys_and_dias <- function(df) {
     df
 }
 
+#' @title WIP: Convert dates that are stored as 5-digit number from Excel to date format
+#'
+#' @param d
+#'
+#' @seealso https://stackoverflow.com/a/50274507: depending on whether read in
+#' file was created on Mac or Windows, the origin date might need to be adjusted.
+#'
+#' @return Date in a character format.
+#'
+#' @examples
+#' date_as_fivedigit_number_fix("44939") # res in "2023-01-13"
+#'
+date_as_fivedigit_number_fix <-
+    function(d){
+
+    if (str_detect(string = d, pattern = "^[:digit:]{5}$")){
+        d <- as.character(openxlsx::convertToDate(d))
+    }
+    d
+}
+
+
 # TEST --------------------------------------------------------------------
 
 # testing <- cleaning_a4d_tracker(data = dat)
