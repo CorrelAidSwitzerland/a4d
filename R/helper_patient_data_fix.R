@@ -274,10 +274,9 @@ fix_fbg <- function(fbg) {
 }
 
 
-# "support_from_a4d" ####
-# ______________________________________________
-#### SUPPORT A4D
-supporta4d_fix <- function(d) {
+##### support_from_a4d ####
+
+support_a4d_fix <- function(d) {
     d <- try(as.character(d), silent = TRUE)
     if (!d %in% c(
         "Partial",
