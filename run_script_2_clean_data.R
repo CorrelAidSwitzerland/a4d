@@ -1,7 +1,7 @@
 options(readxl.show_progress = FALSE)
 options(future.rng.onMisuse = "ignore")
 ERROR_VAL_NUMERIC <<- 999999
-ERROR_VAL_CHARACTER <<- "999999"
+ERROR_VAL_CHARACTER <<- "Other"
 ERROR_VAL_DATE <<- "9999-09-09"
 
 `%dopar%` <- foreach::`%dopar%`
@@ -195,7 +195,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         t1d_diagnosis_age = integer(),
         t1d_diagnosis_date = as.Date(1),
         t1d_diagnosis_with_dka = logical(),
-        testing_fqr_pday = integer(),
+        testing_frequency = integer(),
         tracker_month = integer(),
         tracker_year = integer(),
         updated_2022_date = as.Date(1),
@@ -227,7 +227,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             fbg_baseline_mg = fix_fbg(fbg_baseline_mg),
             fbg_baseline_mmol = fix_fbg(fbg_baseline_mmol),
             fbg_updated_mg = fix_fbg(fbg_updated_mg),
-            fbg_updated_mmol = fix_fbg(fbg_updated_mmol)
+            fbg_updated_mmol = fix_fbg(fbg_updated_mmol),
+            support_from_a4d = fix_support_a4d(support_from_a4d, id),
+            testing_frequency = fix_testing_frequency(testing_frequency)
         ) %>%
         ungroup()
 
@@ -250,7 +252,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
-                \(x) convert_to(x, as.integer, ERROR_VAL_NUMERIC, cur_column())
+                \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column())
             )
         ) %>%
         ungroup()

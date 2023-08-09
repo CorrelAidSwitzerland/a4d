@@ -1,5 +1,8 @@
+ERROR_VAL_CHARACTER <<- "Other"
+ERROR_VAL_NUMERIC <<- 999999
+ERROR_VAL_DATE <<- as.Date("9999-09-09")
+
 test_that("cut_numeric_value works", {
-    ERROR_VAL_NUMERIC <<- 999999
     test_vec <- c(1, 2, 3.4)
     expect_equal(cut_numeric_value(test_vec, min = 0, max = 5), test_vec)
     expect_equal(cut_numeric_value(test_vec, max = 3.4, min = 1), test_vec)
@@ -10,9 +13,8 @@ test_that("cut_numeric_value works", {
 
 
 test_that("fix_bmi works", {
-    ERROR_VAL_NUMERIC <<- 999999
     test_df <- data.frame(weight = c(1, NA, 3, NA, 1), height = c(1, 2, NA, NA, 1), bmi = c(5, 2, 3, 4, 1), id = c("1", "2", "3", "4", "5"))
-    expected_bmi <- c(5, 999999, 999999, 999999, 1)
+    expected_bmi <- c(5, ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, 1)
     expect_equal(test_df %>% rowwise() %>% mutate(bmi = fix_bmi(bmi, weight, height, id)) %>% select(bmi) %>% pull(), expected_bmi)
 })
 
@@ -26,14 +28,14 @@ test_that("split_bp_in_sys_and_dias works", {
 
 test_that("convert_to works", {
     # numeric
-    expect_equal(convert_to(1, as.numeric, 999999), 1)
-    expect_equal(convert_to(123.123, as.numeric, 999999), 123.123)
-    expect_equal(convert_to(0, as.numeric, 999999), 0)
-    expect_equal(convert_to(-0.01, as.numeric, 999999), -0.01)
-    expect_equal(convert_to("1234", as.numeric, 999999), 1234)
-    expect_equal(convert_to(".123", as.numeric, 999999), .123)
-    expect_equal(convert_to("a", as.numeric, 999999), 999999)
-    expect_true(is.na(convert_to(NA, as.numeric, 999999)))
+    expect_equal(convert_to(1, as.numeric, ERROR_VAL_NUMERIC), 1)
+    expect_equal(convert_to(123.123, as.numeric, ERROR_VAL_NUMERIC), 123.123)
+    expect_equal(convert_to(0, as.numeric, ERROR_VAL_NUMERIC), 0)
+    expect_equal(convert_to(-0.01, as.numeric, ERROR_VAL_NUMERIC), -0.01)
+    expect_equal(convert_to("1234", as.numeric, ERROR_VAL_NUMERIC), 1234)
+    expect_equal(convert_to(".123", as.numeric, ERROR_VAL_NUMERIC), .123)
+    expect_equal(convert_to("a", as.numeric, ERROR_VAL_NUMERIC), ERROR_VAL_NUMERIC)
+    expect_true(is.na(convert_to(NA, as.numeric, ERROR_VAL_NUMERIC)))
 
     # logical
     expect_true(convert_to(1, as.logical, FALSE))
@@ -50,24 +52,24 @@ test_that("convert_to works", {
     expect_true(is.na(convert_to(NA, as.logical, FALSE)))
 
     # integer
-    expect_equal(convert_to(1, as.integer, 999999), 1)
-    expect_equal(convert_to(123, as.integer, 999999), 123)
-    expect_equal(convert_to(-1, as.integer, 999999), -1)
-    expect_equal(convert_to(.1, as.integer, 999999), 0)
-    expect_equal(convert_to(-.1, as.integer, 999999), 0)
-    expect_equal(convert_to(123.123, as.integer, 999999), 123)
-    expect_equal(convert_to("1", as.integer, 999999), 1)
-    expect_equal(convert_to("1.5", as.integer, 999999), 1)
-    expect_true(is.na(convert_to("", as.integer, 999999)))
-    expect_equal(convert_to(T, as.integer, 999999), 1)
-    expect_true(is.na(convert_to(NA, as.integer, 999999)))
+    expect_equal(convert_to(1, as.integer, ERROR_VAL_NUMERIC), 1)
+    expect_equal(convert_to(123, as.integer, ERROR_VAL_NUMERIC), 123)
+    expect_equal(convert_to(-1, as.integer, ERROR_VAL_NUMERIC), -1)
+    expect_equal(convert_to(.1, as.integer, ERROR_VAL_NUMERIC), 0)
+    expect_equal(convert_to(-.1, as.integer, ERROR_VAL_NUMERIC), 0)
+    expect_equal(convert_to(123.123, as.integer, ERROR_VAL_NUMERIC), 123)
+    expect_equal(convert_to("1", as.integer, ERROR_VAL_NUMERIC), 1)
+    expect_equal(convert_to("1.5", as.integer, ERROR_VAL_NUMERIC), 1)
+    expect_true(is.na(convert_to("", as.integer, ERROR_VAL_NUMERIC)))
+    expect_equal(convert_to(T, as.integer, ERROR_VAL_NUMERIC), 1)
+    expect_true(is.na(convert_to(NA, as.integer, ERROR_VAL_NUMERIC)))
 
     # date
-    expect_equal(convert_to("2023-01-01", lubridate::as_date, as.Date("9999-01-01")), as.Date("2023-01-01"))
-    expect_equal(convert_to("2023", lubridate::as_date, as.Date("9999-01-01")), as.Date("9999-01-01"))
-    expect_equal(convert_to("45007", lubridate::as_date, as.Date("9999-01-01")), as.Date("9999-01-01"))
-    expect_true(is.na(convert_to("", lubridate::as_date, "9999-01-01")))
-    expect_true(is.na(convert_to(NA, lubridate::as_date, "9999-01-01")))
+    expect_equal(convert_to("2023-01-01", lubridate::as_date, ERROR_VAL_DATE), as.Date("2023-01-01"))
+    expect_equal(convert_to("2023", lubridate::as_date, ERROR_VAL_DATE), ERROR_VAL_DATE)
+    expect_equal(convert_to("45007", lubridate::as_date, ERROR_VAL_DATE), ERROR_VAL_DATE)
+    expect_true(is.na(convert_to("", lubridate::as_date, ERROR_VAL_DATE)))
+    expect_true(is.na(convert_to(NA, lubridate::as_date, ERROR_VAL_DATE)))
 })
 
 
@@ -95,7 +97,7 @@ test_that("fix_gender returns the correct gender codes", {
     )
 
     # Test case 4: Test with another# gender not in the synonyms list
-    expect_equal(fix_gender("unknown", "4"), "Other",
+    expect_equal(fix_gender("unknown", "4"), ERROR_VAL_CHARACTER,
         info = "For gender 'unknown', expected 'Other'"
     )
 })
@@ -154,29 +156,22 @@ test_that("correct_decimal_sign works", {
 })
 
 
-test_that("Replaces high textual description with numeric value 200", {
+test_that("fix_fbg works", {
     expect_equal(fix_fbg("High"), "200")
     expect_equal(fix_fbg("Bad"), "200")
     expect_equal(fix_fbg("Hi"), "200")
-})
 
-test_that("Replaces medium textual description with numeric value 170", {
     expect_equal(fix_fbg("Medium"), "170")
     expect_equal(fix_fbg("Med"), "170")
-})
 
-test_that("Replaces low textual description with numeric value 140", {
     expect_equal(fix_fbg("Low"), "140")
     expect_equal(fix_fbg("Good"), "140")
     expect_equal(fix_fbg("Okay"), "140")
-})
 
+    expect_equal(fix_fbg("123 (DKA)"), "123")
 
-test_that("Does not replace other descriptions", {
-    fbg <- "123 (DKA)"
-    expected <- "123"
-    result <- fix_fbg(fbg)
-    expect_equal(result, expected)
+    expect_true(is.na(fix_fbg(NA)))
+    expect_true(is.na(fix_fbg("")))
 })
 
 
@@ -184,4 +179,22 @@ test_that("Test date_as_fivedigit_number_fix()", {
     expect_equal(date_as_fivedigit_number_fix(44693), "2022-05-12")
     expect_equal(date_as_fivedigit_number_fix("44693"), "2022-05-12")
     expect_equal(date_as_fivedigit_number_fix("2021-05-12"), "2021-05-12")
+})
+
+test_that("fix_support_a4d works", {
+    expect_equal(fix_support_a4d("partial", "1"), "partial")
+    expect_equal(fix_support_a4d("Standard", "1"), "Standard")
+    expect_equal(fix_support_a4d("SAc", "1"), "SAc")
+    expect_true(is.na(fix_support_a4d("", "1")))
+    expect_true(is.na(fix_support_a4d(NA, "1")))
+    expect_equal(fix_support_a4d("abc", "1"), ERROR_VAL_CHARACTER)
+})
+
+test_that("fix_testing_frequency works", {
+    expect_equal(fix_testing_frequency("2"), "2")
+    expect_equal(fix_testing_frequency("1.5"), "1.5")
+    expect_equal(fix_testing_frequency("0-2"), "1")
+    expect_equal(fix_testing_frequency("2-3"), "2.5")
+    expect_true(is.na(fix_testing_frequency("")))
+    expect_true(is.na(fix_testing_frequency(NA)))
 })
