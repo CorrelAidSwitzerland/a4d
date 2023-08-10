@@ -42,29 +42,37 @@ extract_country_clinic_code <- function(patient_data) {
 extract_patient_data <- function(tracker_data_file, sheet, year) {
     logDebug("Start extract_patient_data for sheet = ", sheet, ".")
 
-    logDebug("Start readxl::read_excel to get tracker_data.")
-    tracker_data <- readxl::read_excel(
-        path = tracker_data_file,
+    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
+    tracker_data <- openxlsx::read.xlsx(
+        xlsxFile = tracker_data_file,
         sheet = sheet,
-        range = readxl::cell_limits(c(1, NA), c(NA, NA)),
-        trim_ws = T,
-        col_names = F,
-        .name_repair = "unique_quiet"
+        colNames = F,
+        detectDates = F,
+        skipEmptyRows = F,
+        fillMergedCells = T
     )
-    logDebug("Finish readxl::read_excel.")
-    # tracker_data <- openxlsx::read.xlsx(
-    # xlsxFile=tracker_data_file,
+    # tracker_data <- readxl::read_excel(
+    # path = tracker_data_file,
     # sheet = sheet,
-    # colNames = F,
-    # detectDates = F,
-    # skipEmptyRows = F,
-    # fillMergedCells = T
+    # range = readxl::cell_limits(c(1, NA), c(NA, NA)),
+    # trim_ws = T,
+    # col_names = F,
+    # .name_repair = "unique_quiet"
     # )
+    logDebug("Finish openxlsx::read.xlsx.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
+
+    # trackers from 2020 and newer have an empty first row
+    # and openxlsx always skipps empty rows at the start of the file
+    if (year >= 2021) {
+        row_min <- row_min - 1
+        row_max <- row_max - 1
+    }
+
     testit::assert(row_min <= row_max) # <= because there could only be a single patient
 
     logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
@@ -84,24 +92,24 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     )
     logDebug("Finish readxl::read_excel.")
 
-    if (is.na(header_cols[2])) {
+    if (tracker_data[row_min - 1, 2] == tracker_data[row_min - 2, 2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         logInfo("Read in multiline header.")
         header_cols_2 <-
             str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
-        # because readxl cannot handle merged cells, we need to copy the header for these cells
-        header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm = F, fromLast = F))
-        testit::assert(length(header_cols) == length(header_cols_2))
 
-        header_cols <- data.frame(header_cols, header_cols_2) %>%
-            unite(header, header_cols_2, header_cols, na.rm = T, sep = " ") %>%
-            pull()
-        header_cols[header_cols == ""] <- NA
+        diff_colnames <- which((header_cols != header_cols_2))
+        header_cols[diff_colnames] <-
+            paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
+
+        empty_colnames <- which(is.na(header_cols))
+        header_cols[empty_colnames] <- header_cols_2[empty_colnames]
     }
 
     colnames(df_patient) <- header_cols
     logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
+    # delete columns without a header (=NA)
     df_patient <- df_patient[, !is.na(colnames(df_patient))]
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
