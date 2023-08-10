@@ -94,13 +94,13 @@ read_patient_data <-
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
 
-            patient_df <-
+            df_patient <-
                 extract_patient_data(tracker_data)
             tracker_cols <-
                 extract_patient_data_header(tracker_data, year)
-            colnames(patient_df) <- tracker_cols
-            patient_df <-
-                harmonize_patient_data_columns(patient_df, columns_synonyms)
+            colnames(df_patient) <- tracker_cols
+            df_patient <-
+                harmonize_patient_data_columns(df_patient, columns_synonyms)
             print("patient df extracted")
 
             #### 2017 + 2018 ####
@@ -108,51 +108,51 @@ read_patient_data <-
                 format <- "%Y/%m/%d"
 
                 # fix dates (split dates in cells)
-                patient_df <-
-                    split_col_into_value_date_pair(patient_df, "updated_hba1c_prc")
-                patient_df$updated_hba1c_date <-
-                    transform_MM_DD_to_YYYY_MM_DD_str(patient_df$updated_hba1c_date, year)
-                patient_df$updated_hba1c_date <- as.Date(
-                    patient_df$updated_hba1c_date,
+                df_patient <-
+                    split_col_into_value_date_pair(df_patient, "updated_hba1c_prc")
+                df_patient$updated_hba1c_date <-
+                    transform_MM_DD_to_YYYY_MM_DD_str(df_patient$updated_hba1c_date, year)
+                df_patient$updated_hba1c_date <- as.Date(
+                    df_patient$updated_hba1c_date,
                     format = format,
                     origin = "1899-12-30",
                     tz = "GMT"
                 )
 
-                patient_df <-
-                    extract_date_from_measurement_column(patient_df, "updated_fbg_mgdl")
-                patient_df$updated_fbg_date <-
-                    transform_MM_DD_to_YYYY_MM_DD_str(patient_df$updated_fbg_date, year)
-                patient_df$updated_fbg_date <- as.Date(
-                    patient_df$updated_fbg_date,
+                df_patient <-
+                    extract_date_from_measurement_column(df_patient, "updated_fbg_mgdl")
+                df_patient$updated_fbg_date <-
+                    transform_MM_DD_to_YYYY_MM_DD_str(df_patient$updated_fbg_date, year)
+                df_patient$updated_fbg_date <- as.Date(
+                    df_patient$updated_fbg_date,
                     format = format,
                     origin = "1899-12-30",
                     tz = "GMT"
                 )
                 print("date extracted from compound cols")
 
-                if ("recruitment_date" %in% colnames(patient_df)) {
-                    patient_df <- patient_df %>%
+                if ("recruitment_date" %in% colnames(df_patient)) {
+                    df_patient <- df_patient %>%
                         dplyr::mutate(recruitment_date = openxlsx::convertToDate(as.numeric(
-                            patient_df$recruitment_date
+                            df_patient$recruitment_date
                         )))
                 }
             }
 
-            patient_df <- bmi_fix(patient_df)
-            patient_df <- date_fix(patient_df, year)
+            df_patient <- bmi_fix(df_patient)
+            df_patient <- date_fix(df_patient, year)
 
-            if ("blood_pressure_mmhg" %in% colnames(patient_df)) {
-                patient_df <- bp_fix(patient_df)
+            if ("blood_pressure_mmhg" %in% colnames(df_patient)) {
+                df_patient <- bp_fix(df_patient)
             }
             print("patient cleaning done")
 
-            patient_df <-
-                patient_df %>% dplyr::left_join(an_patient_data, by = "id")
+            df_patient <-
+                df_patient %>% dplyr::left_join(an_patient_data, by = "id")
             print("added patient anon data")
 
 
-            patient_df <- patient_df %>%
+            df_patient <- df_patient %>%
                 dplyr::mutate(
                     sheet_name = CurrSheet,
                     tracker_month = match(substr(CurrSheet, 1, 3), month.abb),
@@ -164,7 +164,7 @@ read_patient_data <-
 
             #### Save data ####
             # save data in a list
-            tidy_tracker_list[[CurrSheet]] <- patient_df # %>%
+            tidy_tracker_list[[CurrSheet]] <- df_patient # %>%
             # mutate(across(everything(), as.character)) # all data is converted as characters otherwise many errors emerge
         } # sheet for loop
 
@@ -293,33 +293,34 @@ reading_patient_data_2 <-
         for (curr_sheet in month_list) {
             logDebug("Start processing sheet ", curr_sheet, ".")
 
-            patient_df <- extract_patient_data(tracker_data_file, curr_sheet, year)
-            testit::assert(nrow(patient_df) > 0)
-            logDebug("patient_df dim: ", dim(patient_df) %>% as.data.frame(), ".")
+            df_patient <- extract_patient_data(tracker_data_file, curr_sheet, year)
+            testit::assert(nrow(df_patient) > 0)
+            logDebug("df_patient dim: ", dim(df_patient) %>% as.data.frame(), ".")
 
-            patient_df <-
-                harmonize_patient_data_columns_2(patient_df, columns_synonyms)
-            testit::assert("id" %in% colnames(patient_df))
+            df_patient <-
+                harmonize_patient_data_columns_2(df_patient, columns_synonyms)
+            testit::assert("id" %in% colnames(df_patient))
             # -- if we have duplicate columns, merge them
-            if (anyDuplicated(colnames(patient_df)) > 0) {
-                duplicated_cols <- colnames(patient_df) %>%
+            if (anyDuplicated(colnames(df_patient)) > 0) {
+                duplicated_cols <- colnames(df_patient) %>%
                     table() %>%
                     as.tibble() %>%
                     dplyr::filter(n > 1) %>%
-                    select(1)
+                    select(1) %>%
+                    pull()
                 for (col in duplicated_cols) {
-                    mask <- colnames(patient_df) == col
-                    merged_col <- patient_df[mask] %>% unite(!!col, sep = ",")
-                    patient_df <- patient_df[!mask]
-                    patient_df <- patient_df %>% add_column(!!col := pull(merged_col))
+                    mask <- colnames(df_patient) == col
+                    merged_col <- df_patient[mask] %>% unite(!!col, sep = ",")
+                    df_patient <- df_patient[!mask]
+                    df_patient <- df_patient %>% add_column(!!col := pull(merged_col), .name_repair = "minimal")
                 }
             }
 
-            cc_codes <- extract_country_clinic_code(patient_df)
+            cc_codes <- extract_country_clinic_code(df_patient)
             country_code <- cc_codes$country_code
             clinic_code <- cc_codes$clinic_code
 
-            patient_df <- patient_df %>%
+            df_patient <- df_patient %>%
                 dplyr::mutate(
                     sheet_name = curr_sheet,
                     tracker_month = match(substr(curr_sheet, 1, 3), month.abb),
@@ -328,7 +329,7 @@ reading_patient_data_2 <-
                     clinic_code = clinic_code
                 )
 
-            tidy_tracker_list[[curr_sheet]] <- patient_df
+            tidy_tracker_list[[curr_sheet]] <- df_patient
             logDebug("Finish processing sheet ", curr_sheet, ".")
         }
 

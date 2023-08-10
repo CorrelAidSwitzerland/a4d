@@ -72,8 +72,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     header_cols <-
         str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
     # header_cols <- append(NA, zoo::na.locf(header_cols, nw.rm = F, fromLast = F))
+
     logDebug("Start readxl::read_excel to get patient data.")
-    patient_df <- readxl::read_excel(
+    df_patient <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
         range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
@@ -83,7 +84,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     )
     logDebug("Finish readxl::read_excel.")
 
-    if (year %in% c(2019, 2020, 2021, 2022)) {
+    if (is.na(header_cols[2])) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         logInfo("Read in multiline header.")
         header_cols_2 <-
@@ -92,30 +93,28 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm = F, fromLast = F))
         testit::assert(length(header_cols) == length(header_cols_2))
 
-        diff_colnames <- which((header_cols != header_cols_2))
-        header_cols[diff_colnames] <-
-            paste(header_cols_2[diff_colnames], header_cols[diff_colnames])
-
-        empty_colnames <- which(is.na(header_cols))
-        header_cols[empty_colnames] <- header_cols_2[empty_colnames]
+        header_cols <- data.frame(header_cols, header_cols_2) %>%
+            unite(header, header_cols_2, header_cols, na.rm = T, sep = " ") %>%
+            pull()
+        header_cols[header_cols == ""] <- NA
     }
 
-    colnames(patient_df) <- header_cols
+    colnames(df_patient) <- header_cols
     logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
-    patient_df <-
-        patient_df %>% select(header_cols[!is.na(header_cols)])
+    df_patient <- df_patient[, !is.na(colnames(df_patient))]
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
-    # patient_df <- patient_df %>% distinct()
+    # df_patient <- df_patient %>% distinct()
     # remove empty rows with only NA
-    patient_df <-
-        patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
+    df_patient <-
+        df_patient[rowSums(is.na(df_patient)) != ncol(df_patient), ]
 
     logDebug("Finish extract_patient_data.")
     # store every column as character to avoid wrong data transformations
-    patient_df <-
-        patient_df %>% mutate(across(everything(), as.character))
+    df_patient[] <- lapply(df_patient, as.character)
+
+    df_patient
 }
 
 

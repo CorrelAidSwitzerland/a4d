@@ -86,6 +86,60 @@ correct_decimal_sign <- function(x) {
     str_replace(x, ",", ".")
 }
 
+
+#' @title Split a column value into value and date.
+#'
+#' @description
+#' Assumes that the measurement entry is in the format "8.53 (28/8/2017)".
+#' Uses regex to split this string into the value part and the date part,
+#' for example in "8.53 " and "28/8/2017".
+#'
+#' @param df data frame with patient data.
+#' @param colname column to split into value and date.
+#'
+#' @return data frame with the original column and a new colname_date column.
+extract_date_from_measurement <-
+    function(df, colname) {
+        df <- df %>% separate_wider_regex(
+            !!colname,
+            c(
+                set_names(".*", colname),
+                "[(]",
+                set_names(".*?", paste0(colname, "_date")),
+                "[)]?"
+            ),
+            too_few = "align_start"
+        )
+
+        if (colname == "fbg_updated_mmol" || colname == "fbg_updated_mg") {
+            df <- df %>% rename_with(~ str_replace(.x, "_mmol_date|_mg_date", "_date"))
+        }
+
+        df
+    }
+
+
+#' @title WIP: Convert dates that are stored as 5-digit number from Excel to date format
+#'
+#' @param date date as five number digit.
+#'
+#' @seealso https://stackoverflow.com/a/50274507: depending on whether read in
+#' file was created on Mac or Windows, the origin date might need to be adjusted.
+#'
+#' @return Standardized date in a character format.
+#'
+#' @examples
+#' fix_digit_date("44939") # res in "2023-01-13"
+#'
+fix_digit_date <-
+    function(date) {
+        if (str_detect(string = date, pattern = "^[:digit:]{5}$")) {
+            date <- as.character(openxlsx::convertToDate(date))
+        }
+        date
+    }
+
+
 #### age ####
 
 #' @title Fix age column.
@@ -129,6 +183,7 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
 
     calc_age
 }
+
 
 #### bmi ####
 
@@ -185,25 +240,7 @@ fix_gender <- function(gender, id) {
 }
 
 
-
 #### t1d_diagnosis_age ####
-
-
-#' @title Extract year from age descriptions like "10y5m"
-#'
-#' @description
-#' Example: "1y5m" -> "1"
-#'
-#' @param age text representation of diagnosis age
-#'
-#' @return year of given age as character.
-#' @export
-extract_year_from_age <- function(age) {
-    if (is.na(age)) {
-        return(age)
-    }
-    unlist(strsplit(age, "y", fixed = T))[1]
-}
 
 #' @title Try to replace text descriptions for age with proper numerical values.
 #'
@@ -225,8 +262,24 @@ fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
 }
 
 
-#### fbg ####
+#' @title Extract year from age descriptions like "10y5m"
+#'
+#' @description
+#' Example: "1y5m" -> "1"
+#'
+#' @param age text representation of diagnosis age
+#'
+#' @return year of given age as character.
+#' @export
+extract_year_from_age <- function(age) {
+    if (is.na(age)) {
+        return(age)
+    }
+    unlist(strsplit(age, "y", fixed = T))[1]
+}
 
+
+#### fbg ####
 
 # @Description: Makes sure FBG values are in mmol/L
 # @fbg: Any fbg value in mg/dL or mmol/L
@@ -333,6 +386,7 @@ fix_testing_frequency <- function(test_frq) {
     test_frq
 }
 
+
 #' @title Replace a range with mean.
 #'
 #' @description
@@ -346,9 +400,7 @@ replace_range_with_mean <- function(x) {
 }
 
 
-# "est_strips_pmoth" ####
-# ______________________________________________
-#### STRIPS NEEDED
+#### est_strips_pmoth ####
 
 fix_strips <- function(d) {
     d <- try(as.numeric(d), silent = TRUE)
@@ -359,9 +411,8 @@ fix_strips <- function(d) {
 }
 
 
-# "status" ####
-# ______________________________________________
-#### STATUS
+#### status ####
+
 fix_status <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
@@ -383,62 +434,16 @@ fix_status <- function(d) {
 }
 
 
-# "updated_fbg_sample" ####
-# ______________________________________________
-#### UPDATED FBG SAMPLE
-fix_fbg_sample <- function(d) {
-    if (!is.na(d)) {
-        d <-
-            try(replace_empty_string_with_NA(as.character(d)),
-                silent = TRUE
-            )
-        if (!d %in% c("SMBG", "CBG")) {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
+#### insulin_regimen ####
 
-    return(d)
-}
-
-
-# "tracker_year" ####
-# TODO: Read out single year, check that all years are the same and match the input of the year function?
-# Currently uses fix_chr_without_NAs
-
-# "clinic_code" ####
-# TODO: When we have data, using list of clinics to double check?
-# TODO Operationalization: Read out clinic table in database to check data with
-# Currently uses fix_chr_without_NAs
-
-# "country_code" ####
-# TODO: When we have data, using list of countries to double check?
-# TODO Operationalization: Read out clinic table in database to check data with
-# Currently uses fix_chr_without_NAs
-
-
-# "sheet_name" ####
-# TODO: Include in final function
-# Currently uses fix_chr_without_NAs
-
-# parse_sheet_name <- function(x){
-# y <- unlist(map(as.character(x), function(z)
-# (format(readr::parse_date(z,"%b'%y"), format = "%Y-%m"))))
-# # TODO: real trackers use format like "Feb18" not "Feb'18" -> remove the apostrophe upstream?
-# }
-#
-# transform_sheet_name_to_tracker_month <- function(x) {
-# x <- try(parse_sheet_name(x), silent = TRUE)
-# if (class(x) == "try-error") {
-# x <- "999999" }
-# return(x)
-# }
-#
-
-# "insulin_regimen" ####
-# ______________________________________________
-
+#' Title
+#'
+#' @param d
+#'
+#' @return
+#' @export
+#'
+#' @examples
 fix_insulin_reg <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
@@ -474,58 +479,16 @@ fix_insulin_reg <- function(d) {
 }
 
 
-# "insulin_dosage" ####
-# ______________________________________________
+#### est_strips_pmoth ####
 
-fix_insulin_dos <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.character(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-
-# "required_insulin" ####
-# ______________________________________________
-
-fix_required_insulin <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.numeric(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-# "required_insulin_product_name" ####
-# ______________________________________________
-
-fix_required_insulin_name <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.character(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-# "est_strips_pmoth" ####
-# ______________________________________________
-
+#' Title
+#'
+#' @param d
+#'
+#' @return
+#' @export
+#'
+#' @examples
 fix_est_strips_pmoth <- function(d) {
     if (!is.na(d)) {
         d <- try(as.numeric(d), silent = TRUE)
@@ -539,8 +502,28 @@ fix_est_strips_pmoth <- function(d) {
     return(d)
 }
 
-# "blood_pressure_sys_mmhg" ####
-# ______________________________________________
+
+#### blood_pressure_mmhg ####
+
+#' @title Separate single blood pressure value into sys and dias values.
+#'
+#' @param df data frame with patient data.
+#'
+#' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
+split_bp_in_sys_and_dias <- function(df) {
+    logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
+    df <- df %>%
+        separate_wider_delim(
+            cols = blood_pressure_mmhg,
+            delim = "/",
+            names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
+        )
+    df
+}
+
+
+##### blood_pressure_sys_mmhg ####
+
 par_highest_blood_pressure_sys <- 250
 par_lowest_blood_pressure_sys <- 20
 
@@ -565,8 +548,7 @@ fix_blood_pressure_sys <- function(d) {
     return(d)
 }
 
-# "blood_pressure_dias_mmhg" ####
-# ______________________________________________
+#### blood_pressure_dias_mmhg ####
 
 par_highest_blood_pressure_dias <- 220
 par_lowest_blood_pressure_dias <- 20
@@ -591,8 +573,9 @@ fix_blood_pressure_dias <- function(d) {
     return(d)
 }
 
-# "weight" ####
-# ______________________________________________
+
+##### weight ####
+
 par_max_weight_kg <- 200
 par_min_weight_kg <- 0
 
@@ -614,8 +597,8 @@ fix_weight <- function(d) {
 }
 
 
-# "height" ####
-# ______________________________________________
+#### height ####
+
 par_max_height <- 200
 par_min_height <- 0
 
@@ -626,6 +609,7 @@ transform_cm_to_m <- function(height) {
         height
     )
 }
+
 
 fix_height <- function(d) {
     if (!is.na(d)) {
@@ -647,22 +631,9 @@ fix_height <- function(d) {
 }
 
 
-# "edu_occ" AN CODES ####
-# ______________________________________________
+#### hospitalisation ####
 
-# TODO need to check with valid codes from the AN sheet
-# tyla could give us a list to check if all codes exist such that these can later be replaced
-fix_edu_occ <- function(d) {
-    d <- d
-    return(d)
-}
-
-
-#
-# "hospitalisation" ####
-# ______________________________________________
 # TODO: If possible transform all texted dates into real dates. Complex manual function necessary
-
 extract_hospitalisation_date <- function(hosp_str) {
     str_out <- hosp_str %>%
         replace(hosp_str == "NA", NA)
@@ -679,56 +650,8 @@ fix_hospitalisation <- function(d) {
 }
 
 
-# "id" ####
-# ______________________________________________
-fix_id <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
+#### dm_complication_* ####
 
-# "latest_complication_screening_type" ####
-# ______________________________________________
-fix_latest_complic <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-
-# "remarks" ####
-# ______________________________________________
-fix_remarks <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-
-
-
-# TODO: Add checks & new columns for DC_V2_Anon Example csv DONE!
-
-
-# "dm_complication_comment" ####
-# ______________________________________________
-fix_complication_comment <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-# "dm_complication_*" ####
-# ______________________________________________
 fix_complication <- function(d) {
     if (!is.na(d)) {
         d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
@@ -747,77 +670,9 @@ fix_complication <- function(d) {
     return(d)
 }
 
-# "num_admin_hosp_*" ####
-# ______________________________________________
 
-fix_num_hosp <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.numeric(d),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
+##### dka_diag ####
 
-    return(d)
-}
-
-
-# "num_admin_hosp_other_reason" ####
-# ______________________________________________
-fix_admin_hosp <- function(d) {
-    if (!is.na(d)) {
-        d <- as.character(d)
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-
-# "inactive_reason" ####
-# ______________________________________________
-#### INSULIN REGIMEN
-fix_inactive_reason <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.character(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-        if (!tolower(d) %in% tolower(c("Deceased", "Lost Follow Up"))) {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-# "lost_date" ####
-# SEE DATE FIX FUNCTION
-# "lost_age" ####
-# ______________________________________________
-fix_lost_age <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.numeric(d),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-# "diag_date" ####
-# SEE DATE FIX FUNCTION
-# "dka_diag" ####
-# ______________________________________________
 fix_dka_diag <- function(d) {
     if (!is.na(d)) {
         d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
@@ -835,157 +690,6 @@ fix_dka_diag <- function(d) {
     }
     return(d)
 }
-
-
-#' @title Split a column value into value and date.
-#'
-#' @description
-#' Assumes that the measurement entry is in the format "8.53 (28/8/2017)".
-#' Uses regex to split this string into the value part and the date part,
-#' for example in "8.53 " and "28/8/2017".
-#'
-#' @param df data frame with patient data.
-#' @param colname column to split into value and date.
-#'
-#' @return data frame with the original column and a new colname_date column.
-extract_date_from_measurement <-
-    function(df, colname) {
-        df <- df %>% separate_wider_regex(
-            !!colname,
-            c(
-                set_names(".*", colname),
-                "[(]",
-                set_names(".*?", paste0(colname, "_date")),
-                "[)]?"
-            ),
-            too_few = "align_start"
-        )
-
-        if (colname == "fbg_updated_mmol" || colname == "fbg_updated_mg") {
-            df <- df %>% rename_with(~ str_replace(.x, "_mmol_date|_mg_date", "_date"))
-        }
-
-        df
-    }
-
-
-
-
-date_fix <-
-    function(df) {
-        format <- "%Y/%m/%d"
-        year <- df$tracker_year[1]
-
-
-        if ("recruitment_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    recruitment_date = as.Date(
-                        as.numeric(recruitment_date) * (60 * 60 * 24),
-                        origin = "1899-12-30",
-                        format = format,
-                        tz = "GMT"
-                    )
-                )
-        }
-
-        if ("last_clinic_visit_date" %in% colnames(df)) {
-            df <- df %>%
-                mutate(
-                    last_clinic_visit_date = as.POSIXct(
-                        as.numeric(last_clinic_visit_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    )
-                )
-        }
-
-        if ("bmi_date" %in% colnames(df)) {
-            df <- df %>%
-                mutate(
-                    bmi_date = as.POSIXct(
-                        as.numeric(bmi_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    bmi_date = format(as.Date(bmi_date), "%Y-%m")
-                )
-        }
-
-        if ("updated_fbg_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    updated_fbg_date = as.POSIXct(
-                        as.numeric(updated_fbg_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    updated_fbg_date = case_when(
-                        year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000),
-                        TRUE ~ updated_fbg_date
-                    )
-                )
-        }
-
-        if ("updated_hba1c_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    updated_hba1c_date = as.POSIXct(
-                        as.numeric(updated_hba1c_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    updated_hba1c_date = case_when(
-                        year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000),
-                        TRUE ~ updated_hba1c_date
-                    )
-                )
-        }
-
-        return(df)
-    }
-
-
-
-#' @title Separate single blood pressure value into sys and dias values.
-#'
-#' @param df data frame with patient data.
-#'
-#' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
-split_bp_in_sys_and_dias <- function(df) {
-    logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
-    df <- df %>%
-        separate_wider_delim(
-            cols = blood_pressure_mmhg,
-            delim = "/",
-            names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
-        )
-    df
-}
-
-#' @title WIP: Convert dates that are stored as 5-digit number from Excel to date format
-#'
-#' @param d
-#'
-#' @seealso https://stackoverflow.com/a/50274507: depending on whether read in
-#' file was created on Mac or Windows, the origin date might need to be adjusted.
-#'
-#' @return Date in a character format.
-#'
-#' @examples
-#' date_as_fivedigit_number_fix("44939") # res in "2023-01-13"
-#'
-date_as_fivedigit_number_fix <-
-    function(d) {
-        if (str_detect(string = d, pattern = "^[:digit:]{5}$")) {
-            d <- as.character(openxlsx::convertToDate(d))
-        }
-        d
-    }
 
 
 # TEST --------------------------------------------------------------------
@@ -1006,7 +710,7 @@ date_as_fivedigit_number_fix <-
 # that some R language encryption issues arise when saving thai strings.
 # 4. Columns that are not correctly extracted yet, input needed:
 # latest_complication_screening_type, latest_complication_screening_date,
-# remarks, additional_support, est_strips_pmonth
+# remarks, est_strips_pmonth
 ## 4. Final check if all variables have been transformed correctly
 
 # testing on correct data:
