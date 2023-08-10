@@ -22,10 +22,7 @@ clinic_visit:
   - clinic visit
 complication_screening:
   - current month complication screening kidney eye foot dropdown
-  - current month complication screening kidney eye foot dropdown1
-  - current month complication screening kidney eye foot dropdown2
-  - current month complication screening kidney eye foot dropdown3
-  - current month complication screening kidney eye foot dropdown4
+  - current month complication screening kidney eye foot
   - Current Month Complication Screening (kidney, eye, foot)
   - Complication Screening (select from list)
   - Complication Screening (Current Month Testing) Select for Drop Down
@@ -172,8 +169,6 @@ meter_received_date:
 name:
   - Patient Name
   - Patient.Name..ANON
-'no':
-  - 'No'
 num_admin_hosp_dka:
   - Number DKA
 num_admin_hosp_hypo:
@@ -187,6 +182,13 @@ num_admin_hosp_total:
 observations:
   - current patient observations
   - Other Patient Observations
+  - Any opportunity or intervention that may require support from A4D e.g. complications or family support
+  - Any opportunity or intervention that may require support from A4D e.g. complications or family support Remarks (If Applicable)
+  - Remarks (If Applicable)
+  - Potential additional support or intervention from A4D e.g. complications or family support
+  - Complications e.g. (1,3,4)
+  - remarks
+  - Suggestions for potential additional support or intervention from A4D e.g. complications or family support
 observations_category:
   - current patient observations category
   - Observation Category (Select)
@@ -201,12 +203,6 @@ recruitment_date:
   - date of recruitment mmmyy
   - Date of Recruitment into A4D
   - date of recruitment mmyyyy
-remarks:
-  - Any opportunity or intervention that may require support from A4D e.g. complications or family support Remarks (If Applicable)
-  - Potential additional support or intervention from A4D e.g. complications or family support
-  - Complications e.g. (1,3,4)
-  - remarks
-  - Suggestions for potential additional support or intervention from A4D e.g. complications or family support
 remote_followup:
   - remote follow up current month
   - remote follow up

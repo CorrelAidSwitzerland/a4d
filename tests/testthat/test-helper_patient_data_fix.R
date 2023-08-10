@@ -175,10 +175,10 @@ test_that("fix_fbg works", {
 })
 
 
-test_that("Test date_as_fivedigit_number_fix()", {
-    expect_equal(date_as_fivedigit_number_fix(44693), "2022-05-12")
-    expect_equal(date_as_fivedigit_number_fix("44693"), "2022-05-12")
-    expect_equal(date_as_fivedigit_number_fix("2021-05-12"), "2021-05-12")
+test_that("fix_digit_date works", {
+    expect_equal(fix_digit_date(44693), "2022-05-12")
+    expect_equal(fix_digit_date("44693"), "2022-05-12")
+    expect_equal(fix_digit_date("2021-05-12"), "2021-05-12")
 })
 
 test_that("fix_support_a4d works", {
