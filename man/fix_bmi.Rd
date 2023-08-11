@@ -2,13 +2,11 @@
 % Please edit documentation in R/helper_patient_data_fix.R
 \name{fix_bmi}
 \alias{fix_bmi}
-\title{Only accept value for bmi if there is also a weight and height.}
+\title{Calculate bmi value based on weight and height.}
 \usage{
-fix_bmi(bmi, weight, height, id)
+fix_bmi(weight, height, id)
 }
 \arguments{
-\item{bmi}{numeric bmi value.}
-
 \item{weight}{numeric weight value.}
 
 \item{height}{numeric height value.}
@@ -16,8 +14,10 @@ fix_bmi(bmi, weight, height, id)
 \item{id}{patient id.}
 }
 \value{
-corrected bmi value
+calculated bmi value.
 }
 \description{
-Set bmi to error val if either weight or height is NA.
+Formula: weight (kg) / height^2 (meters^2)
+bmi is set to NA if either weight or height are NA.
+bmi is set to error val if either weight or height are error val.
 }
