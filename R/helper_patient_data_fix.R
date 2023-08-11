@@ -135,7 +135,6 @@ extract_date_from_measurement <-
 #'
 fix_digit_date <-
     function(date) {
-
         if (is.na(date)) {
             return(NA_Date_)
         }
