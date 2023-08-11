@@ -66,21 +66,21 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
 
-    # trackers from 2020 and newer have an empty first row
-    # and openxlsx always skipps empty rows at the start of the file
-    if (year >= 2021) {
-        row_min <- row_min - 1
-        row_max <- row_max - 1
-    }
-
     testit::assert(row_min <= row_max) # <= because there could only be a single patient
-
-    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
 
     header_cols <-
         str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
-    # header_cols <- append(NA, zoo::na.locf(header_cols, nw.rm = F, fromLast = F))
+    header_cols_2 <-
+        str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
 
+    # trackers from 2020 and newer have an empty first row
+    # and openxlsx always skipps empty rows at the start of the file
+    if (year >= 2020) {
+        row_min <- row_min + 1
+        row_max <- row_max + 1
+    }
+
+    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
     logDebug("Start readxl::read_excel to get patient data.")
     df_patient <- readxl::read_excel(
         path = tracker_data_file,
@@ -92,11 +92,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     )
     logDebug("Finish readxl::read_excel.")
 
-    if (tracker_data[row_min - 1, 2] == tracker_data[row_min - 2, 2]) {
+    if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         logInfo("Read in multiline header.")
-        header_cols_2 <-
-            str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
 
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
