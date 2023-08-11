@@ -75,7 +75,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     # trackers from 2020 and newer have an empty first row
     # and openxlsx always skipps empty rows at the start of the file
-    if (year >= 2020) {
+    if (year >= 2020 && sheet != "Patient List") {
         row_min <- row_min + 1
         row_max <- row_max + 1
     }

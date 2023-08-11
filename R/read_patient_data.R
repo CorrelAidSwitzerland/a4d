@@ -304,7 +304,7 @@ reading_patient_data_2 <-
             if (anyDuplicated(colnames(df_patient)) > 0) {
                 duplicated_cols <- colnames(df_patient) %>%
                     table() %>%
-                    as.tibble() %>%
+                    as_tibble() %>%
                     dplyr::filter(n > 1) %>%
                     select(1) %>%
                     pull()
