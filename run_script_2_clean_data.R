@@ -151,7 +151,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         # insulin_dosage = character(),
         # meter_received_date = as.Date(1), # TODO
         # remarks = character(),
-        #additional_support = character(),
+        # additional_support = character(),
         age = integer(),
         blood_pressure_dias_mmhg = integer(),
         blood_pressure_sys_mmhg = integer(),
