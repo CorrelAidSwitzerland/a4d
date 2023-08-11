@@ -7,7 +7,6 @@ ERROR_VAL_DATE <<- "9999-09-09"
 `%dopar%` <- foreach::`%dopar%`
 
 source("R/helper_main.R")
-source("R/helper_dates.R")
 source("R/read_patient_data.R")
 source("R/helper_read_patient_data.R")
 source("R/helper_patient_data_fix.R")
@@ -40,7 +39,7 @@ main <- function() {
     logDebug("Start processing patient csv files.")
 
     foreach::foreach(patient_file = patient_data_files) %dopar% {
-        patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
+        patient_file_name <- str_replace(tools::file_path_sans_ext(basename(patient_file)), "_patient_raw", "")
         logfile <- paste0(patient_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
@@ -62,7 +61,7 @@ main <- function() {
     synonyms_product <- synonyms$product
 
     foreach::foreach(product_file = product_data_files) %dopar% {
-        product_file_name <- tools::file_path_sans_ext(basename(product_file))
+        product_file_name <- str_replace(tools::file_path_sans_ext(basename(patient_file)), "_product_raw", "")
         logfile <- paste0(product_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
@@ -99,8 +98,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         logInfo("Column updated_hba1c_date not found. Trying to parse from hba1c_updated.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "hba1c_updated")
-        df_patient_raw <-
-            parse_invalid_dates(df_patient_raw, "hba1c_updated_date")
         logDebug("Finished parsing dates from hba1c_updated.")
     }
 
@@ -108,8 +105,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         logInfo("Column updated_fbg_date not found. Trying to parse from fbg_updated_mg.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mg")
-        df_patient_raw <-
-            parse_invalid_dates(df_patient_raw, "fbg_updated_date")
         logDebug("Finished parsing dates from fbg_updated_mg.")
     }
 
@@ -117,8 +112,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol")
-        df_patient_raw <-
-            parse_invalid_dates(df_patient_raw, "fbg_updated_date")
         logDebug("Finished parsing dates from fbg_updated_mmol.")
     }
 
@@ -158,7 +151,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         # insulin_dosage = character(),
         # meter_received_date = as.Date(1), # TODO
         # remarks = character(),
-        additional_support = character(),
+        #additional_support = character(),
         age = integer(),
         blood_pressure_dias_mmhg = integer(),
         blood_pressure_sys_mmhg = integer(),
@@ -257,7 +250,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             ),
             across(
                 schema %>% select(where(is.Date)) %>% names(),
-                \(x) convert_to(x, lubridate::as_date, as.Date(ERROR_VAL_DATE), cur_column())
+                \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), cur_column())
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
