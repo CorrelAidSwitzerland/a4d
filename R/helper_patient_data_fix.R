@@ -218,28 +218,25 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
 
 #### bmi ####
 
-#' @title Only accept value for bmi if there is also a weight and height.
+#' @title Calculate bmi value based on weight and height.
 #'
 #' @description
-#' Set bmi to error val if either weight or height is NA.
+#' Formula: weight (kg) / height^2 (meters^2)
+#' bmi is set to NA if either weight or height are NA.
+#' bmi is set to error val if either weight or height are error val.
 #'
-#' @param bmi numeric bmi value.
 #' @param weight numeric weight value.
 #' @param height numeric height value.
 #' @param id patient id.
 #'
-#' @return corrected bmi value
+#' @return calculated bmi value.
 #' @export
-fix_bmi <- function(bmi, weight, height, id) {
-    if (is.na(bmi)) {
-        return(NA_real_)
-    }
-
-    if (is.na(weight) || is.na(height)) {
-        logWarn("Patient ", id, ": height or weight value is missing. Setting bmi to error value.")
-        bmi <- ERROR_VAL_NUMERIC
-    }
-
+fix_bmi <- function(weight, height, id) {
+    bmi <- case_when(
+        is.na(weight) || is.na(height) ~ NA_real_,
+        weight == ERROR_VAL_NUMERIC || height == ERROR_VAL_NUMERIC ~ ERROR_VAL_NUMERIC,
+        .default = weight / height^2
+    )
     bmi
 }
 
@@ -568,58 +565,6 @@ split_bp_in_sys_and_dias <- function(df) {
 }
 
 
-##### blood_pressure_sys_mmhg ####
-
-par_highest_blood_pressure_sys <- 250
-par_lowest_blood_pressure_sys <- 20
-
-fix_blood_pressure_sys <- function(d) {
-    if (!is.na(d)) {
-        d <- try(
-            cut_numeric_value(
-                d,
-                par_highest_blood_pressure_sys,
-                par_lowest_blood_pressure_sys
-            ),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-
-    return(d)
-}
-
-#### blood_pressure_dias_mmhg ####
-
-par_highest_blood_pressure_dias <- 220
-par_lowest_blood_pressure_dias <- 20
-
-fix_blood_pressure_dias <- function(d) {
-    if (!is.na(d)) {
-        d <- try(
-            cut_numeric_value(
-                d,
-                par_highest_blood_pressure_dias,
-                par_lowest_blood_pressure_dias
-            ),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-
 ##### weight ####
 
 par_max_weight_kg <- 200
@@ -645,35 +590,13 @@ fix_weight <- function(d) {
 
 #### height ####
 
-par_max_height <- 200
-par_min_height <- 0
-
 transform_cm_to_m <- function(height) {
     height <- as.numeric(height)
     height <- ifelse(height > 50,
         height / 100,
         height
     )
-}
-
-
-fix_height <- function(d) {
-    if (!is.na(d)) {
-        d <- try(
-            cut_numeric_value(
-                transform_cm_to_m(d),
-                par_max_height, par_min_height
-            ),
-            silent = TRUE
-        )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
+    height
 }
 
 

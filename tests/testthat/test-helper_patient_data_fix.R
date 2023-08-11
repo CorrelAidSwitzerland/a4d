@@ -14,9 +14,13 @@ test_that("cut_numeric_value works", {
 
 
 test_that("fix_bmi works", {
-    test_df <- data.frame(weight = c(1, NA, 3, NA, 1), height = c(1, 2, NA, NA, 1), bmi = c(5, 2, 3, 4, 1), id = c("1", "2", "3", "4", "5"))
-    expected_bmi <- c(5, ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, 1)
-    expect_equal(test_df %>% rowwise() %>% mutate(bmi = fix_bmi(bmi, weight, height, id)) %>% select(bmi) %>% pull(), expected_bmi)
+    test_df <- data.frame(
+        weight = c(1, 10, NA, 3, NA, 999999),
+        height = c(1, 2, 2, NA, NA, 1),
+        id = c("1", "2", "3", "4", "5", "6")
+    )
+    expected_bmi <- c(1, 10 / 4, NA, NA, NA, 999999)
+    expect_equal(test_df %>% rowwise() %>% mutate(bmi = fix_bmi(weight, height, id)) %>% select(bmi) %>% pull(), expected_bmi)
 })
 
 
