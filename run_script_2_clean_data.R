@@ -39,7 +39,7 @@ main <- function() {
     logDebug("Start processing patient csv files.")
 
     foreach::foreach(patient_file = patient_data_files) %dopar% {
-        patient_file_name <- str_replace(tools::file_path_sans_ext(basename(patient_file)), "_patient_raw", "")
+        patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
         logfile <- paste0(patient_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
@@ -61,7 +61,7 @@ main <- function() {
     synonyms_product <- synonyms$product
 
     foreach::foreach(product_file = product_data_files) %dopar% {
-        product_file_name <- str_replace(tools::file_path_sans_ext(basename(patient_file)), "_product_raw", "")
+        product_file_name <- tools::file_path_sans_ext(basename(product_file))
         logfile <- paste0(product_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
@@ -283,7 +283,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     export_data(
         data = df_patient,
-        filename = patient_file_name,
+        filename = str_replace(patient_file_name, "_patient_raw", ""),
         output_root = output_root,
         suffix = "_patient_cleaned"
     )
@@ -313,7 +313,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
 
     export_data(
         data = df_product_raw,
-        filename = product_file_name,
+        filename = str_replace(product_file_name, "_product_raw", ""),
         output_root = output_root,
         suffix = "_product_cleaned"
     )
