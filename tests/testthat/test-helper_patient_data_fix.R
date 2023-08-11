@@ -3,12 +3,13 @@ ERROR_VAL_NUMERIC <<- 999999
 ERROR_VAL_DATE <<- as.Date("9999-09-09")
 
 test_that("cut_numeric_value works", {
-    test_vec <- c(1, 2, 3.4)
-    expect_equal(cut_numeric_value(test_vec, min = 0, max = 5), test_vec)
-    expect_equal(cut_numeric_value(test_vec, max = 3.4, min = 1), test_vec)
-    expect_equal(cut_numeric_value(test_vec, max = 3, min = 0), c(1, 2, ERROR_VAL_NUMERIC))
-    expect_equal(cut_numeric_value(test_vec, max = 5, min = 2), c(ERROR_VAL_NUMERIC, 2, 3.4))
-    expect_equal(cut_numeric_value(test_vec, max = 3, min = 3), as.numeric(c(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC)))
+    expect_equal(cut_numeric_value(1, min = 0, max = 5), 1)
+    expect_equal(cut_numeric_value(3.4, min = 0, max = 5), 3.4)
+    expect_equal(cut_numeric_value(3.4, max = 3.4, min = 1), 3.4)
+    expect_equal(cut_numeric_value(3.4, max = 3, min = 0), ERROR_VAL_NUMERIC)
+    expect_equal(cut_numeric_value(1, max = 5, min = 2), ERROR_VAL_NUMERIC)
+    expect_equal(cut_numeric_value(2, max = 3, min = 3), ERROR_VAL_NUMERIC)
+    expect_true(is.na(cut_numeric_value(NA, max = 3, min = 1)))
 })
 
 
@@ -22,6 +23,13 @@ test_that("fix_bmi works", {
 test_that("split_bp_in_sys_and_dias works", {
     test_df <- data.frame(blood_pressure_mmhg = c("96/55", "101/57", NA))
     expected_df <- tibble(blood_pressure_sys_mmhg = c("96", "101", NA), blood_pressure_dias_mmhg = c("55", "57", NA))
+    expect_equal(split_bp_in_sys_and_dias(test_df), expected_df)
+
+    test_df <- data.frame(blood_pressure_mmhg = c("96", "1,6"))
+    expected_df <- tibble(
+        blood_pressure_sys_mmhg = c(as.character(ERROR_VAL_NUMERIC), as.character(ERROR_VAL_NUMERIC)),
+        blood_pressure_dias_mmhg = c(as.character(ERROR_VAL_NUMERIC), as.character(ERROR_VAL_NUMERIC))
+    )
     expect_equal(split_bp_in_sys_and_dias(test_df), expected_df)
 })
 
@@ -80,7 +88,7 @@ test_that("fix_age works", {
 })
 
 
-test_that("fix_gender returns the correct gender codes", {
+test_that("fix_gender works", {
     # Test case 1: Test with a female gender
     expect_equal(fix_gender("female", "1"), "F",
         info = "For gender 'female', expected 'F'"
@@ -116,35 +124,24 @@ test_that("extract_year_from_age works", {
 
 
 # Test case for detecting 'birth' in t1d_diagnosis_age
-test_that("Test for detecting 'birth' in t1d_diagnosis_age", {
+test_that("fix_t1d_diagnosis_age works", {
     expect_equal(fix_t1d_diagnosis_age("birth", "2000-01-01", "1"), "0")
     expect_equal(fix_t1d_diagnosis_age("At birth", "2000-01-01", "1"), "0")
-})
 
-# Test case for detecting 'born' in t1d_diagnosis_age
-test_that("Test for detecting 'born' in t1d_diagnosis_age", {
+    # Test case for detecting 'born' in t1d_diagnosis_age
     expect_equal(fix_t1d_diagnosis_age("born", "2020-01-01", "1"), "0")
-})
 
-# Test case for detecting 'month' in t1d_diagnosis_age
-
-test_that("Test for detecting 'month' in t1d_diagnosis_age", {
+    # Test case for detecting 'month' in t1d_diagnosis_age
     expect_equal(fix_t1d_diagnosis_age("4 months", "2020-01-01", "1"), "0")
-})
 
-# Test case for detecting 'y' in t1d_diagnosis_age
-test_that("Test for detecting 'y' in t1d_diagnosis_age", {
+    # Test case for detecting 'y' in t1d_diagnosis_age
     expect_equal(fix_t1d_diagnosis_age("5y", "2020-01-01", "1"), "5")
     expect_equal(fix_t1d_diagnosis_age("10y10m", "2020-01-02", "2"), "10")
-})
 
-# Test case for handling NA values in t1d_diagnosis_age
-test_that("Test for handling NA values in t1d_diagnosis_age", {
+    # Test case for handling NA values in t1d_diagnosis_age
     expect_true(is.na(fix_t1d_diagnosis_age(NA, "2020-01-01", "1")))
-})
 
-# Test case for default case
-test_that("Test for default case in fix_t1d_diagnosis_age", {
+    # Test case for default case
     expect_equal(fix_t1d_diagnosis_age("10", "2020-01-01", "1"), "10")
     expect_equal(fix_t1d_diagnosis_age("0", "2020-01-01", "1"), "0")
     expect_equal(fix_t1d_diagnosis_age("1", "2020-01-01", "1"), "1")
@@ -153,6 +150,8 @@ test_that("Test for default case in fix_t1d_diagnosis_age", {
 
 test_that("correct_decimal_sign works", {
     expect_equal(correct_decimal_sign("12,2"), "12.2")
+    expect_equal(correct_decimal_sign(""), "")
+    expect_true(is.na(correct_decimal_sign(NA)))
 })
 
 

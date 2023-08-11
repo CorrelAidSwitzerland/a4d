@@ -7,6 +7,7 @@ ERROR_VAL_DATE <<- "9999-09-09"
 `%dopar%` <- foreach::`%dopar%`
 
 source("R/helper_main.R")
+source("R/helper_dates.R")
 source("R/read_patient_data.R")
 source("R/helper_read_patient_data.R")
 source("R/helper_patient_data_fix.R")
@@ -19,8 +20,8 @@ source("R/logger.R")
 main <- function() {
     paths <- init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
     setup_logger(paths$output_root)
-    patient_data_files <- get_files(paths$tracker_root, pattern = "patient_data.csv$")
-    product_data_files <- get_files(paths$tracker_root, pattern = "product_data.csv$")
+    patient_data_files <- get_files(paths$tracker_root, pattern = "patient_raw.csv$")
+    product_data_files <- get_files(paths$tracker_root, pattern = "product_raw.csv$")
     logInfo(
         "Found ",
         length(patient_data_files),
@@ -40,14 +41,17 @@ main <- function() {
 
     foreach::foreach(patient_file = patient_data_files) %dopar% {
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
+        logfile <- paste0(patient_file_name)
+        setup_file_logger(paths$output_root, logfile)
         tryCatch(
-            process_patient_file(paths, patient_file, patient_file_name),
+            process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
             error = function(e) {
-                logError("Could not process ", patient_file_name, ". Error = ", e, ".")
+                logError("Could not process raw patient data. Error = ", e, ".")
             },
             warning = function(w) {
-                logWarn("Could not process ", patient_file_name, ". Warning = ", w, ".")
-            }
+                logWarn("Could not process raw patient data. Warning = ", w, ".")
+            },
+            finally = unregisterLogger(logfile)
         )
     }
 
@@ -59,14 +63,17 @@ main <- function() {
 
     foreach::foreach(product_file = product_data_files) %dopar% {
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
+        logfile <- paste0(product_file_name)
+        setup_file_logger(paths$output_root, logfile)
         tryCatch(
-            process_product_file(paths, product_file, product_file_name, synonyms_product),
+            process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
             error = function(e) {
-                logError("Could not process ", product_file_name, ". Error = ", e, ".")
+                logError("Could not process raw product data. Error = ", e, ".")
             },
             warning = function(w) {
-                logWarn("Could not process ", product_file_name, ". Warning = ", w, ".")
-            }
+                logWarn("Could not process raw product data. Warning = ", w, ".")
+            },
+            finally = unregisterLogger(logfile)
         )
     }
 
@@ -74,7 +81,7 @@ main <- function() {
 }
 
 
-process_patient_file <- function(paths, patient_file, patient_file_name) {
+process_patient_file <- function(paths, patient_file, patient_file_name, output_root) {
     patient_file_path <-
         file.path(paths$tracker_root, patient_file)
     logDebug("Start process_patient_file.")
@@ -82,9 +89,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         "Current file: ",
         patient_file_name
     )
-
-    logfile <- paste0(patient_file_name)
-    setup_file_logger(paths$output_root, logfile)
 
     df_patient_raw <- read_raw_csv(patient_file_path)
 
@@ -97,7 +101,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             extract_date_from_measurement(df_patient_raw, "hba1c_updated")
         df_patient_raw <-
             parse_invalid_dates(df_patient_raw, "hba1c_updated_date")
-        logInfo("Finished parsing dates from hba1c_updated.")
+        logDebug("Finished parsing dates from hba1c_updated.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mg" %in% colnames(df_patient_raw)) {
@@ -106,7 +110,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mg")
         df_patient_raw <-
             parse_invalid_dates(df_patient_raw, "fbg_updated_date")
-        logInfo("Finished parsing dates from fbg_updated_mg.")
+        logDebug("Finished parsing dates from fbg_updated_mg.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mmol" %in% colnames(df_patient_raw)) {
@@ -115,7 +119,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol")
         df_patient_raw <-
             parse_invalid_dates(df_patient_raw, "fbg_updated_date")
-        logInfo("Finished parsing dates from fbg_updated_mmol.")
+        logDebug("Finished parsing dates from fbg_updated_mmol.")
     }
 
     # blood pressure is given as sys/dias value pair,
@@ -128,6 +132,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     # depending on the equipment being used.
     # If the reading is above the maximum available value the > sign is used -
     # we would prefer to retain this character in the database as it is important for data analysis.
+    logInfo("Adding columns hba1c_baseline_exceeds and hba1c_updated_exceeds.")
     df_patient_raw <- df_patient_raw %>%
         mutate(
             hba1c_baseline_exceeds = ifelse(grepl(">|<", hba1c_baseline), TRUE, FALSE),
@@ -137,6 +142,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     # --- META SCHEMA ---
     # meta schema has all final columns for the database
     # along with their corresponding data types
+    logInfo("Creating meta schema.")
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),
@@ -203,19 +209,21 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
     )
 
     cols_extra <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
-    logInfo("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
+    logWarn("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
 
     cols_missing <-
         colnames(schema)[!colnames(schema) %in% colnames(df_patient_raw)]
-    logInfo("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
+    logWarn("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
 
     # add all columns of schema to df_patient_raw
     # keep all rows, only append missing cols
+    logInfo("Merging df_patient with meta schema and selecting all columns of meta schema.")
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
     # the cleaning, fixing and validating happens in three major steps:
     # 1. make sure we fix any known problems in the raw character columns
+    logInfo("Applying fix functions phase 1: mutate df_patient row-wise to fix all problems with character columns.")
     df_patient <-
         df_patient %>%
         rowwise() %>%
@@ -234,6 +242,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         ungroup()
 
     # 2. convert the refined character columns into the target data type
+    logInfo("Applying fix functions phase 2: mutate df_patient row-wise to convert character columns into target type.")
     df_patient <-
         df_patient %>%
         rowwise() %>%
@@ -258,27 +267,39 @@ process_patient_file <- function(paths, patient_file, patient_file_name) {
         ungroup()
 
     # 3. fix any remaining issues in the target data type
+    logInfo("Applying fix functions phase 3: mutate df_patient row-wise to fix all problems in the target data type.")
     df_patient <-
         df_patient %>%
         rowwise() %>%
         # 3. fix remaining problems in the target data type
         mutate(
-            bmi = cut_numeric_value(fix_bmi(bmi, weight, height, id), min = 4, max = 60),
+            bmi = fix_bmi(bmi, weight, height, id) %>% cut_numeric_value(min = 4, max = 60, "bmi"),
             age = fix_age(age, dob, tracker_year, tracker_month, id), # fix DOB first!
             gender = fix_gender(gender, id),
-            hba1c_baseline = cut_numeric_value(hba1c_baseline, 4, 18, cur_column()),
-            fbg_baseline_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, cur_column()), # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
-            fbg_updated_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, cur_column()) # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
+            hba1c_baseline = cut_numeric_value(hba1c_baseline, 4, 18, "hba1c_baseline"),
+            fbg_baseline_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, "fbg_baseline_mmol"), # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
+            fbg_updated_mmol = cut_numeric_value(fbg_baseline_mmol, 0, 136.5, "fbg_updated_mmol") # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
         ) %>%
         ungroup()
 
-    unregisterLogger(logfile)
+    logDebug(
+        "df_patient dim: ",
+        dim(df_patient) %>% as.data.frame(),
+        "."
+    )
+
+    export_data(
+        data = df_patient,
+        filename = patient_file_name,
+        output_root = output_root,
+        suffix = "_patient_cleaned"
+    )
 
     logInfo("Finish process_patient_file.")
 }
 
 
-process_product_file <- function(paths, product_file, product_file_name, synonyms_product) {
+process_product_file <- function(paths, product_file, product_file_name, synonyms_product, output_root) {
     product_file_path <-
         file.path(paths$tracker_root, product_file)
     logDebug("Start process_product_file.")
@@ -287,14 +308,22 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         product_file_name
     )
 
-    logfile <- paste0(product_file_name)
-    setup_file_logger(paths$output_root, logfile)
-
     df_product_raw <- read_raw_csv(product_file_path)
 
     df_product_raw <- reading_product_data_step2(df_product_raw, synonyms_product)
 
-    unregisterLogger(logfile)
+    logDebug(
+        "df_product_raw dim: ",
+        dim(df_product_raw) %>% as.data.frame(),
+        "."
+    )
+
+    export_data(
+        data = df_product_raw,
+        filename = product_file_name,
+        output_root = output_root,
+        suffix = "_product_cleaned"
+    )
 
     logInfo("Finish process_product_file.")
 }

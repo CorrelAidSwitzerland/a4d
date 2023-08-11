@@ -158,7 +158,7 @@ export_data <- function(data, filename, output_root, suffix) {
 #'
 #' @return tibble with patient data
 read_raw_csv <- function(file) {
-    logInfo("Start loading data from csv.")
+    logDebug("Start reading data with read_csv.")
     df_patient_raw <- read_csv(
         file,
         name_repair = "check_unique",
@@ -166,7 +166,7 @@ read_raw_csv <- function(file) {
         show_col_types = FALSE,
         col_types = readr::cols(.default = "c")
     )
-    logInfo("Finished loading data from csv.")
+    logDebug("Finished loading data with read_csv.")
     logInfo("Dim: ", dim(df_patient_raw))
     logInfo("Columns: ", spec(df_patient_raw))
 
