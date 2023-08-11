@@ -113,7 +113,7 @@ extract_date_from_measurement <-
             too_few = "align_start"
         )
 
-        if (colname == "fbg_updated_mmol" || colname == "fbg_updated_mg") {
+        if (colname %in% c("fbg_updated_mmol", "fbg_updated_mg")) {
             df <- df %>% rename_with(~ str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
@@ -135,11 +135,41 @@ extract_date_from_measurement <-
 #'
 fix_digit_date <-
     function(date) {
+
+        if (is.na(date)) {
+            return(NA_Date_)
+        }
+
         if (str_detect(string = date, pattern = "^[:digit:]{5}$")) {
             date <- as.character(openxlsx::convertToDate(date))
         }
         date
     }
+
+
+#' @title Try to handle invalid dates.
+#'
+#' @description
+#' For each value of the character vector, this function uses the
+#' lubridate parse functions to find common formats
+#'
+#' @param date character date value.
+#'
+#' @return
+parse_dates <- function(date) {
+    parsed_date <- suppressWarnings(lubridate::as_date(date))
+
+    if (is.na(parsed_date)) {
+        logWarn(
+            "Could not parse date value ", date, ". ",
+            "Trying to parse with lubridate::parse_date_time and orders = c('dmy', 'dmY', 'by', 'bY')."
+        )
+        orders <- c("dmy", "dmY", "dbY", "by", "bY")
+        parsed_date <- lubridate::parse_date_time(date, orders)
+    }
+
+    parsed_date
+}
 
 
 #### age ####
