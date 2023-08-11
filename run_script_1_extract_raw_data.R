@@ -118,7 +118,7 @@ process_patient_data <-
             data = df_raw_patient,
             filename = tracker_name,
             output_root = output_root,
-            suffix = "_patient_data"
+            suffix = "_patient_raw"
         )
 
         logInfo("Finish process_patient_data.")
@@ -152,7 +152,7 @@ process_product_data <-
                 data = df_raw_product,
                 filename = tracker_name,
                 output_root = output_root,
-                suffix = "_product_data"
+                suffix = "_product_raw"
             )
         } else {
             logWarn("No product data in the file")

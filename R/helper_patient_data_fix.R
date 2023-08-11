@@ -49,15 +49,17 @@ cut_numeric_value <- function(x,
                               min,
                               max,
                               col_name = "") {
-    old_error_count <- length(which(x == ERROR_VAL_NUMERIC))
+    if (is.na(x)) {
+        return(x)
+    }
+
     x <- ifelse(x > max, ERROR_VAL_NUMERIC, x)
     x <- ifelse(x < min, ERROR_VAL_NUMERIC, x)
 
-    if (ERROR_VAL_NUMERIC %in% x) {
-        new_error_count <- length(which(x == ERROR_VAL_NUMERIC)) - old_error_count
+    if (x == ERROR_VAL_NUMERIC) {
         logWarn(
-            "Column ", col_name, " contains invalid values outside [", min, ", ", max, "]. ",
-            new_error_count, " values were replaced with ", ERROR_VAL_NUMERIC, "."
+            "Found invalid value ", x, " for column ", col_name, " outside [", min, ", ", max, "]. ",
+            "Value was replaced with ", ERROR_VAL_NUMERIC, "."
         )
     }
 
@@ -512,12 +514,27 @@ fix_est_strips_pmoth <- function(d) {
 #' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
 split_bp_in_sys_and_dias <- function(df) {
     logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
+    df <- df %>% mutate(
+        blood_pressure_mmhg = case_when(
+            str_detect(blood_pressure_mmhg, "/", negate = T) ~ paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/"),
+            TRUE ~ blood_pressure_mmhg
+        )
+    )
+
+    if (paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/") %in% df$blood_pressure_mmhg) {
+        logWarn(
+            "Found invalid values for column blood_pressure_mmhg that do not follow the format X/Y. ",
+            "Values were replaced with ", ERROR_VAL_NUMERIC, "."
+        )
+    }
+
     df <- df %>%
         separate_wider_delim(
             cols = blood_pressure_mmhg,
             delim = "/",
             names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
         )
+    logDebug("Finished splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df
 }
 
