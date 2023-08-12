@@ -115,11 +115,6 @@ test_that("fix_gender works", {
 })
 
 
-test_that("replace_empty_string_with_NA works", {
-    expect_equal(replace_empty_string_with_NA(c("a", "", "NA", NA, "b")), c("a", NA, "NA", NA, "b"))
-})
-
-
 test_that("extract_year_from_age works", {
     expect_equal(extract_year_from_age("2y9m"), "2")
     expect_equal(extract_year_from_age("10y10m"), "10")
@@ -185,12 +180,19 @@ test_that("fix_digit_date works", {
 })
 
 test_that("fix_support_a4d works", {
-    expect_equal(fix_support_a4d("partial", "1"), "partial")
-    expect_equal(fix_support_a4d("Standard", "1"), "Standard")
-    expect_equal(fix_support_a4d("SAc", "1"), "SAc")
-    expect_true(is.na(fix_support_a4d("", "1")))
-    expect_true(is.na(fix_support_a4d(NA, "1")))
-    expect_equal(fix_support_a4d("abc", "1"), ERROR_VAL_CHARACTER)
+    valid_support_values <- c(
+        "Standard",
+        "Partial",
+        "Semi-Partial",
+        "SAC",
+        "Monitoring"
+    )
+    expect_equal(check_allowed_values("partial", valid_support_values, "1"), "partial")
+    expect_equal(check_allowed_values("Standard", valid_support_values, "1"), "Standard")
+    expect_equal(check_allowed_values("SAc", valid_support_values, "1"), "SAc")
+    expect_true(is.na(check_allowed_values("", valid_support_values, "1")))
+    expect_true(is.na(check_allowed_values(NA, valid_support_values, "1")))
+    expect_equal(check_allowed_values("abc", valid_support_values, "1"), ERROR_VAL_CHARACTER)
 })
 
 test_that("fix_testing_frequency works", {
