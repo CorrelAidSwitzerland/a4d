@@ -67,17 +67,6 @@ cut_numeric_value <- function(x,
 }
 
 
-#' @title replace empty strings with NA.
-#'
-#' @param string_vector character vector containing empty strings.
-#'
-#' @return
-#' @export
-replace_empty_string_with_NA <- function(string_vector) {
-    ifelse(string_vector == "", NA_character_, string_vector)
-}
-
-
 #' @title Correct decimal sign.
 #'
 #' @param x character representation of a number.
@@ -154,7 +143,7 @@ fix_digit_date <-
 #'
 #' @param date character date value.
 #'
-#' @return
+#' @return Either a correctly parsed date or NA.
 parse_dates <- function(date) {
     parsed_date <- suppressWarnings(lubridate::as_date(date))
 
@@ -168,6 +157,31 @@ parse_dates <- function(date) {
     }
 
     parsed_date
+}
+
+
+#' @title Check value against list of allowed values.
+#'
+#' @param x character value to check.
+#' @param valid_values list of valid options.
+#' @param id patient id.
+#' @param col column name when used with mutate/across.
+#'
+#' @return Either x or "Other".
+check_allowed_values <- function(x, valid_values, id, col = "") {
+    if (is.na(x) || x == "") {
+        return(NA_character_)
+    }
+
+    if (!tolower(x) %in% tolower(valid_values)) {
+        logWarn(
+            "Patient ", id, ": Value ", x, "for column ", col, " is not in the list of allowed values. ",
+            "Replacing it with ", ERROR_VAL_CHARACTER, "."
+        )
+        x <- ERROR_VAL_CHARACTER
+    }
+
+    x
 }
 
 
@@ -276,7 +290,7 @@ fix_gender <- function(gender, id) {
 #' @param t1d_diagnosis_date date when diagnosed with T1D.
 #' @param id patient id
 #'
-#' @return
+#' @return Corrected value with text replacement.
 #' @export
 fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
     age_corrected <- case_when(
@@ -359,40 +373,6 @@ fix_fbg <- function(fbg) {
 }
 
 
-##### support_from_a4d ####
-
-#' @title Fix invalid values for support a4d.
-#'
-#' @param support text
-#' @param id patient id
-#'
-#' @return valid character value for support a4d.
-#' @export
-fix_support_a4d <- function(support, id) {
-    if (is.na(support) || support == "") {
-        return(NA_character_)
-    }
-
-    valid_support_values <- c(
-        "Standard",
-        "Partial",
-        "Semi-Partial",
-        "SAC",
-        "Monitoring"
-    )
-
-    if (!tolower(support) %in% tolower(valid_support_values)) {
-        logWarn(
-            "Patient ", id, ": A4D support ", support, " is not in the list of allowed values. ",
-            "Replacing it with ", ERROR_VAL_CHARACTER, "."
-        )
-        support <- ERROR_VAL_CHARACTER
-    }
-
-    support
-}
-
-
 #### testing_fqr_pday ####
 
 #' @title Fix problems with ranges and decimal numbers in testing_frequency.
@@ -425,40 +405,6 @@ fix_testing_frequency <- function(test_frq) {
 #' @return mean of that range
 replace_range_with_mean <- function(x) {
     mean(as.numeric(unlist(str_split(x, "-"))))
-}
-
-
-#### est_strips_pmoth ####
-
-fix_strips <- function(d) {
-    d <- try(as.numeric(d), silent = TRUE)
-    if (class(d) == "try-error") {
-        d <- 999999
-    }
-    return(d)
-}
-
-
-#### status ####
-
-fix_status <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.character(d), silent = TRUE)
-        if (!d %in% c(
-            "Active",
-            "Deceased",
-            "Discontinued",
-            "Inactive",
-            "Query",
-            "Active - Remote",
-            "Lost Follow Up"
-        )) {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-    return(d)
 }
 
 
@@ -498,30 +444,6 @@ fix_insulin_reg <- function(d) {
             )
         )) {
             d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-
-#### est_strips_pmoth ####
-
-#' Title
-#'
-#' @param d
-#'
-#' @return
-#' @export
-#'
-#' @examples
-fix_est_strips_pmoth <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.numeric(d), silent = TRUE)
-        if (class(d) == "try-error") {
-            d <- 999999
         }
     } else {
         d <- NA

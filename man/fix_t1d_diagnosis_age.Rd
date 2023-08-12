@@ -13,6 +13,9 @@ fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id)
 
 \item{id}{patient id}
 }
+\value{
+Corrected value with text replacement.
+}
 \description{
 Try to replace text descriptions for age with proper numerical values.
 }

@@ -9,6 +9,9 @@ parse_dates(date)
 \arguments{
 \item{date}{character date value.}
 }
+\value{
+Either a correctly parsed date or NA.
+}
 \description{
 For each value of the character vector, this function uses the
 lubridate parse functions to find common formats
