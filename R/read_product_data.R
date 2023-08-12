@@ -190,7 +190,9 @@ reading_product_data_step2 <-
             logDebug(paste("Start processing the following sheet:", sheet_month))
 
             # remove former
-            rm(product_df)
+            if (exists("product_df")) {
+                rm(product_df)
+            }
 
             # filter on month sheet
             product_df <- df %>%
