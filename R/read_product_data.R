@@ -189,11 +189,6 @@ reading_product_data_step2 <-
         for (sheet_month in unique(df$product_sheet_name)) {
             logDebug(paste("Start processing the following sheet:", sheet_month))
 
-            # remove former
-            if (exists("product_df")) {
-                rm(product_df)
-            }
-
             # filter on month sheet
             product_df <- df %>%
                 dplyr::filter(product_sheet_name == sheet_month)
@@ -231,11 +226,12 @@ reading_product_data_step2 <-
             # Keep first row and last row and order the rest by date
             product_df <- product_df %>%
                 ungroup() %>%
-                tidyr::fill(c(product, product_entry_date), .direction = "down") %>%
+                tidyr::fill(c(product), .direction = "down") %>%
                 group_by(product) %>%
                 mutate(rank = ifelse(row_number() == 1, 1,
-                    if_else(row_number() == n(), n() + 2, dense_rank(product_entry_date) + 1)
-                )) %>%
+                    if_else(row_number() == n(), n() + 2,
+                            if_else(is.na(product_entry_date), row_number(), dense_rank(product_entry_date) + 1)
+                ))) %>%
                 arrange(product, rank) %>%
                 ungroup() %>%
                 select(-rank)

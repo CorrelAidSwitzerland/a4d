@@ -197,14 +197,14 @@ sanitize_column_name <- function(column_name) {
 # @Description: Reformates dates entered into excel in wrong format (e.g., 44042) to final date format (yyyy-mm-dd)
 format_date_excelnum <- function(product_df) {
     rel_rows <- which(!grepl("-", product_df$product_entry_date) & !grepl("\\.", product_df$product_entry_date))
-    product_df[rel_rows, "product_entry_date"] <- as.character(openxlsx::convertToDate(as.numeric(unlist(product_df[rel_rows, "product_entry_date"]))))
+    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(openxlsx::convertToDate(as.numeric(unlist(product_df[rel_rows, "product_entry_date"])))))
     return(product_df)
 }
 
 # @Description: Reformates dates entered into excel in wrong format (e.g., dd-mm-yyyy) to final date format (yyyy-mm-dd)
 format_date_exceldate <- function(product_df) {
     rel_rows <- which(grepl("-", product_df$product_entry_date) | grepl("\\.", product_df$product_entry_date))
-    product_df[rel_rows, "product_entry_date"] <- as.character(dmy(unlist(product_df[rel_rows, "product_entry_date"])))
+    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(dmy(unlist(product_df[rel_rows, "product_entry_date"]))))
     return(product_df)
 }
 
@@ -252,7 +252,7 @@ clean_unitsreceived <- function(product_df) {
     product_df <- product_df %>%
         mutate(product_units_received = ifelse(index %in% drop_rows,
             0,
-            as.numeric(product_units_received)
+            suppressWarnings(as.numeric(product_units_received))
         ))
 
     return(product_df)
@@ -395,8 +395,7 @@ adjust_column_classes <- function(product_df) {
     list_date <- c("product_entry_date")
     list_character <- c(
         "product", "product_received_from", "product_released_to", "product_returned_by", "product_balance_status",
-        # "product_country", "product_hospital",
-        "product_sheet_name"
+        "product_sheet_name","file_name", "product_units_notes"
     )
     list_numeric <- c(
         "product_units_received", "product_units_released", "product_balance", "product_units_returned",
