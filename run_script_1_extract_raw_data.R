@@ -138,7 +138,11 @@ process_product_data <-
                 columns_synonyms = synonyms_product
             )
 
-        df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+        if(!is.null(df_raw_product)){
+            df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+        }else{
+            logDebug("Empty product data")
+            }
 
         logDebug(
             "df_raw_product dim: ",
