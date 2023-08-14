@@ -230,8 +230,9 @@ reading_product_data_step2 <-
                 group_by(product) %>%
                 mutate(rank = ifelse(row_number() == 1, 1,
                     if_else(row_number() == n(), n() + 2,
-                            if_else(is.na(product_entry_date), row_number(), dense_rank(product_entry_date) + 1)
-                ))) %>%
+                        if_else(is.na(product_entry_date), row_number(), dense_rank(product_entry_date) + 1)
+                    )
+                )) %>%
                 arrange(product, rank) %>%
                 ungroup() %>%
                 select(-rank)

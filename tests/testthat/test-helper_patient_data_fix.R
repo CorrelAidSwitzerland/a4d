@@ -92,25 +92,25 @@ test_that("fix_age works", {
 })
 
 
-test_that("fix_gender works", {
+test_that("fix_sex works", {
     # Test case 1: Test with a female gender
-    expect_equal(fix_gender("female", "1"), "F",
-        info = "For gender 'female', expected 'F'"
+    expect_equal(fix_sex("female", "1"), "F",
+        info = "For sex 'female', expected 'F'"
     )
 
     # Test case 2: Test with a male gender
-    expect_equal(fix_gender("man", "2"), "M",
-        info = "For gender 'man', expected 'M'"
+    expect_equal(fix_sex("man", "2"), "M",
+        info = "For sex 'man', expected 'M'"
     )
 
     # Test case 3: Test with an empty gender
-    expect_true(is.na(fix_gender("", "3")),
-        info = "For empty gender, expected NA"
+    expect_true(is.na(fix_sex("", "3")),
+        info = "For empty sex, expected NA"
     )
 
     # Test case 4: Test with another# gender not in the synonyms list
-    expect_equal(fix_gender("unknown", "4"), ERROR_VAL_CHARACTER,
-        info = "For gender 'unknown', expected 'Other'"
+    expect_equal(fix_sex("unknown", "4"), ERROR_VAL_CHARACTER,
+        info = "For sex 'unknown', expected 'Other'"
     )
 })
 
@@ -179,6 +179,7 @@ test_that("fix_digit_date works", {
     expect_equal(fix_digit_date("2021-05-12"), "2021-05-12")
 })
 
+
 test_that("fix_support_a4d works", {
     valid_support_values <- c(
         "Standard",
@@ -195,6 +196,7 @@ test_that("fix_support_a4d works", {
     expect_equal(check_allowed_values("abc", valid_support_values, "1"), ERROR_VAL_CHARACTER)
 })
 
+
 test_that("fix_testing_frequency works", {
     expect_equal(fix_testing_frequency("2"), "2")
     expect_equal(fix_testing_frequency("1.5"), "1.5")
@@ -202,4 +204,50 @@ test_that("fix_testing_frequency works", {
     expect_equal(fix_testing_frequency("2-3"), "2.5")
     expect_true(is.na(fix_testing_frequency("")))
     expect_true(is.na(fix_testing_frequency(NA)))
+})
+
+
+test_that("extract_date_from_measurement works", {
+    test_df <- data.frame(
+        measurement = c(
+            "8.53 (28/8/2017)",
+            "10,75 (31/12/2020)",
+            "1075 (31/12/2020)",
+            "10.75 (31/12/2020)",
+            "10.75 (31-12-2020)",
+            "15.42 (2022-01)",
+            "10.75 (01-Sept-2022)",
+            "10.75 (01-Sept-2022",
+            "10.75(01-2017)",
+            "3"
+        )
+    )
+    expected_df <- as_tibble(data.frame(
+        measurement = c(
+            "8.53 ",
+            "10,75 ",
+            "1075 ",
+            "10.75 ",
+            "10.75 ",
+            "15.42 ",
+            "10.75 ",
+            "10.75 ",
+            "10.75",
+            "3"
+        ),
+        measurement_date = c(
+            "28/8/2017",
+            "31/12/2020",
+            "31/12/2020",
+            "31/12/2020",
+            "31-12-2020",
+            "2022-01",
+            "01-Sept-2022",
+            "01-Sept-2022",
+            "01-2017",
+            NA
+        )
+    ))
+
+    expect_equal(extract_date_from_measurement(test_df, "measurement"), expected_df)
 })

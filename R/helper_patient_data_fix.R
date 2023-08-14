@@ -255,30 +255,30 @@ fix_bmi <- function(weight, height, id) {
 }
 
 
-#### gender ####
+#### sex ####
 
-#' @title Replace gender synonyms with either M, F or Other.
+#' @title Replace sex synonyms with either M, F or Other.
 #'
-#' @param gender patient gender.
+#' @param sex patient gender.
 #' @param id patient id.
 #'
 #' @return Either M, F or Other.
 #' @export
-fix_gender <- function(gender, id) {
+fix_sex <- function(sex, id) {
     synonyms_female <- c("female", "girl", "woman", "fem", "feminine", "f")
     synonyms_male <- c("male", "boy", "man", "masculine", "m")
 
-    fixed_gender <- case_when(
-        is.na(gender) | gender == "" ~ NA_character_,
-        tolower(gender) %in% synonyms_female ~ "F",
-        tolower(gender) %in% synonyms_male ~ "M",
+    fixed_sex <- case_when(
+        is.na(sex) | sex == "" ~ NA_character_,
+        tolower(sex) %in% synonyms_female ~ "F",
+        tolower(sex) %in% synonyms_male ~ "M",
         .default = ERROR_VAL_CHARACTER
     )
 
-    if (!is.na(fixed_gender) && fixed_gender == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": gender ", gender, " is not in the list of synonyms. Replacing it with ", fixed_gender, ".")
+    if (!is.na(fixed_sex) && fixed_sex == ERROR_VAL_CHARACTER) {
+        logWarn("Patient ", id, ": sex ", sex, " is not in the list of synonyms. Replacing it with ", fixed_sex, ".")
     }
-    fixed_gender
+    fixed_sex
 }
 
 
@@ -416,8 +416,6 @@ replace_range_with_mean <- function(x) {
 #'
 #' @return
 #' @export
-#'
-#' @examples
 fix_insulin_reg <- function(d) {
     if (!is.na(d)) {
         d <- try(as.character(d), silent = TRUE)
@@ -484,29 +482,6 @@ split_bp_in_sys_and_dias <- function(df) {
         )
     logDebug("Finished splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df
-}
-
-
-##### weight ####
-
-par_max_weight_kg <- 200
-par_min_weight_kg <- 0
-
-fix_weight <- function(d) {
-    if (!is.na(d)) {
-        d <-
-            try(cut_numeric_value(d, par_max_weight_kg, par_min_weight_kg),
-                silent = TRUE
-            )
-        if (class(d) == "try-error") {
-            d <- 999999
-        }
-    } else {
-        d <- NA
-    }
-
-
-    return(d)
 }
 
 

@@ -265,17 +265,31 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         rowwise() %>%
         # 3. fix remaining problems in the target data type
         mutate(
+            # height and weight are needed to calculate bmi
             height = transform_cm_to_m(height) %>% cut_numeric_value(min = 0, max = 2.3),
-            bmi = fix_bmi(weight, height, id) %>% cut_numeric_value(min = 4, max = 60, "bmi"), # fix height and weight first
-            age = fix_age(age, dob, tracker_year, tracker_month, id) %>% cut_numeric_value(min = 0, max = 25, "age"), # fix DOB first!
-            gender = fix_gender(gender, id),
+            weight = cut_numeric_value(weight, min = 0, max = 200),
+            bmi = fix_bmi(weight, height, id) %>% cut_numeric_value(min = 4, max = 60, "bmi"),
+            age = fix_age(age, dob, tracker_year, tracker_month, id) %>% cut_numeric_value(min = 0, max = 25, "age"),
+            sex = fix_sex(sex, id),
             hba1c_baseline = cut_numeric_value(hba1c_baseline, min = 4, max = 18, "hba1c_baseline"),
             fbg_baseline_mmol = cut_numeric_value(fbg_baseline_mmol, min = 0, max = 136.5, "fbg_baseline_mmol"), # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
             fbg_updated_mmol = cut_numeric_value(fbg_baseline_mmol, min = 0, max = 136.5, "fbg_updated_mmol"), # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
             blood_pressure_sys_mmhg = cut_numeric_value(blood_pressure_sys_mmhg, min = 20, max = 250, "blood_pressure_sys_mmhg"),
             blood_pressure_dias_mmhg = cut_numeric_value(blood_pressure_dias_mmhg, min = 20, max = 220, "blood_pressure_dias_mmhg"),
             support_from_a4d = check_allowed_values(support_from_a4d, c("Standard", "Partial", "Semi-Partial", "SAC", "Monitoring"), id, "support_from_a4d"),
-            status = check_allowed_values(status, c("Active", "Active - Remote", "Query", "Inactive", "Lost Follow Up", "Deceased", "Discontinued"), id, "status")
+            status = check_allowed_values(status, c("Active", "Active - Remote", "Query", "Inactive", "Lost Follow Up", "Deceased", "Discontinued"), id, "status"),
+            insulin_regimen = check_allowed_values(
+                insulin_regimen, c(
+                    "Basal-bolus",
+                    "Basal-bolus MDI (AN)",
+                    "Basal-bolus MDI (HI)",
+                    "Premixed 30/70 BD",
+                    "Self-mixed BD",
+                    "Modified conventional TID"
+                ),
+                id,
+                "insulin_regimen"
+            )
         ) %>%
         ungroup()
 

@@ -98,7 +98,7 @@ fbg_updated_date:
   - Updated FBG Date
   - Updated FBG or CBG Date
 file_name: []
-gender:
+sex:
   - Gender
 hba1c_baseline:
   - HbA1c (%) - BASELINE
