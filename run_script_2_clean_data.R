@@ -193,7 +193,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         support_from_a4d = character(),
         t1d_diagnosis_age = integer(),
         t1d_diagnosis_date = as.Date(1),
-        t1d_diagnosis_with_dka = logical(),
+        t1d_diagnosis_with_dka = character(),
         testing_frequency = integer(),
         tracker_month = integer(),
         tracker_year = integer(),
@@ -289,7 +289,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 ),
                 id,
                 "insulin_regimen"
-            )
+            ),
+            t1d_diagnosis_with_dka = check_allowed_values(t1d_diagnosis_with_dka, c("N", "Y"), id, "t1d_diagnosis_with_dka")
         ) %>%
         ungroup()
 

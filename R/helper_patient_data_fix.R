@@ -497,67 +497,6 @@ transform_cm_to_m <- function(height) {
 }
 
 
-#### hospitalisation ####
-
-# TODO: If possible transform all texted dates into real dates. Complex manual function necessary
-extract_hospitalisation_date <- function(hosp_str) {
-    str_out <- hosp_str %>%
-        replace(hosp_str == "NA", NA)
-}
-
-fix_hospitalisation <- function(d) {
-    d <- try(extract_hospitalisation_date(d),
-        silent = TRUE
-    )
-    if (class(d) == "try-error") {
-        d <- "999999"
-    }
-    return(d)
-}
-
-
-#### dm_complication_* ####
-
-fix_complication <- function(d) {
-    if (!is.na(d)) {
-        d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
-
-        d <- as.data.frame(d)
-        d <- d %>% mutate(d = case_when(
-            d == "0" ~ "N",
-            d == "1" ~ "Y",
-            TRUE ~ "999999"
-        ))
-
-        d <- d$d
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-
-
-##### dka_diag ####
-
-fix_dka_diag <- function(d) {
-    if (!is.na(d)) {
-        d <- ifelse(tolower(d) %in% c("y", "n", "0", "1"), d, "999999")
-
-        d <- as.data.frame(d)
-        d <- d %>% mutate(d = case_when(
-            d == "0" ~ "N",
-            d == "1" ~ "Y",
-            TRUE ~ "999999"
-        ))
-
-        d <- d$d
-    } else {
-        d <- NA
-    }
-    return(d)
-}
-
-
 # TEST --------------------------------------------------------------------
 
 # testing <- cleaning_a4d_tracker(data = dat)
