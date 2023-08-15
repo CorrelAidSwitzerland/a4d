@@ -408,49 +408,6 @@ replace_range_with_mean <- function(x) {
 }
 
 
-#### insulin_regimen ####
-
-#' Title
-#'
-#' @param d
-#'
-#' @return
-#' @export
-fix_insulin_reg <- function(d) {
-    if (!is.na(d)) {
-        d <- try(as.character(d), silent = TRUE)
-        if (!tolower(d) %in% tolower(
-            c(
-                "basal-bolus",
-                "premixed 30/70 bd",
-                "insulin pump",
-                "Premixed BD",
-                "Premixed 30/70 BD",
-                "Modified conventional TID",
-                "NPH ",
-                "Others",
-                "basal",
-                "premixed bd + bolus",
-                "premixed bd + glaridus",
-                "glargine",
-                "basal bolus",
-                "self-mixed bd",
-                "modified conventional",
-                "premixed 30/70",
-                "basal-bolus mdi (an)",
-                "other"
-            )
-        )) {
-            d <- "999999"
-        }
-    } else {
-        d <- NA
-    }
-
-    return(d)
-}
-
-
 #### blood_pressure_mmhg ####
 
 #' @title Separate single blood pressure value into sys and dias values.
@@ -494,6 +451,33 @@ transform_cm_to_m <- function(height) {
         height
     )
     height
+}
+
+
+#### id ####
+#' @title check patient id and truncate it if necessary.
+#'
+#' @param id patient id.
+#'
+#' @return Either original id, truncated id, or error value.
+#' @export
+fix_id <- function(id) {
+    if (is.na(id)) {
+        return(NA_character_)
+    }
+
+    if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
+        logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
+        if (str_length(id) > 8) {
+            logWarn("Patient ", id, ": id was truncated because it is longer than 8 characters.")
+            id <- str_sub(id, 1, 8)
+        } else {
+            logError("Patient ", id, ": id is not valid.")
+            id <- ERROR_VAL_CHARACTER
+        }
+    }
+
+    id
 }
 
 
