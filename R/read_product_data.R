@@ -237,6 +237,9 @@ reading_product_data_step2 <-
                 ungroup() %>%
                 select(-rank)
 
+            # extract start/end balance when they are in the sheet (e.g. 2019_PKH and 2020_STH examples)
+            product_df <- update_receivedfrom(product_df)
+
             # Recode all NAs in unit columns to 0
             product_df <- recode_unitcolumnstozero(product_df)
 
