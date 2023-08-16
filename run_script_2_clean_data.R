@@ -290,6 +290,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                     "SAC",
                     "Monitoring"
                 ),
+                ERROR_VAL_CHARACTER,
                 id,
                 "support_from_a4d"
             ),
@@ -304,6 +305,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                     "Deceased",
                     "Discontinued"
                 ),
+                ERROR_VAL_CHARACTER,
                 id,
                 "status"
             ),
@@ -315,8 +317,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                     "Basal-bolus MDI (HI)",
                     "Premixed 30/70 BD",
                     "Self-mixed BD",
-                    "Modified conventional TID"
+                    "Modified conventional TID",
+                    "Other"
                 ),
+                NA_character_,
                 id,
                 "insulin_regimen"
             ),
@@ -327,9 +331,40 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 "t1d_diagnosis_with_dka"
             ),
             # should be fixed last as other fix functions use id to log invalid rows!
-            id = fix_id(id)
+            id = fix_id(id),
+            hospitalisation_cause = check_allowed_values(
+                hospitalisation_cause,
+                c("DKA", "HYPO", "OTHER"),
+                NA_character_,
+                id,
+                "hospitalisation_cause"
+            )
         ) %>%
         ungroup()
+
+    # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
+    if (all(is.na(df_patient$fbg_baseline_mmol))) {
+        df_patient <- df_patient %>%
+            dplyr::filter(fbg_baseline_mg != ERROR_VAL_NUMERIC) %>%
+            mutate(fbg_baseline_mmol = fbg_baseline_mg / 18)
+    }
+    if (all(is.na(df_patient$fbg_updated_mmol))) {
+        df_patient <- df_patient %>%
+            dplyr::filter(fbg_updated_mg != ERROR_VAL_NUMERIC) %>%
+            mutate(fbg_updated_mmol = fbg_updated_mg / 18)
+    }
+
+    # Formula to calculate mg/dl from mmol/l: mg/dl = 18 × mmol/l
+    if (all(is.na(df_patient$fbg_baseline_mg))) {
+        df_patient <- df_patient %>%
+            dplyr::filter(fbg_baseline_mmol != ERROR_VAL_NUMERIC) %>%
+            mutate(fbg_baseline_mg = fbg_baseline_mmol * 18)
+    }
+    if (all(is.na(df_patient$fbg_updated_mg))) {
+        df_patient <- df_patient %>%
+            dplyr::filter(fbg_updated_mmol != ERROR_VAL_NUMERIC) %>%
+            mutate(fbg_updated_mg = fbg_updated_mmol * 18)
+    }
 
     logDebug(
         "df_patient dim: ",

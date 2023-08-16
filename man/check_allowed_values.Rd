@@ -4,12 +4,14 @@
 \alias{check_allowed_values}
 \title{Check value against list of allowed values.}
 \usage{
-check_allowed_values(x, valid_values, id, col = "")
+check_allowed_values(x, valid_values, error_val, id, col = "")
 }
 \arguments{
 \item{x}{character value to check.}
 
 \item{valid_values}{list of valid options.}
+
+\item{error_val}{value that is used to signal invalid values.}
 
 \item{id}{patient id.}
 
