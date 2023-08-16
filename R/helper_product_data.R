@@ -271,8 +271,8 @@ update_receivedfrom <- function(product_df) {
     if (any(grepl("Balance", product_df[["product_units_received"]], ignore.case = TRUE)) & any(is.na(product_df$product_received_from))) {
         product_df <- product_df %>%
             dplyr::mutate(product_received_from = case_when(
-                grepl("Balance", product_units_received, ignore.case = TRUE) &  !is.na(product_units_released) ~ product_units_released,
-                grepl("Balance", product_units_received, ignore.case = TRUE) &  !is.na(product_received_from) ~ product_received_from
+                grepl("Balance", product_units_received, ignore.case = TRUE) & !is.na(product_units_released) ~ product_units_released,
+                grepl("Balance", product_units_received, ignore.case = TRUE) & !is.na(product_received_from) ~ product_received_from
             )) %>%
             dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released))
         logInfo("The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance")
@@ -402,7 +402,7 @@ adjust_column_classes <- function(product_df) {
     list_date <- c("product_entry_date")
     list_character <- c(
         "product", "product_received_from", "product_released_to", "product_returned_by", "product_balance_status",
-        "product_sheet_name","file_name", "product_units_notes"
+        "product_sheet_name", "file_name", "product_units_notes"
     )
     list_numeric <- c(
         "product_units_received", "product_units_released", "product_balance", "product_units_returned",

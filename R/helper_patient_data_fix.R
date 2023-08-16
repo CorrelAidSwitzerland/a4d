@@ -145,6 +145,10 @@ fix_digit_date <-
 #'
 #' @return Either a correctly parsed date or NA.
 parse_dates <- function(date) {
+    if (is.na(date)) {
+        return(NA_Date_)
+    }
+
     parsed_date <- suppressWarnings(lubridate::as_date(date))
 
     if (is.na(parsed_date)) {
@@ -164,21 +168,22 @@ parse_dates <- function(date) {
 #'
 #' @param x character value to check.
 #' @param valid_values list of valid options.
+#' @param error_val value that is used to signal invalid values.
 #' @param id patient id.
 #' @param col column name when used with mutate/across.
 #'
 #' @return Either x or "Other".
-check_allowed_values <- function(x, valid_values, id, col = "") {
+check_allowed_values <- function(x, valid_values, error_val, id, col = "") {
     if (is.na(x) || x == "") {
         return(NA_character_)
     }
 
     if (!tolower(x) %in% tolower(valid_values)) {
-        logWarn(
-            "Patient ", id, ": Value ", x, "for column ", col, " is not in the list of allowed values. ",
-            "Replacing it with ", ERROR_VAL_CHARACTER, "."
-        )
-        x <- ERROR_VAL_CHARACTER
+        logWarn("Patient ", id, ": Value ", x, "for column ", col, " is not in the list of allowed values. ")
+        if (!is.na(error_val)) {
+            logInfo("Replacing ", x, " with ", error_val, ".")
+            x <- error_val
+        }
     }
 
     x
