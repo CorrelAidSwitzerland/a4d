@@ -167,7 +167,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         fbg_updated_mg = numeric(),
         fbg_updated_mmol = numeric(),
         file_name = character(),
-        gender = character(),
+        sex = character(),
         hba1c_baseline = numeric(),
         hba1c_baseline_exceeds = logical(),
         hba1c_updated = numeric(),
