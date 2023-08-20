@@ -278,7 +278,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
             fbg_baseline_mmol = cut_numeric_value(fbg_baseline_mmol, min = 0, max = 136.5, "fbg_baseline_mmol"),
             # https://www.cleveland19.com/story/1425584/ohio-man-holds-world-record-of-highest-blood-sugar/
-            fbg_updated_mmol = cut_numeric_value(fbg_baseline_mmol, min = 0, max = 136.5, "fbg_updated_mmol"),
+            fbg_updated_mmol = cut_numeric_value(fbg_updated_mmol, min = 0, max = 136.5, "fbg_updated_mmol"),
             blood_pressure_sys_mmhg = cut_numeric_value(blood_pressure_sys_mmhg, min = 20, max = 250, "blood_pressure_sys_mmhg"),
             blood_pressure_dias_mmhg = cut_numeric_value(blood_pressure_dias_mmhg, min = 20, max = 220, "blood_pressure_dias_mmhg"),
             support_from_a4d = check_allowed_values(
