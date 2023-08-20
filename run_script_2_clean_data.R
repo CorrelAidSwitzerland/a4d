@@ -241,19 +241,19 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         mutate(
             across(
                 schema %>% select(where(is.numeric)) %>% names(),
-                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, cur_column())
+                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, cur_column(), id = id)
             ),
             across(
                 schema %>% select(where(is.logical)) %>% names(),
-                \(x) convert_to(x, as.logical, FALSE, cur_column())
+                \(x) convert_to(x, as.logical, FALSE, cur_column(), id = id)
             ),
             across(
                 schema %>% select(where(is.Date)) %>% names(),
-                \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), cur_column())
+                \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), cur_column(), id = id)
             ),
             across(
                 schema %>% select(where(is.integer)) %>% names(),
-                \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column())
+                \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column(), id = id)
             )
         ) %>%
         ungroup()

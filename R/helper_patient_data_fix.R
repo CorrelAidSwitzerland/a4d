@@ -19,15 +19,15 @@
 #'
 #' @return converted value
 #' @export
-convert_to <- function(x, cast_fnc, error_val, col_name = "") {
+convert_to <- function(x, cast_fnc, error_val, col_name = "", id = id) {
     x <- tryCatch(
         cast_fnc(x),
         error = function(e) {
-            logError("Could not convert value ", x, " in column ", col_name)
+            logError("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
             x <- error_val
         },
         warning = function(w) {
-            logWarn("Could not convert value ", x, " in column ", col_name)
+            logWarn("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
             x <- error_val
         }
     )
@@ -257,12 +257,13 @@ fix_bmi <- function(weight, height, id) {
         .default = weight / height^2
     )
 
-    if (weight == ERROR_VAL_NUMERIC) {
-        logWarn("Patient ", id, ": the weight is either out of bounds or missing.")
+
+    if (!is.na(weight) && weight == ERROR_VAL_CHARACTER) {
+        logWarn("Patient ", id, ": the weight is out of bounds.")
     }
 
-    if (height == ERROR_VAL_NUMERIC) {
-        logWarn("Patient ", id, ": the height is either out of bounds or missing.")
+    if (!is.na(height) && height == ERROR_VAL_CHARACTER) {
+        logWarn("Patient ", id, ": the height is out of bounds.")
     }
     bmi
 }
