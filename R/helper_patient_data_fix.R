@@ -256,6 +256,14 @@ fix_bmi <- function(weight, height, id) {
         weight == ERROR_VAL_NUMERIC || height == ERROR_VAL_NUMERIC ~ ERROR_VAL_NUMERIC,
         .default = weight / height^2
     )
+
+    if (weight == ERROR_VAL_NUMERIC) {
+        logWarn("Patient ", id, ": the weight is either out of bounds or missing.")
+    }
+
+    if (height == ERROR_VAL_NUMERIC) {
+        logWarn("Patient ", id, ": the height is either out of bounds or missing.")
+    }
     bmi
 }
 
