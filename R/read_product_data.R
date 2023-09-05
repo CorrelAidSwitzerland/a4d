@@ -143,23 +143,6 @@ check_entry_dates <- function(df, Sheet) {
     }
 }
 
-# Check negative values in product_balance column
-check_negative_balance <- function(df, Sheet) {
-    # Create a new data frame containing only rows with negative values in product_balance column
-    negative_df <- df[df$product_balance < 0, ]
-
-    # Check if there are any rows in the new data frame
-    if (nrow(negative_df) > 0) {
-        # Log a warning message with the number of negative values and their corresponding product_balance values
-        logWarn(
-            Sheet,
-            " number of negative values in product_balance on the sheet is ",
-            nrow(negative_df), ": ",
-            paste(negative_df$product_balance, collapse = ", ")
-        )
-    }
-}
-
 #' @title Remove Rows with NA Values in Specified Columns.
 #'
 #' @description
@@ -180,6 +163,29 @@ remove_rows_with_na_columns <-
         # Return the data frame without the NA rows
         return(df[!na_rows, ])
     }
+
+
+#' @title Switch product_received_from and product_units_received column.
+#'
+#' @description
+#' Renaming columns when string Remaining stock in wrong column. E.g. 2018_PNG for Nov and Dec.
+#'
+#'
+#' @param df Dataframe. Output of tracker file from script 1 for product data.
+#'
+#' @return Dataframe with columns switched (renamed)
+switch_columns_stock <-
+    function(df){
+        if(sum(str_detect(df$product_units_received[!is.na(df$product_units_received)], 'Remaining Stock')) > 0){
+            df <- df %>%
+                rename("product_units_received" = "product_received_from",
+                       "product_received_from" = "product_units_received")
+            logDebug("Columns product_units_received and product_received_from were switched")
+            return(df)
+        } else {
+            return(df)
+        }
+        }
 
 
 #' @title Process product data in script 2.
@@ -223,6 +229,9 @@ reading_product_data_step2 <-
             missing_cols <- which(columns_missing %notin% colnames(product_df))
             missing_cols_names <- unique(columns_missing[missing_cols])
             product_df[missing_cols_names] <- NA
+
+            # switch column names if applicable
+            product_df <- switch_columns_stock(product_df)
 
             # Remove rows which do not contain any new information
             column_names_check <- c("product_entry_date", "product_units_received", "product_received_from", "product_units_released", "product_released_to", "product_units_returned", "product_returned_by")
@@ -283,9 +292,6 @@ reading_product_data_step2 <-
 
             # remove index column
             product_df <- subset(product_df, select = -index)
-
-            # check negative values in product_balance column
-            check_negative_balance(product_df, sheet_month)
 
             #### hospital and country information missing here!!
 
