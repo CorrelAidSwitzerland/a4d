@@ -165,6 +165,24 @@ remove_rows_with_na_columns <-
     }
 
 
+# Check negative values in product_balance column
+check_negative_balance <- function(df, Sheet) {
+    # Create a new data frame containing only rows with negative values in product_balance column
+    negative_df <- df[df$product_balance < 0, ]
+
+    # Check if there are any rows in the new data frame
+    if (nrow(negative_df) > 0) {
+        # Log a warning message with the number of negative values and their corresponding product_balance values
+        logWarn(
+            Sheet,
+            " number of negative values in product_balance on the sheet is ",
+            nrow(negative_df), ": ",
+            paste(negative_df$product_balance, collapse = ", ")
+        )
+    }
+}
+
+
 #' @title Switch product_received_from and product_units_received column.
 #'
 #' @description
@@ -292,6 +310,9 @@ reading_product_data_step2 <-
 
             # remove index column
             product_df <- subset(product_df, select = -index)
+
+            # check negative values in product_balance column
+            check_negative_balance(product_df, sheet_month)
 
             #### hospital and country information missing here!!
 
