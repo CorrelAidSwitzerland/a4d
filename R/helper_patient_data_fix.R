@@ -15,11 +15,12 @@
 #' @param x character value.
 #' @param cast_fnc function used to convert character values into target type.
 #' @param error_val error value to use when cast_fnc fails.
-#' @param col_name column name if used with across.
+#' @param col_name column name if used with across. Optional, defaults to "".
+#' @param id patient id, optional, defaults to "".
 #'
 #' @return converted value
 #' @export
-convert_to <- function(x, cast_fnc, error_val, col_name = "", id = id) {
+convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
     x <- tryCatch(
         cast_fnc(x),
         error = function(e) {
@@ -49,18 +50,16 @@ cut_numeric_value <- function(x,
                               min,
                               max,
                               col_name = "") {
-    if (is.na(x)) {
+    if (is.na(x) || x == ERROR_VAL_NUMERIC) {
         return(x)
     }
 
-    x <- ifelse(x > max, ERROR_VAL_NUMERIC, x)
-    x <- ifelse(x < min, ERROR_VAL_NUMERIC, x)
-
-    if (x == ERROR_VAL_NUMERIC) {
+    if (x < min || x > max) {
         logWarn(
             "Found invalid value ", x, " for column ", col_name, " outside [", min, ", ", max, "]. ",
             "Value was replaced with ", ERROR_VAL_NUMERIC, "."
         )
+        x <- ERROR_VAL_NUMERIC
     }
 
     x
@@ -158,6 +157,7 @@ parse_dates <- function(date) {
         )
         orders <- c("dmy", "dmY", "dbY", "by", "bY")
         parsed_date <- lubridate::parse_date_time(date, orders)
+        parsed_date <- as.Date(parsed_date)
     }
 
     parsed_date
@@ -459,6 +459,10 @@ split_bp_in_sys_and_dias <- function(df) {
 #### height ####
 
 transform_cm_to_m <- function(height) {
+    if (is.na(height) || height == ERROR_VAL_NUMERIC) {
+        return(height)
+    }
+
     height <- as.numeric(height)
     height <- ifelse(height > 50,
         height / 100,

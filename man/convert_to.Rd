@@ -4,7 +4,7 @@
 \alias{convert_to}
 \title{Try to convert character x into a value of target type.}
 \usage{
-convert_to(x, cast_fnc, error_val, col_name = "")
+convert_to(x, cast_fnc, error_val, col_name = "", id = "")
 }
 \arguments{
 \item{x}{character value.}
@@ -13,7 +13,9 @@ convert_to(x, cast_fnc, error_val, col_name = "")
 
 \item{error_val}{error value to use when cast_fnc fails.}
 
-\item{col_name}{column name if used with across.}
+\item{col_name}{column name if used with across. Optional, defaults to "".}
+
+\item{id}{patient id, optional, defaults to "".}
 }
 \value{
 converted value

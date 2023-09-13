@@ -193,17 +193,19 @@ check_negative_balance <- function(df, Sheet) {
 #'
 #' @return Dataframe with columns switched (renamed)
 switch_columns_stock <-
-    function(df){
-        if(sum(str_detect(df$product_units_received[!is.na(df$product_units_received)], 'Remaining Stock')) > 0){
+    function(df) {
+        if (sum(str_detect(df$product_units_received[!is.na(df$product_units_received)], "Remaining Stock")) > 0) {
             df <- df %>%
-                rename("product_units_received" = "product_received_from",
-                       "product_received_from" = "product_units_received")
+                rename(
+                    "product_units_received" = "product_received_from",
+                    "product_received_from" = "product_units_received"
+                )
             logDebug("Columns product_units_received and product_received_from were switched")
             return(df)
         } else {
             return(df)
         }
-        }
+    }
 
 
 #' @title Process product data in script 2.
