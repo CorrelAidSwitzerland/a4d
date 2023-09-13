@@ -151,6 +151,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         # insulin_dosage = character(),
         # meter_received_date = as.Date(1), # TODO
         # remarks = character(),
+        # remote_followup = logical(),
         # additional_support = character(),
         age = integer(),
         blood_pressure_dias_mmhg = integer(),
@@ -186,7 +187,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         observations_category = character(),
         province = character(),
         recruitment_date = as.Date(1),
-        remote_followup = as.Date(1),
         sheet_name = character(),
         status = character(),
         status_out = character(),
@@ -267,8 +267,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         mutate(
             # height and weight are needed to calculate bmi
             height = transform_cm_to_m(height) %>%
-                cut_numeric_value(min = 0, max = 2.3),
-            weight = cut_numeric_value(weight, min = 0, max = 200),
+                cut_numeric_value(min = 0, max = 2.3, col_name = "height"),
+            weight = cut_numeric_value(weight, min = 0, max = 200, col_name = "weight"),
             bmi = fix_bmi(weight, height, id) %>%
                 cut_numeric_value(min = 4, max = 60, "bmi"),
             age = fix_age(age, dob, tracker_year, tracker_month, id) %>%
@@ -341,6 +341,12 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             )
         ) %>%
         ungroup()
+
+    # filter all rows with no patient id or patient name
+    # sort by year and month like it is in the tracker files
+    df_patient <- df_patient %>%
+        dplyr::filter(!is.na(id) & !is.na(name)) %>%
+        arrange(tracker_month, id)
 
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
