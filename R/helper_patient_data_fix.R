@@ -218,11 +218,18 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
             calc_age <- calc_age - 1
         }
 
-        if (calc_age != age) {
+        if (is.na(age)) {
             logWarn(
-                "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
-                ". Using calculated age instead of original age."
+                "Patient ", id, ": age is missing. Using calculated age ", calc_age,
+                " instead of original age."
             )
+        } else {
+            if (calc_age != age) {
+                logWarn(
+                    "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
+                    ". Using calculated age instead of original age."
+                )
+            }
         }
 
         if (calc_age < 0) {
