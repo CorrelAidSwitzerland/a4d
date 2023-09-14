@@ -134,6 +134,7 @@ hospitalisation_date:
   - Hospitalisation due to diabetes emergency or glucose control (Insert Date or NA)
   - hospitalisation due to diabetes emergency or glucose control egdka include date
   - Current Month Hospitalisation due to diabetes emergency or glucose control Date
+  - hospitalisation due to diabetes emergency or glucose control date
   - hospitalisation due to diabetes emergency date
 id:
   - ID
