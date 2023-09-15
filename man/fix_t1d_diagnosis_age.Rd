@@ -4,12 +4,10 @@
 \alias{fix_t1d_diagnosis_age}
 \title{Try to replace text descriptions for age with proper numerical values.}
 \usage{
-fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id)
+fix_t1d_diagnosis_age(t1d_diagnosis_age, id)
 }
 \arguments{
 \item{t1d_diagnosis_age}{patient age when diagnosed with T1D.}
-
-\item{t1d_diagnosis_date}{date when diagnosed with T1D.}
 
 \item{id}{patient id}
 }

@@ -316,17 +316,11 @@ reading_patient_data_2 <-
                 }
             }
 
-            cc_codes <- extract_country_clinic_code(df_patient)
-            country_code <- cc_codes$country_code
-            clinic_code <- cc_codes$clinic_code
-
             df_patient <- df_patient %>%
                 dplyr::mutate(
                     sheet_name = curr_sheet,
                     tracker_month = match(substr(curr_sheet, 1, 3), month.abb),
-                    tracker_year = year,
-                    country_code = country_code,
-                    clinic_code = clinic_code
+                    tracker_year = year
                 )
 
             tidy_tracker_list[[curr_sheet]] <- df_patient

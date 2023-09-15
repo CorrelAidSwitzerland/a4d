@@ -124,26 +124,26 @@ test_that("extract_year_from_age works", {
 
 # Test case for detecting 'birth' in t1d_diagnosis_age
 test_that("fix_t1d_diagnosis_age works", {
-    expect_equal(fix_t1d_diagnosis_age("birth", "2000-01-01", "1"), "0")
-    expect_equal(fix_t1d_diagnosis_age("At birth", "2000-01-01", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("birth", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("At birth", "1"), "0")
 
     # Test case for detecting 'born' in t1d_diagnosis_age
-    expect_equal(fix_t1d_diagnosis_age("born", "2020-01-01", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("born", "1"), "0")
 
     # Test case for detecting 'month' in t1d_diagnosis_age
-    expect_equal(fix_t1d_diagnosis_age("4 months", "2020-01-01", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("4 months", "1"), "0")
 
     # Test case for detecting 'y' in t1d_diagnosis_age
-    expect_equal(fix_t1d_diagnosis_age("5y", "2020-01-01", "1"), "5")
-    expect_equal(fix_t1d_diagnosis_age("10y10m", "2020-01-02", "2"), "10")
+    expect_equal(fix_t1d_diagnosis_age("5y", "1"), "5")
+    expect_equal(fix_t1d_diagnosis_age("10y10m", "2"), "10")
 
     # Test case for handling NA values in t1d_diagnosis_age
-    expect_true(is.na(fix_t1d_diagnosis_age(NA, "2020-01-01", "1")))
+    expect_true(is.na(fix_t1d_diagnosis_age(NA, "1")))
 
     # Test case for default case
-    expect_equal(fix_t1d_diagnosis_age("10", "2020-01-01", "1"), "10")
-    expect_equal(fix_t1d_diagnosis_age("0", "2020-01-01", "1"), "0")
-    expect_equal(fix_t1d_diagnosis_age("1", "2020-01-01", "1"), "1")
+    expect_equal(fix_t1d_diagnosis_age("10", "1"), "10")
+    expect_equal(fix_t1d_diagnosis_age("0", "1"), "0")
+    expect_equal(fix_t1d_diagnosis_age("1", "1"), "1")
 })
 
 
