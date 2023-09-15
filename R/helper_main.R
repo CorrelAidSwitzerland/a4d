@@ -172,3 +172,16 @@ read_raw_csv <- function(file) {
 
     df_patient_raw
 }
+
+
+#' @title Read allowed provinces from a YAML file.
+#'
+#' @description
+#' Read in all provinces from a YAML file inside the provinces folder.
+#'
+#' @return A named character vector with all allowed provinces.
+get_allowed_provinces <- function() {
+    ## Should new countries and provinces be added, update the YAML file
+    provinces <- yaml::read_yaml("provinces/allowed_provinces.yaml") %>% unlist()
+    return(provinces)
+}
