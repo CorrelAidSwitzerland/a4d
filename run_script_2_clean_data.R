@@ -89,6 +89,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         patient_file_name
     )
 
+    allowed_provinces <- get_allowed_provinces()
+
     df_patient_raw <- read_raw_csv(patient_file_path)
 
     # filter all rows with no patient id or patient name
@@ -341,6 +343,13 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 NA_character_,
                 id,
                 "hospitalisation_cause"
+            ),
+            province = check_allowed_values(
+                province,
+                allowed_provinces,
+                ERROR_VAL_CHARACTER,
+                id,
+                "province"
             ),
             # should be fixed last as other fix functions use id to log invalid rows!
             id = fix_id(id)
