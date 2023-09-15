@@ -91,6 +91,11 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     df_patient_raw <- read_raw_csv(patient_file_path)
 
+    # filter all rows with no patient id or patient name
+    df_patient_raw <- df_patient_raw %>%
+        dplyr::filter(!(is.na(id) & is.na(name))) %>%
+        dplyr::filter(!(id == "0" & name == "0"))
+
     # --- TRANSFORMATIONS ---
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value
@@ -222,7 +227,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         rowwise() %>%
         # 1. handle known problems before converting to target type
         mutate(
-            t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, t1d_diagnosis_date, id),
+            t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, id),
             hba1c_baseline = str_replace(hba1c_baseline, "<|>", ""),
             hba1c_updated = str_replace(hba1c_updated, "<|>", ""),
             fbg_baseline_mg = fix_fbg(fbg_baseline_mg),
@@ -330,23 +335,22 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 id,
                 "t1d_diagnosis_with_dka"
             ),
-            # should be fixed last as other fix functions use id to log invalid rows!
-            id = fix_id(id),
             hospitalisation_cause = check_allowed_values(
                 hospitalisation_cause,
                 c("DKA", "HYPO", "OTHER"),
                 NA_character_,
                 id,
                 "hospitalisation_cause"
-            )
+            ),
+            # should be fixed last as other fix functions use id to log invalid rows!
+            id = fix_id(id)
         ) %>%
         ungroup()
 
-    # filter all rows with no patient id or patient name
-    # sort by year and month like it is in the tracker files
-    df_patient <- df_patient %>%
-        dplyr::filter(!is.na(id) & !is.na(name)) %>%
-        arrange(tracker_month, id)
+    # add clinic and country code after having fixed all issues with patient id
+    cc_codes <- extract_country_clinic_code(df_patient)
+    df_patient["clinic_code"] <- cc_codes$clinic_code
+    df_patient["country_code"] <- cc_codes$country_code
 
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
@@ -371,6 +375,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             dplyr::filter(fbg_updated_mmol != ERROR_VAL_NUMERIC) %>%
             mutate(fbg_updated_mg = fbg_updated_mmol * 18)
     }
+
+    # sort by year and month like it is in the tracker files
+    df_patient <- df_patient %>%
+        arrange(tracker_month, id)
 
     logDebug(
         "df_patient dim: ",

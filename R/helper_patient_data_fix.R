@@ -308,12 +308,11 @@ fix_sex <- function(sex, id) {
 #' @title Try to replace text descriptions for age with proper numerical values.
 #'
 #' @param t1d_diagnosis_age patient age when diagnosed with T1D.
-#' @param t1d_diagnosis_date date when diagnosed with T1D.
 #' @param id patient id
 #'
 #' @return Corrected value with text replacement.
 #' @export
-fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, t1d_diagnosis_date, id) {
+fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, id) {
     age_corrected <- case_when(
         is.na(t1d_diagnosis_age) ~ NA_character_,
         grepl("birth|born|month", tolower(t1d_diagnosis_age)) ~ "0",
@@ -490,6 +489,8 @@ fix_id <- function(id) {
     if (is.na(id)) {
         return(NA_character_)
     }
+
+    id <- str_replace(id, "-", "_")
 
     if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
         logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
