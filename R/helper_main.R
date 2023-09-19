@@ -145,7 +145,10 @@ export_data <- function(data, filename, output_root, suffix) {
                         ".csv"
                     )
                 ),
-            row.names = F
+            row.names = F,
+            na = "",
+            fileEncoding = "UTF-16LE",
+            quote = T
         )
     logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
