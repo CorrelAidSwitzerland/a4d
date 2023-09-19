@@ -155,7 +155,10 @@ parse_dates <- function(date) {
             "Could not parse date value ", date, ". ",
             "Trying to parse with lubridate::parse_date_time and orders = c('dmy', 'dmY', 'by', 'bY')."
         )
-        orders <- c("dmy", "dmY", "dbY", "by", "bY")
+        if (grepl("[[:alpha:]]{4}", date)) {
+            date <- sub("([[:alpha:]]{3})[[:alpha:]]", "\\1", date)
+        }
+        orders <- c("dmy", "dmY", "dbY", "by", "bY", "mY", "my", "y")
         parsed_date <- lubridate::parse_date_time(date, orders)
         parsed_date <- as.Date(parsed_date)
     }
