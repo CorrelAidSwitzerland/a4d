@@ -101,7 +101,7 @@ process_patient_data <-
         logDebug("Start process_patient_data.")
 
         df_raw_patient <-
-            reading_patient_data_2(
+            reading_patient_data(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_patient
             )
