@@ -138,36 +138,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #' @export
 harmonize_patient_data_columns <-
     function(patient_df, columns_synonyms) {
-        patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
-        patient_df <- patient_df[!is.na(names(patient_df))]
-
-        colnames(patient_df) <-
-            sanitize_column_name(colnames(patient_df))
-        synonym_headers <-
-            sanitize_column_name(columns_synonyms$tracker_name)
-
-        # replacing var codes
-        colnames_found <-
-            match(colnames(patient_df), synonym_headers, nomatch = 0)
-        colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <-
-            columns_synonyms$variable_name[colnames_found]
-
-        if (sum(colnames_found == 0) != 0) {
-            "Non-matching column names found (see 0)"
-            view(colnames_found)
-        } else {
-            return(patient_df)
-        }
-    }
-
-
-# adjust new harmonize function ---------------------------------------------------------
-# adjusted harmonize function that has the same name as the original function
-# function is based on harmonize_patient_data_columns() but shortened
-# Might need a better solution
-harmonize_patient_data_columns_2 <-
-    function(patient_df, columns_synonyms) {
-        logDebug("Start harmonize_patient_data_columns_2.")
+        logDebug("Start harmonize_patient_data_columns.")
 
         patient_df <- patient_df[!is.na(names(patient_df))]
 
@@ -186,6 +157,6 @@ harmonize_patient_data_columns_2 <-
             )
         }
 
-        logDebug("Finish harmonize_patient_data_columns_2.")
+        logDebug("Finish harmonize_patient_data_columns.")
         patient_df
     }

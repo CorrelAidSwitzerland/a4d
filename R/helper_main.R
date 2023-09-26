@@ -167,7 +167,8 @@ read_raw_csv <- function(file) {
         name_repair = "check_unique",
         progress = FALSE,
         show_col_types = FALSE,
-        col_types = readr::cols(.default = "c")
+        col_types = readr::cols(.default = "c"),
+        locale = readr::locale(encoding = "UTF-16LE")
     )
     logDebug("Finished loading data with read_csv.")
     logInfo("Dim: ", dim(df_patient_raw))
