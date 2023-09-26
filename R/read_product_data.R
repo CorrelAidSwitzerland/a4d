@@ -15,7 +15,7 @@ reading_product_data_step1 <-
 
         # loop through all months
         for (CurrSheet in month_list) {
-            print(CurrSheet)
+            logDebug("Start processing the following sheet: ", CurrSheet)
 
             # open tracker data
             tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, CurrSheet,
@@ -96,6 +96,8 @@ reading_product_data_step1 <-
 
             # Check if the entry dates for the balance match the month/year on the sheet
             check_entry_dates(product_df, CurrSheet)
+
+            logDebug("Finished processing the following sheet: ", CurrSheet)
 
             # combine all months
             if (!exists("df_final")) {
@@ -438,7 +440,7 @@ reading_product_data_step2 <-
             df_final <- df_final %>%
                 rbind(product_df)
 
-            logInfo(paste("Finished processing the following sheet:", sheet_month))
+            logDebug(paste("Finished processing the following sheet:", sheet_month))
         }
 
         if (nrow(df_final) > 0) {
