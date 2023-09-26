@@ -143,6 +143,12 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms) {
     colnames(product_df) <- sanitize_column_name(colnames(product_df))
     synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
 
+    ## report all column names which have not been found
+    unknown_column_names <- colnames(product_df)[!colnames(product_df) %in% synonym_headers]
+    if(length(unknown_column_names) > 0){
+        logWarn('Unknown column names in sheet: ', paste(unknown_column_names, collapse = ', '))
+    }
+
     # replacing var codes
     colnames_found <- match(colnames(product_df), synonym_headers, nomatch = 0)
     colnames(product_df)[colnames(product_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]

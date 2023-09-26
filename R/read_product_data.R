@@ -59,7 +59,7 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (num_na_rows > 0) {
-                        logInfo(CurrSheet, " number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+                        logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
                     }
                 },
                 error = function(e) {
@@ -75,7 +75,7 @@ reading_product_data_step1 <-
                     if (nrow(non_processed_dates) > 0) {
                         logWarn(
                             CurrSheet,
-                            " number of rows with non-processed dates in product_entry_date is ",
+                            " the number of rows with non-processed dates in product_entry_date is ",
                             nrow(non_processed_dates), ": ",
                             paste(non_processed_dates$product_entry_date, collapse = ", ")
                         )
@@ -112,12 +112,32 @@ reading_product_data_step1 <-
         logDebug("Finish reading_product_data_step1.")
     }
 
-# Check if the patient's name is missing next to the released units
+
+#' @title Count rows with missing patient's name next to the released units
+#'
+#' @description
+#' This function checks if the patient's name is missing next to the released units in a given dataframe. It counts the number of such rows.
+#'
+#' @param df A dataframe containing patient data.
+#' @param units_released_col The name of the column that contains information about the units released.
+#' @param released_to_col The name of the column that contains information about who the units were released to (patient's name).
+#'
+#' @return The number of rows where the patient's name is missing next to the released units.
 count_na_rows <- function(df, units_released_col, released_to_col) {
     na_rows <- df[is.na(df[[released_to_col]]) & !is.na(df[[units_released_col]]), ]
     nrow(na_rows)
 }
 
+
+#' @title Check entry dates in product data
+#'
+#' @description
+#' This function checks if the entry dates for the balance match the month/year on the sheet. If any discrepancies are found, it logs a warning message with the number of mismatched dates and their corresponding 'product_entry_date' values.
+#'
+#' @param df A dataframe containing product data.
+#' @param Sheet The name of the sheet where the product data is located.
+#'
+#' @return This function does not return a value. It logs a warning message if there are any dates in 'product_entry_date' that don't match the month/year on the sheet.
 check_entry_dates <- function(df, Sheet) {
     # Check if the entry dates for the balance match the month/year on the sheet
     entry_dates_df <- df %>% filter(grepl("^[0-9]+$", product_entry_date))
@@ -136,7 +156,7 @@ check_entry_dates <- function(df, Sheet) {
     if (nrow(not_same) > 0) {
         logWarn(
             Sheet,
-            " number of dates in product_entry_date that don't match the month/year on the sheet is ",
+            " the number of dates in product_entry_date that don't match the month/year on the sheet is ",
             nrow(not_same), ": ",
             paste(not_same$ed_date, collapse = ", ")
         )
@@ -165,7 +185,15 @@ remove_rows_with_na_columns <-
     }
 
 
-# Check negative values in product_balance column
+#' @title Check negative values in 'product_balance' column
+#'
+#' @description
+#' This function checks for negative values in the 'product_balance' column of a given dataframe. If any negative values are found, it logs a warning message with the number of negative values and their corresponding 'product_balance' values.
+#'
+#' @param df A dataframe containing product data.
+#' @param Sheet The name of the sheet where the product data is located.
+#'
+#' @return This function does not return a value. It logs a warning message if there are any negative values in the 'product_balance' column.
 check_negative_balance <- function(df, Sheet) {
     # Create a new data frame containing only rows with negative values in product_balance column
     negative_df <- df[df$product_balance < 0, ]
@@ -207,6 +235,86 @@ switch_columns_stock <-
         }
     }
 
+#' @title Compare two lists and return unmatched strings
+#'
+#' @description
+#' This function compares two lists and returns the strings that are present in the first list but not in the second list.
+#'
+#' @param list1 The first list of strings to be compared.
+#' @param list2 The second list of strings to be compared.
+#'
+#' @return A vector of strings that are present in 'list1' but not in 'list2'.
+compare_lists <- function(list1, list2) {
+    # Use the setdiff function to find strings in list1 that are not in list2
+    unmatched_strings <- setdiff(list1, list2)
+    return(unmatched_strings)
+}
+
+
+#' @title Report unknown products
+#'
+#' @description
+#' This function reports unknown products. It compares the product list in a given dataframe with a stock list, and logs any products that are not found in the stock list.
+#'
+#' @param df A dataframe containing product data.
+#' @param Sheet The name of the sheet where the product data is located.
+#' @param stock_list_df A dataframe containing the stock list of products.
+#'
+#' @return This function does not return a value. It logs a warning message if there are any unknown products, and logs an info message if there are no unknown products.
+report_unknown_products <- function(df, Sheet, stock_list_df) {
+    # Create lists containing only products names
+    products_list <- df$product
+    stock_products_list <- stock_list_df$product
+
+    products_list <- tolower(products_list)
+    products_list <- products_list[!is.na(products_list)]
+    stock_products_list <- tolower(stock_products_list)
+
+    # Create a new list containing only unknown products names
+    unmatched_products <- compare_lists(products_list, stock_products_list)
+
+    # Check if there are any unknown products names
+    if (length(unmatched_products) > 0) {
+        # Log a warning message with the number of unknown products names
+        logWarn(
+            Sheet,
+            " the number of unknown product names on the sheet is ",
+            length(unmatched_products), ": ",
+            paste(unmatched_products, collapse = ", ")
+        )
+    } else {
+        logInfo(Sheet, " no unknown product names on the sheet")
+    }
+}
+
+
+#' @title Load Product List from Stock Summary
+#'
+#' @description
+#' This function loads the product list from 'Stock_Summary' sheet in an Excel file.
+#'
+#' @param stock_summary_xlsx A string that represents the path to the Excel file. Defaults to "master_tracker_variables.xlsx".
+#'
+#' @return A data frame that contains the product names. If there is an error during the process, it logs the error message.
+#'
+#' @examples
+#' product_list <- load_stock_products()
+#' product_list <- load_stock_products("your_file.xlsx")
+load_stock_products <- function(stock_summary_xlsx = "master_tracker_variables.xlsx") {
+    logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
+    tryCatch(
+        {
+            product_names_df <- readxl::read_excel(stock_summary_xlsx, "Stock_Summary")
+            colnames(product_names_df) <- tolower(colnames(product_names_df))
+            logDebug(nrow(product_names_df), " product names were loaded from the Stock Summary.")
+            return(product_names_df)
+        },
+        error = function(e) {
+            logError("Error in loading stock product list: ", e)
+        }
+    )
+}
+
 
 #' @title Process product data in script 2.
 #'
@@ -227,6 +335,9 @@ reading_product_data_step2 <-
 
         # save all results
         df_final <- c()
+
+        # get product list from Stock_Summary
+        stock_product_names_df <- load_stock_products()
 
         # loop through all months
         for (sheet_month in unique(df$product_sheet_name)) {
@@ -315,6 +426,11 @@ reading_product_data_step2 <-
 
             # check negative values in product_balance column
             check_negative_balance(product_df, sheet_month)
+
+            # Report unknown product names
+            if (exists("stock_product_names_df") && !is.null(stock_product_names_df) && nrow(stock_product_names_df) > 0) {
+                report_unknown_products(product_df, sheet_month, stock_product_names_df)
+            }
 
             #### hospital and country information missing here!!
 
