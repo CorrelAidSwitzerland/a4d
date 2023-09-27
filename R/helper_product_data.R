@@ -145,8 +145,8 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms) {
 
     ## report all column names which have not been found
     unknown_column_names <- colnames(product_df)[!colnames(product_df) %in% synonym_headers]
-    if(length(unknown_column_names) > 0){
-        logWarn('Unknown column names in sheet: ', paste(unknown_column_names, collapse = ', '))
+    if (length(unknown_column_names) > 0) {
+        logWarn("Unknown column names in sheet: ", paste(unknown_column_names, collapse = ", "))
     }
 
     # replacing var codes

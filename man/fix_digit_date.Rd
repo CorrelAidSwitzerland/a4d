@@ -16,8 +16,9 @@ Standardized date in a character format.
 WIP: Convert dates that are stored as 5-digit number from Excel to date format
 }
 \examples{
-fix_digit_date("44939") # res in "2023-01-13"
-
+\dontrun{
+fix_digit_date("44939") # should return "2023-01-13"
+}
 }
 \seealso{
 https://stackoverflow.com/a/50274507: depending on whether read in

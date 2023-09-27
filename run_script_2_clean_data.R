@@ -143,6 +143,8 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # meta schema has all final columns for the database
     # along with their corresponding data types
     logInfo("Creating meta schema.")
+    # short type string for read_csv:
+    # iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),

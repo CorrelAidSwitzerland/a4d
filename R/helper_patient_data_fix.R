@@ -119,8 +119,9 @@ extract_date_from_measurement <-
 #' @return Standardized date in a character format.
 #'
 #' @examples
-#' fix_digit_date("44939") # res in "2023-01-13"
-#'
+#' \dontrun{
+#' fix_digit_date("44939") # should return "2023-01-13"
+#' }
 fix_digit_date <-
     function(date) {
         if (is.na(date)) {

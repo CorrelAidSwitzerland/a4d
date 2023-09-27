@@ -16,6 +16,8 @@ A data frame that contains the product names. If there is an error during the pr
 This function loads the product list from 'Stock_Summary' sheet in an Excel file.
 }
 \examples{
+\dontrun {
 product_list <- load_stock_products()
 product_list <- load_stock_products("your_file.xlsx")
+}
 }
