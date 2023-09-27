@@ -14,7 +14,7 @@ source("R/logger.R")
 
 main <- function() {
     paths <- init_paths(c("patient_data_raw", "product_data_raw"), delete = TRUE)
-    setup_logger(paths$output_root)
+    setup_logger(paths$output_root, "script1")
     tracker_files <- get_files(paths$tracker_root)
     logInfo(
         "Found ",
@@ -26,7 +26,7 @@ main <- function() {
 
     synonyms <- get_synonyms()
 
-    logDebug("Start processing tracker files.")
+    logInfo("Start processing tracker files.")
 
     foreach::foreach(tracker_file = tracker_files) %dopar% {
         tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
