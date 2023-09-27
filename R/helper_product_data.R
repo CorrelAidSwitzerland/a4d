@@ -143,6 +143,12 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms) {
     colnames(product_df) <- sanitize_column_name(colnames(product_df))
     synonym_headers <- sanitize_column_name(columns_synonyms$name_to_be_matched)
 
+    ## report all column names which have not been found
+    unknown_column_names <- colnames(product_df)[!colnames(product_df) %in% synonym_headers]
+    if(length(unknown_column_names) > 0){
+        logWarn('Unknown column names in sheet: ', paste(unknown_column_names, collapse = ', '))
+    }
+
     # replacing var codes
     colnames_found <- match(colnames(product_df), synonym_headers, nomatch = 0)
     colnames(product_df)[colnames(product_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
@@ -196,15 +202,15 @@ sanitize_column_name <- function(column_name) {
 # ==============================================================================
 # @Description: Reformates dates entered into excel in wrong format (e.g., 44042) to final date format (yyyy-mm-dd)
 format_date_excelnum <- function(product_df) {
-    rel_rows <- which(!grepl("-", product_df$product_entry_date))
-    product_df[rel_rows, "product_entry_date"] <- as.character(openxlsx::convertToDate(as.numeric(unlist(product_df[rel_rows, "product_entry_date"]))))
+    rel_rows <- which(!grepl("-", product_df$product_entry_date) & !grepl("\\.", product_df$product_entry_date))
+    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(openxlsx::convertToDate(as.numeric(unlist(product_df[rel_rows, "product_entry_date"])))))
     return(product_df)
 }
 
 # @Description: Reformates dates entered into excel in wrong format (e.g., dd-mm-yyyy) to final date format (yyyy-mm-dd)
 format_date_exceldate <- function(product_df) {
-    rel_rows <- which(grepl("-", product_df$product_entry_date))
-    product_df[rel_rows, "product_entry_date"] <- as.character(dmy(product_df[rel_rows, "product_entry_date"]))
+    rel_rows <- which(grepl("-", product_df$product_entry_date) | grepl("\\.", product_df$product_entry_date))
+    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(dmy(unlist(product_df[rel_rows, "product_entry_date"]))))
     return(product_df)
 }
 
@@ -252,23 +258,30 @@ clean_unitsreceived <- function(product_df) {
     product_df <- product_df %>%
         mutate(product_units_received = ifelse(index %in% drop_rows,
             0,
-            as.numeric(product_units_received)
+            suppressWarnings(as.numeric(product_units_received))
         ))
 
     return(product_df)
 }
 
-# @Description: Run before clean_receivedfrom for format in the example 2019_PKH.xlsx
-# Where 'Released' column in the tracker file also includes values for Start/End Balance
-# To change the 2019_PKH.xlsx format to standard format 'Start/End Balance' in 'Received From'.
+
+#' @title Transfers in trackers with specific format which have "START BALANCE" in product data the start balance to the correct column.
+#'
+#' @description
+#' Run before clean_receivedfrom and recode_unitcolumnstozero. Necessary for specific format such as in 2019_PKH and 2020_STH. When start balance in tracker next to text "start balance" one need to extract the balance either from the "received from" column or the "units released" column.
+#'
+#' @param product_df Input product data.
+#'
+#' @return Dataframe with corrected product_received_from column extracting the starting balance from trackers where necessary.
 update_receivedfrom <- function(product_df) {
     if (any(grepl("Balance", product_df[["product_units_received"]], ignore.case = TRUE)) & any(is.na(product_df$product_received_from))) {
         product_df <- product_df %>%
             dplyr::mutate(product_received_from = case_when(
-                grepl("Balance", product_units_received, ignore.case = TRUE) ~ product_units_released
+                grepl("Balance", product_units_received, ignore.case = TRUE) & !is.na(product_units_released) ~ product_units_released,
+                grepl("Balance", product_units_received, ignore.case = TRUE) & !is.na(product_received_from) ~ product_received_from
             )) %>%
             dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released))
-        logInfo("The rule for the case was applied - Released (product_units_released) column also includes values for Start/End Balance")
+        logInfo("The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance")
     }
     return(product_df)
 }
@@ -395,7 +408,7 @@ adjust_column_classes <- function(product_df) {
     list_date <- c("product_entry_date")
     list_character <- c(
         "product", "product_received_from", "product_released_to", "product_returned_by", "product_balance_status",
-        "product_country", "product_hospital", "product_sheet_name"
+        "product_sheet_name", "file_name", "product_units_notes"
     )
     list_numeric <- c(
         "product_units_received", "product_units_released", "product_balance", "product_units_returned",

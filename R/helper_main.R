@@ -22,14 +22,6 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
         output_dir_name
     )
 
-    if (!fs::dir_exists(output_root)) {
-        fs::dir_create(output_root)
-    } else {
-        if (delete) {
-            fs::dir_delete(output_root)
-        }
-    }
-
     paths$output_root <- output_root
 
     for (name in names) {
@@ -38,6 +30,12 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
             output_dir_name,
             name
         )
+
+        if (fs::dir_exists(subdir)) {
+            if (delete) {
+                fs::dir_delete(subdir)
+            }
+        }
 
         fs::dir_create(subdir)
 
@@ -147,7 +145,47 @@ export_data <- function(data, filename, output_root, suffix) {
                         ".csv"
                     )
                 ),
-            row.names = F
+            row.names = F,
+            na = "",
+            fileEncoding = "UTF-16LE",
+            quote = T
         )
     logInfo("Finish export_data. Suffix = ", suffix, ".")
+}
+
+
+
+#' @title Read in patient data from CSV.
+#'
+#' @param patient_file_path Path to the CSV file.
+#'
+#' @return tibble with patient data
+read_raw_csv <- function(file) {
+    logDebug("Start reading data with read_csv.")
+    df_patient_raw <- read_csv(
+        file,
+        name_repair = "check_unique",
+        progress = FALSE,
+        show_col_types = FALSE,
+        col_types = readr::cols(.default = "c"),
+        locale = readr::locale(encoding = "UTF-16LE")
+    )
+    logDebug("Finished loading data with read_csv.")
+    logInfo("Dim: ", dim(df_patient_raw))
+    logInfo("Columns: ", spec(df_patient_raw))
+
+    df_patient_raw
+}
+
+
+#' @title Read allowed provinces from a YAML file.
+#'
+#' @description
+#' Read in all provinces from a YAML file inside the provinces folder.
+#'
+#' @return A named character vector with all allowed provinces.
+get_allowed_provinces <- function() {
+    ## Should new countries and provinces be added, update the YAML file
+    provinces <- yaml::read_yaml("provinces/allowed_provinces.yaml") %>% unlist()
+    return(provinces)
 }

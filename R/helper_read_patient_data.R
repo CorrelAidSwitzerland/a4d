@@ -2,14 +2,14 @@
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
     logDebug("Start extract_country_clinic_code.")
-    patient_ids <- patient_data["patient_id"] %>%
-        dplyr::filter(patient_id != "0") %>%
+    patient_ids <- patient_data["id"] %>%
+        dplyr::filter(id != "0") %>%
         drop_na() %>%
         rowwise() %>%
         mutate(
-            country = str_split(patient_id, "_", n = 2, simplify = T)[1],
+            country = str_split(id, "_", n = 2, simplify = T)[1],
             clinic = substr(str_split(
-                patient_id, "_",
+                id, "_",
                 n = 2, simplify = T
             )[2], 0, 2)
         )
@@ -42,37 +42,47 @@ extract_country_clinic_code <- function(patient_data) {
 extract_patient_data <- function(tracker_data_file, sheet, year) {
     logDebug("Start extract_patient_data for sheet = ", sheet, ".")
 
-    logDebug("Start readxl::read_excel to get tracker_data.")
-    tracker_data <- readxl::read_excel(
-        path = tracker_data_file,
+    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
+    tracker_data <- openxlsx::read.xlsx(
+        xlsxFile = tracker_data_file,
         sheet = sheet,
-        range = readxl::cell_limits(c(1, NA), c(NA, NA)),
-        trim_ws = T,
-        col_names = F,
-        .name_repair = "unique_quiet"
+        colNames = F,
+        detectDates = F,
+        skipEmptyRows = F,
+        fillMergedCells = T
     )
-    logDebug("Finish readxl::read_excel.")
-    # tracker_data <- openxlsx::read.xlsx(
-    # xlsxFile=tracker_data_file,
+    # tracker_data <- readxl::read_excel(
+    # path = tracker_data_file,
     # sheet = sheet,
-    # colNames = F,
-    # detectDates = F,
-    # skipEmptyRows = F,
-    # fillMergedCells = T
+    # range = readxl::cell_limits(c(1, NA), c(NA, NA)),
+    # trim_ws = T,
+    # col_names = F,
+    # .name_repair = "unique_quiet"
     # )
+    logDebug("Finish openxlsx::read.xlsx.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
     row_min <- min(patient_data_range)
     row_max <- max(patient_data_range)
-    testit::assert(row_min < row_max)
 
-    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
+    testit::assert(row_min <= row_max) # <= because there could only be a single patient
 
     header_cols <-
-        str_replace(as.vector(t(tracker_data[row_min - 1, ])), "\r\n", "")
+        str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
+    header_cols_2 <-
+        str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
+
+    # trackers from 2020 and newer have an empty first row
+    # and openxlsx always skips empty rows at the start of the file
+    if (year == 2022 && sheet != "Patient List") {
+        row_min <- row_min + 1
+        row_max <- row_max + 1
+    }
+
+    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
     logDebug("Start readxl::read_excel to get patient data.")
-    patient_df <- readxl::read_excel(
+    df_patient <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
         range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
@@ -82,15 +92,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     )
     logDebug("Finish readxl::read_excel.")
 
-    if (year %in% c(2019, 2020, 2021, 2022)) {
+    if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
         logInfo("Read in multiline header.")
-        header_cols_2 <-
-            str_replace(as.vector(t(tracker_data[row_min - 2, ])), "\r\n", "")
-        # because readxl cannot handle merged cells, we need to copy the header for these cells
-        #
-        header_cols_2 <- append(NA, zoo::na.locf(header_cols_2, nw.rm = F, fromLast = F))
-        testit::assert(length(header_cols) == length(header_cols_2))
 
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
@@ -100,22 +104,23 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         header_cols[empty_colnames] <- header_cols_2[empty_colnames]
     }
 
-    colnames(patient_df) <- header_cols
+    colnames(df_patient) <- header_cols
     logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
-    patient_df <-
-        patient_df %>% select(header_cols[!is.na(header_cols)])
+    # delete columns without a header (=NA)
+    df_patient <- df_patient[, !is.na(colnames(df_patient))]
 
     # removes duplicate columns that appear due to merged cells (e.g. insulin regimen)
-    patient_df <- patient_df %>% distinct()
+    # df_patient <- df_patient %>% distinct()
     # remove empty rows with only NA
-    patient_df <-
-        patient_df[rowSums(is.na(patient_df)) != ncol(patient_df), ]
+    df_patient <-
+        df_patient[rowSums(is.na(df_patient)) != ncol(df_patient), ]
 
     logDebug("Finish extract_patient_data.")
     # store every column as character to avoid wrong data transformations
-    patient_df <-
-        patient_df %>% mutate(across(everything(), as.character))
+    df_patient[] <- lapply(df_patient, as.character)
+
+    df_patient
 }
 
 
@@ -133,36 +138,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #' @export
 harmonize_patient_data_columns <-
     function(patient_df, columns_synonyms) {
-        patient_df <- patient_df %>% discard(~ all(is.na(.) | . == ""))
-        patient_df <- patient_df[!is.na(names(patient_df))]
-
-        colnames(patient_df) <-
-            sanitize_column_name(colnames(patient_df))
-        synonym_headers <-
-            sanitize_column_name(columns_synonyms$tracker_name)
-
-        # replacing var codes
-        colnames_found <-
-            match(colnames(patient_df), synonym_headers, nomatch = 0)
-        colnames(patient_df)[colnames(patient_df) %in% synonym_headers] <-
-            columns_synonyms$variable_name[colnames_found]
-
-        if (sum(colnames_found == 0) != 0) {
-            "Non-matching column names found (see 0)"
-            view(colnames_found)
-        } else {
-            return(patient_df)
-        }
-    }
-
-
-# adjust new harmonize function ---------------------------------------------------------
-# adjusted harmonize function that has the same name as the original function
-# function is based on harmonize_patient_data_columns() but shortened
-# Might need a better solution
-harmonize_patient_data_columns_2 <-
-    function(patient_df, columns_synonyms) {
-        logDebug("Start harmonize_patient_data_columns_2.")
+        logDebug("Start harmonize_patient_data_columns.")
 
         patient_df <- patient_df[!is.na(names(patient_df))]
 
@@ -181,149 +157,6 @@ harmonize_patient_data_columns_2 <-
             )
         }
 
-        logDebug("Finish harmonize_patient_data_columns_2.")
+        logDebug("Finish harmonize_patient_data_columns.")
         patient_df
     }
-
-
-extract_date_from_measurement_column <-
-    function(patient_df, colname) {
-        # produces columns with names coherent with original naming before refactor
-        colname_value <- paste(c(colname, ""), collapse = "")
-        colname_core <-
-            sub("[_][^_]+$", "", colname) # remove last element after "_"
-        colname_date <- paste(c(colname_core, "_date"), collapse = "")
-        patient_df <- separate(
-            data = patient_df,
-            col = colname,
-            into = c(colname_value, colname_date),
-            sep = "([(])"
-        )
-        patient_df[[colname_date]] <-
-            gsub(")", "", patient_df[[colname_date]])
-        print(c("separated column: ", colname))
-
-        return(patient_df)
-    }
-
-transform_MM_DD_to_YYYY_MM_DD_str <- function(column, year) {
-    for (i in 1:length(column)) {
-        if (!is.na(column[i])) {
-            arr <- str_split(column[i], "-") %>% unlist()
-            day <- arr[2]
-            month <-
-                ifelse(day < 10, paste0("0", day), as.character(day))
-            month <- match(c(arr[1]), month.abb)
-            month <-
-                ifelse(month < 10, paste0("0", month), as.character(month))
-
-            column[i] <-
-                as.character(paste(year, month, day, sep = "/"))
-        }
-    }
-    return(as.character(column))
-}
-
-
-
-bmi_fix <- function(patient_df) {
-    if ("height" %in% colnames(patient_df) &
-        "weight" %in% colnames(patient_df)) {
-        patient_df <- patient_df %>%
-            mutate(bmi = if_else(is.na(height) |
-                is.na(weight), NA_character_, bmi))
-    }
-    return(patient_df)
-}
-
-
-
-date_fix <-
-    function(df, year) {
-        # used to be initial_clean_up_patient_df
-
-        format <- "%Y/%m/%d"
-
-
-        if ("recruitment_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    recruitment_date = as.Date(
-                        as.numeric(recruitment_date) * (60 * 60 * 24),
-                        origin = "1899-12-30",
-                        format = format,
-                        tz = "GMT"
-                    )
-                )
-        }
-
-        if ("last_clinic_visit_date" %in% colnames(df)) {
-            df <- df %>%
-                mutate(
-                    last_clinic_visit_date = as.POSIXct(
-                        as.numeric(last_clinic_visit_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    )
-                )
-        }
-
-        if ("bmi_date" %in% colnames(df)) {
-            df <- df %>%
-                mutate(
-                    bmi_date = as.POSIXct(
-                        as.numeric(bmi_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    bmi_date = format(as.Date(bmi_date), "%Y-%m")
-                )
-        }
-
-        if ("updated_fbg_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    updated_fbg_date = as.POSIXct(
-                        as.numeric(updated_fbg_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    updated_fbg_date = case_when(
-                        year(updated_fbg_date) < 100 ~ updated_fbg_date %m+% years(2000),
-                        TRUE ~ updated_fbg_date
-                    )
-                )
-        }
-
-        if ("updated_hba1c_date" %in% colnames(df) & year > 2018) {
-            df <- df %>%
-                mutate(
-                    updated_hba1c_date = as.POSIXct(
-                        as.numeric(updated_hba1c_date) * (60 * 60 * 24),
-                        format = format,
-                        origin = "1899-12-30",
-                        tz = "GMT"
-                    ),
-                    updated_hba1c_date = case_when(
-                        year(updated_hba1c_date) < 100 ~ updated_hba1c_date %m+% years(2000),
-                        TRUE ~ updated_hba1c_date
-                    )
-                )
-        }
-
-        return(df)
-    }
-
-
-
-bp_fix <- function(df) {
-    df <- df %>%
-        separate(
-            blood_pressure_mmhg,
-            c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
-            sep = "([/])"
-        )
-}
