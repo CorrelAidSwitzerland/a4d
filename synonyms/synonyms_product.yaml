@@ -1,35 +1,35 @@
 product:
-- Product
-- Description of Support
-product_entry_date:
-- Date
-- Entry Date
-product_units_received:
-- Units Received  (bottle/box)
-- Units Received
-- Units Received \r\n(bottle/box)
+  - Product
+  - Description of Support
 product_balance: Balance
-product_received_from:
-- Received From
-- Received From
-product_units_released:
-- Units Released (box)
-- Units Released
-- Units Released\r\n(box)
-product_released_to:
-- Released To
-- Released To (select from drop down list)
-- Released To \r\n(Drop Down List)
-- releasedtodropdownlist
-- releasedtoselectfromdropdownlist
-- Released To (Drop Down)
-product_units_returned:
-- Units Returned
-- Extra Unis Kept in Clinic
-product_returned_by: Returned By
 product_balance_status: []
 product_country: []
+product_entry_date:
+  - Date
+  - Entry Date
 product_hospital: []
+product_received_from:
+  - Received From
+  - Received From
+product_released_to:
+  - Released To
+  - Released To (select from drop down list)
+  - Released To \r\n(Drop Down List)
+  - releasedtodropdownlist
+  - releasedtoselectfromdropdownlist
+  - Released To (Drop Down)
+product_returned_by: Returned By
+product_sheet_name: []
 product_table_month: []
 product_table_year: []
-product_sheet_name: []
+product_units_received:
+  - Units Received  (bottle/box)
+  - Units Received
+  - Units Received \r\n(bottle/box)
+product_units_released:
+  - Units Released (box)
+  - Units Released
+  - Units Released\r\n(box)
+product_units_returned:
+  - Units Returned
+  - Extra Unis Kept in Clinic

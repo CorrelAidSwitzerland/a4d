@@ -55,23 +55,39 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
 
     logfile <- paste0(tracker_name, "_", "patient")
     setup_file_logger(paths$output_root, logfile)
-    process_patient_data(
-        tracker_name = tracker_name,
-        tracker_data_file = tracker_data_file,
-        output_root = paths$patient_data_raw,
-        synonyms_patient = synonyms$patient
+    tryCatch(
+        process_patient_data(
+            tracker_name = tracker_name,
+            tracker_data_file = tracker_data_file,
+            output_root = paths$patient_data_raw,
+            synonyms_patient = synonyms$patient
+        ),
+        error = function(e) {
+            logError("Could not process patient data. Error = ", e, ".")
+        },
+        warning = function(w) {
+            logWarn("Could not process patient data. Warning = ", w, ".")
+        },
+        finally = unregisterLogger(logfile)
     )
-    unregisterLogger(logfile)
 
     logfile <- paste0(tracker_name, "_", "product")
     setup_file_logger(paths$output_root, logfile)
-    process_product_data(
-        tracker_name = tracker_name,
-        tracker_data_file = tracker_data_file,
-        output_root = paths$product_data_raw,
-        synonyms_product = synonyms$product
+    tryCatch(
+        process_product_data(
+            tracker_name = tracker_name,
+            tracker_data_file = tracker_data_file,
+            output_root = paths$product_data_raw,
+            synonyms_product = synonyms$product
+        ),
+        error = function(e) {
+            logError("Could not process product data. Error = ", e, ".")
+        },
+        warning = function(w) {
+            logWarn("Could not process product data. Warning = ", w, ".")
+        },
+        finally = unregisterLogger(logfile)
     )
-    unregisterLogger(logfile)
 
     logInfo("Finish process_tracker_file.")
 }
@@ -85,7 +101,7 @@ process_patient_data <-
         logDebug("Start process_patient_data.")
 
         df_raw_patient <-
-            reading_patient_data_2(
+            reading_patient_data(
                 tracker_data_file = tracker_data_file,
                 columns_synonyms = synonyms_patient
             )
@@ -102,7 +118,7 @@ process_patient_data <-
             data = df_raw_patient,
             filename = tracker_name,
             output_root = output_root,
-            suffix = "_patient_data"
+            suffix = "_patient_raw"
         )
 
         logInfo("Finish process_patient_data.")
@@ -122,7 +138,11 @@ process_product_data <-
                 columns_synonyms = synonyms_product
             )
 
-        df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+        if (!is.null(df_raw_product)) {
+            df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+        } else {
+            logDebug("Empty product data")
+        }
 
         logDebug(
             "df_raw_product dim: ",
@@ -136,7 +156,7 @@ process_product_data <-
                 data = df_raw_product,
                 filename = tracker_name,
                 output_root = output_root,
-                suffix = "_product_data"
+                suffix = "_product_raw"
             )
         } else {
             logWarn("No product data in the file")
