@@ -37,6 +37,21 @@ main <- function() {
         finally = unregisterLogger(logfile)
     )
 
+    logfile <- "table_patient_data"
+    setup_file_logger(paths$output_root, logfile)
+    tryCatch(
+        {
+            create_table_patient_data(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+        },
+        error = function(e) {
+            logError("Could not create table csv for dynamic patient data. Error: ", e$message)
+        },
+        warning = function(w) {
+            logWarn("Could not create table csv for dynamic patient data. Error: ", w$message)
+        },
+        finally = unregisterLogger(logfile)
+    )
+
     logInfo("Finish creating table csv files.")
 }
 
