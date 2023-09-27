@@ -1,5 +1,5 @@
 create_table_patient_data_static <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data_staic.")
+    logInfo("Start creating single csv for table patient_data_static.")
 
     # THERE MIGHT BE STATIC COLUMNS MISSING - PLEASE ADD THEM
     static_patient_columns <-
@@ -9,16 +9,16 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
             "edu_occ",
             "fbg_baseline_mg",
             "fbg_baseline_mmol",
-            "file_name",
             "hba1c_baseline",
             "hba1c_baseline_exceeds",
             "id",
             "last_clinic_visit_date",
+            "lost_date",
             "name",
             "province",
             "recruitment_date",
             "sex",
-            "status",
+            "status_out",
             "t1d_diagnosis_age",
             "t1d_diagnosis_date",
             "t1d_diagnosis_with_dka",
@@ -63,5 +63,5 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
         suffix = "_static"
     )
 
-    logInfo("Finish creating single csv for table patient_data_staic.")
+    logInfo("Finish creating single csv for table patient_data_static.")
 }

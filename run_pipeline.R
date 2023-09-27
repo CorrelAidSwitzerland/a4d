@@ -23,4 +23,3 @@ source("run_script_1_extract_raw_data.R") # creates CSV files in subfolders pati
 source("run_script_2_clean_data.R") # creates CSV files in subfolders patient_data_cleaned and product_data_cleaned
 source("run_script_3_create_tables.R") # creates final CSV files in subfolder tables
 upload_data()
-
