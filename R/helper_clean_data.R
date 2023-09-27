@@ -21,4 +21,5 @@ sanitize_str <- function(text) {
         str_to_lower() %>%
         str_replace_all(fixed(" "), "") %>%
         str_replace_all("[^[:alnum:]]", "")
+    text
 }

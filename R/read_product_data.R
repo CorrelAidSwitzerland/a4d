@@ -300,8 +300,10 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
 #' @return A data frame that contains the product names. If there is an error during the process, it logs the error message.
 #'
 #' @examples
+#' \dontrun {
 #' product_list <- load_stock_products()
 #' product_list <- load_stock_products("your_file.xlsx")
+#' }
 load_stock_products <- function(stock_summary_xlsx = "master_tracker_variables.xlsx") {
     logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
     tryCatch(
