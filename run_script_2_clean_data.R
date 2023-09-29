@@ -18,7 +18,7 @@ source("R/logger.R")
 
 main <- function() {
     paths <- init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
-    setup_logger(paths$output_root)
+    setup_logger(paths$output_root, "script2")
     patient_data_files <- get_files(paths$tracker_root, pattern = "patient_raw.csv$")
     product_data_files <- get_files(paths$tracker_root, pattern = "product_raw.csv$")
     logInfo(
@@ -36,7 +36,7 @@ main <- function() {
         "."
     )
 
-    logDebug("Start processing patient csv files.")
+    logInfo("Start processing patient csv files.")
 
     foreach::foreach(patient_file = patient_data_files) %dopar% {
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))

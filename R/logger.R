@@ -2,8 +2,12 @@
 #'
 #' @param output_dir: Output directory of the main script
 #' @export
-setup_logger <- function(output_dir) {
-    logFileName <- file.path(output_dir, "logs", "main.log")
+setup_logger <- function(output_dir, log_name) {
+    logFileName <- file.path(output_dir, "logs", paste0("main_", log_name, ".log"))
+
+    if (file.exists(logFileName)) {
+        file.remove(logFileName)
+    }
 
     logger <- createLogger(
         name = "MAIN",
@@ -32,5 +36,5 @@ setup_file_logger <- function(output_root, logfile) {
     if (file.exists(logFileName)) {
         file.remove(logFileName)
     }
-    addDefaultFileLogger(logFileName, logfile)
+    addDefaultFileLogger(logFileName, name = logfile)
 }

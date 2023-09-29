@@ -4,7 +4,7 @@
 \alias{setup_logger}
 \title{Configure basic logger}
 \usage{
-setup_logger(output_dir)
+setup_logger(output_dir, log_name)
 }
 \arguments{
 \item{output_dir:}{Output directory of the main script}
