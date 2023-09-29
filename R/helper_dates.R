@@ -7,8 +7,6 @@
 #'
 #' @param df data frame with patient data.
 #' @param colname column that has invalid dates.
-#'
-#' @return
 parse_invalid_dates <- function(df, colname) {
     orders <- c("dmy", "dmY", "by", "bY")
     df <- df %>% mutate(across(!!colname, function(x) {
