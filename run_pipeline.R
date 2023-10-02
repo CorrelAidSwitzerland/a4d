@@ -2,8 +2,8 @@
 Sys.setenv(A4D_DATA_ROOT="/home/rstudio/data") # on GCP VM
 BUCKET_DOWLOAD <- "a4dphase2_upload"
 BUCKET_UPLOAD <- "a4dphase2_output"
-PROJECT_ID <- "a4d-315220"
-DATASET <- "a4d_ds_tracker"
+PROJECT_ID <- "a4dphase2"
+DATASET <- "tracker"
 
 download_data <- function(bucket, data_dir) {
     print("Start downloading data from GCP Storage")
@@ -52,6 +52,7 @@ ingest_data <- function(project_id, dataset, table, source, schema) {
 
 data_dir <- select_A4D_directory()
 output_dir <- file.path(data_dir, "output")
+unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
 download_data(bucket = BUCKET_DOWLOAD, data_dir = data_dir)
 source("run_script_1_extract_raw_data.R") # creates CSV files in subfolders patient_data_raw and product_data_raw
