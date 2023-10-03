@@ -52,6 +52,21 @@ main <- function() {
         finally = unregisterLogger(logfile)
     )
 
+    logfile <- "table_product_data"
+    setup_file_logger(paths$output_root, logfile)
+    tryCatch(
+        {
+            create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
+        },
+        error = function(e) {
+            logError("Could not create table csv for product data. Error: ", e$message)
+        },
+        warning = function(w) {
+            logWarn("Could not create table csv for product patient data. Error: ", w$message)
+        },
+        finally = unregisterLogger(logfile)
+    )
+
     logInfo("Finish creating table csv files.")
 }
 
