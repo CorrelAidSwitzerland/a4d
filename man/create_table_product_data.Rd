@@ -12,10 +12,14 @@ create_table_product_data(input_root, output_root)
 \item{output_root}{A string specifying the path to the directory where the output CSV file should be written.}
 }
 \value{
-This function does not return a value. It writes the merged data to a new CSV file in the output_root directory.
+This function does not return a value. It writes the merged data to a new CSV file
+(with reordered columns according to the list of fields) in the output_root directory.
 }
 \description{
-This function reads all CSV files in a specified directory, merges them into a single data frame, and writes the merged data to a new CSV file. If there are any columns that are present in some CSV files but not others, this function will add those missing columns to the data frames where they are missing and fill them with NA.
+This function reads all CSV files in a specified directory, merges them into a single data frame,
+and writes the merged data to a new CSV file with reordered columns according to the list of fields.
+If there are any columns that are present in some CSV files but not others,
+this function will add those missing columns to the data frames where they are missing and fill them with NA.
 }
 \examples{
 create_table_product_data("path/to/input/directory", "path/to/output/directory")
