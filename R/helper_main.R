@@ -162,7 +162,7 @@ export_data <- function(data, filename, output_root, suffix) {
 #' @return tibble with patient data
 read_raw_csv <- function(file) {
     logDebug("Start reading data with read_csv.")
-    df_patient_raw <- read_csv(
+    df_patient_raw <- readr::read_csv(
         file,
         name_repair = "check_unique",
         progress = FALSE,

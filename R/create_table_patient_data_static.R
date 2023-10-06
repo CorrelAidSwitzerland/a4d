@@ -1,3 +1,10 @@
+#' @title title
+#'
+#' @param patient_data_files
+#' @param input_root
+#' @param output_root
+#'
+#' @return
 create_table_patient_data_static <- function(patient_data_files, input_root, output_root) {
     logInfo("Start creating single csv for table patient_data_static.")
 
@@ -31,7 +38,7 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
 
     # get the latest static patient data for each tracker file
     for (patient_file in patient_data_files) {
-        patient_data <- read_csv(
+        patient_data <- readr::read_csv(
             file.path(input_root, patient_file),
             locale = readr::locale(encoding = "UTF-16LE"),
             show_col_types = F,

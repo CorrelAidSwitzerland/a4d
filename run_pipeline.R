@@ -54,6 +54,7 @@ data_dir <- select_A4D_directory()
 output_dir <- file.path(data_dir, "output")
 unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
+
 download_data(bucket = BUCKET_DOWLOAD, data_dir = data_dir)
 source("run_script_1_extract_raw_data.R") # creates CSV files in subfolders patient_data_raw and product_data_raw
 source("run_script_2_clean_data.R") # creates CSV files in subfolders patient_data_cleaned and product_data_cleaned
