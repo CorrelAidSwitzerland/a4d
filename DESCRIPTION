@@ -14,9 +14,7 @@ Depends:
 Imports: 
     data.table,
     digest,
-    doParallel,
     dplyr,
-    foreach,
     here,
     lubridate,
     openxlsx,
