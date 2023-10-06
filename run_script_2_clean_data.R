@@ -33,10 +33,10 @@ main <- function() {
         tryCatch(
             process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
             error = function(e) {
-                logError("Could not process raw patient data. Error = ", e, ".")
+                logError("Could not process raw patient data. Error = ", e$message, ".")
             },
             warning = function(w) {
-                logWarn("Could not process raw patient data. Warning = ", w, ".")
+                logWarn("Could not process raw patient data. Warning = ", w$message, ".")
             },
             finally = unregisterLogger(logfile)
         )
@@ -55,10 +55,10 @@ main <- function() {
         tryCatch(
             process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
             error = function(e) {
-                logError("Could not process raw product data. Error = ", e, ".")
+                logError("Could not process raw product data. Error = ", e$message, ".")
             },
             warning = function(w) {
-                logWarn("Could not process raw product data. Warning = ", w, ".")
+                logWarn("Could not process raw product data. Warning = ", w$message, ".")
             },
             finally = unregisterLogger(logfile)
         )
