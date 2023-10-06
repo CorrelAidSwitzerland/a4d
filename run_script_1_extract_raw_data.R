@@ -21,10 +21,10 @@ main <- function() {
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
             error = function(e) {
-                logError("Could not process ", tracker_name, ". Error = ", e, ".")
+                logError("Could not process ", tracker_name, ". Error = ", e$message, ".")
             },
             warning = function(w) {
-                logWarn("Could not process ", tracker_name, ". Warning = ", w, ".")
+                logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
             }
         )
     }
@@ -51,10 +51,10 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
             synonyms_patient = synonyms$patient
         ),
         error = function(e) {
-            logError("Could not process patient data. Error = ", e, ".")
+            logError("Could not process patient data. Error = ", e$message, ".")
         },
         warning = function(w) {
-            logWarn("Could not process patient data. Warning = ", w, ".")
+            logWarn("Could not process patient data. Warning = ", w$message, ".")
         },
         finally = unregisterLogger(logfile)
     )
@@ -69,10 +69,10 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
             synonyms_product = synonyms$product
         ),
         error = function(e) {
-            logError("Could not process product data. Error = ", e, ".")
+            logError("Could not process product data. Error = ", e$message, ".")
         },
         warning = function(w) {
-            logWarn("Could not process product data. Warning = ", w, ".")
+            logWarn("Could not process product data. Warning = ", w$message, ".")
         },
         finally = unregisterLogger(logfile)
     )

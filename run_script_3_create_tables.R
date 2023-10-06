@@ -29,10 +29,10 @@ main <- function() {
             create_table_patient_data_static(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
         },
         error = function(e) {
-            logError("Could not create table csv for static patient data. Error: ", e)
+            logError("Could not create table csv for static patient data. Error: ", e$message)
         },
         warning = function(w) {
-            logWarn("Could not create table csv for static patient data. Error: ", w)
+            logWarn("Could not create table csv for static patient data. Error: ", w$message)
         },
         finally = unregisterLogger(logfile)
     )
