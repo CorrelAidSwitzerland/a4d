@@ -1,16 +1,4 @@
 options(readxl.show_progress = FALSE)
-options(future.rng.onMisuse = "ignore")
-
-`%dopar%` <- foreach::`%dopar%`
-
-source("R/helper_main.R")
-source("R/read_patient_data.R")
-source("R/helper_read_patient_data.R")
-source("R/read_product_data.R")
-source("R/helper_clean_data.R")
-source("R/helper_product_data.R")
-source("R/get_tracker_year.R")
-source("R/logger.R")
 
 main <- function() {
     paths <- init_paths(c("patient_data_raw", "product_data_raw"), delete = TRUE)
@@ -28,7 +16,7 @@ main <- function() {
 
     logInfo("Start processing tracker files.")
 
-    foreach::foreach(tracker_file = tracker_files) %dopar% {
+    for (tracker_file in tracker_files) {
         tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
@@ -163,13 +151,6 @@ process_product_data <-
         }
         logDebug("Finish process_product_data.")
     }
-
-# Calculate the number of cores
-no_cores <- future::availableCores() - 1
-doFuture::registerDoFuture()
-
-future::plan(future::multisession, workers = no_cores)
-# future::plan(future::sequential)
 
 main()
 
