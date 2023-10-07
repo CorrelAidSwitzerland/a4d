@@ -1,20 +1,8 @@
 options(readxl.show_progress = FALSE)
-options(future.rng.onMisuse = "ignore")
+
 ERROR_VAL_NUMERIC <<- 999999
 ERROR_VAL_CHARACTER <<- "Other"
 ERROR_VAL_DATE <<- "9999-09-09"
-
-`%dopar%` <- foreach::`%dopar%`
-
-source("R/helper_main.R")
-source("R/read_patient_data.R")
-source("R/helper_read_patient_data.R")
-source("R/helper_patient_data_fix.R")
-source("R/read_product_data.R")
-source("R/helper_clean_data.R")
-source("R/helper_product_data.R")
-source("R/get_tracker_year.R")
-source("R/logger.R")
 
 main <- function() {
     paths <- init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
@@ -38,17 +26,17 @@ main <- function() {
 
     logInfo("Start processing patient csv files.")
 
-    foreach::foreach(patient_file = patient_data_files) %dopar% {
+    for (patient_file in patient_data_files) {
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
         logfile <- paste0(patient_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
             process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
             error = function(e) {
-                logError("Could not process raw patient data. Error = ", e, ".")
+                logError("Could not process raw patient data. Error = ", e$message, ".")
             },
             warning = function(w) {
-                logWarn("Could not process raw patient data. Warning = ", w, ".")
+                logWarn("Could not process raw patient data. Warning = ", w$message, ".")
             },
             finally = unregisterLogger(logfile)
         )
@@ -60,17 +48,17 @@ main <- function() {
     synonyms <- get_synonyms()
     synonyms_product <- synonyms$product
 
-    foreach::foreach(product_file = product_data_files) %dopar% {
+    for (product_file in product_data_files) {
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
         logfile <- paste0(product_file_name)
         setup_file_logger(paths$output_root, logfile)
         tryCatch(
             process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
             error = function(e) {
-                logError("Could not process raw product data. Error = ", e, ".")
+                logError("Could not process raw product data. Error = ", e$message, ".")
             },
             warning = function(w) {
-                logWarn("Could not process raw product data. Warning = ", w, ".")
+                logWarn("Could not process raw product data. Warning = ", w$message, ".")
             },
             finally = unregisterLogger(logfile)
         )
@@ -436,14 +424,6 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
 
     logInfo("Finish process_product_file.")
 }
-
-
-# Calculate the number of cores
-no_cores <- future::availableCores() - 1
-doFuture::registerDoFuture()
-
-future::plan(future::multisession, workers = no_cores)
-# future::plan(future::sequential)
 
 main()
 
