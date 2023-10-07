@@ -13,21 +13,26 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- get_tracker_year(tracker_data_file, month_list)
 
+        logDebug("Found ", length(sheet_list), " sheets: ", cat(sheet_list, sep=", "), ".")
+        logDebug("Found ", length(month_list), " month sheets: ", cat(month_list, sep=", "), ".")
+
+
         # loop through all months
-        for (CurrSheet in month_list) {
-            logDebug("Start processing the following sheet: ", CurrSheet)
+        for (curr_sheet in month_list) {
+            logDebug("Start processing the following sheet: ", curr_sheet)
 
             # open tracker data
-            tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, CurrSheet,
+            tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, curr_sheet,
                 .name_repair = "unique_quiet"
             ))
 
             # Jump to next tab sheet if there are no product data
-            if (!
-            any((grepl("Product", tracker_data[, ]) | grepl("Description of Support", tracker_data[, ])))
+            if (
+                !any((grepl("Product", tracker_data[, ]) |
+                      grepl("Description of Support", tracker_data[, ])))
             ) {
                 # go to next month
-                print(paste0(CurrSheet, " is skipped!"))
+                logInfo("Could not find product data in tracker data. Skipping ", curr_sheet, ".")
                 next
             }
 
@@ -36,7 +41,7 @@ reading_product_data_step1 <-
 
             # If after extraction, dataframe is empty, this iteration is also skipped.
             if (all(is.na(product_df))) {
-                print(paste0(CurrSheet, " is skipped!"))
+                logInfo("Product data is empty. Skipping ", curr_sheet, ".")
                 next
             }
 
@@ -59,22 +64,22 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (num_na_rows > 0) {
-                        logInfo(CurrSheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+                        logInfo(curr_sheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
                     }
                 },
                 error = function(e) {
-                    logError(CurrSheet, " trying with num_na_rows for products. Error: ", e$message)
+                    logError(curr_sheet, " trying with num_na_rows for products. Error: ", e$message)
                 }
             )
 
             # Checking non-processed dates in product_entry_date
             non_processed_dates <- product_df %>%
-                filter(!is.na(product_entry_date) & !grepl("^[0-9]+$", product_entry_date)) # filter if: no NA and the string is not only numeric.
+                dplyr::filter(!is.na(product_entry_date) & !grepl("^[0-9]+$", product_entry_date)) # filter if: no NA and the string is not only numeric.
             tryCatch(
                 {
                     if (nrow(non_processed_dates) > 0) {
                         logWarn(
-                            CurrSheet,
+                            curr_sheet,
                             " the number of rows with non-processed dates in product_entry_date is ",
                             nrow(non_processed_dates), ": ",
                             paste(non_processed_dates$product_entry_date, collapse = ", ")
@@ -82,22 +87,22 @@ reading_product_data_step1 <-
                     }
                 },
                 error = function(e) {
-                    logError(CurrSheet, " trying with non_processed_dates in product_entry_date. Error: ", e$message)
+                    logError(curr_sheet, " trying with non_processed_dates in product_entry_date. Error: ", e$message)
                 }
             )
 
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
                 mutate(
-                    product_table_month = extract_month(CurrSheet),
+                    product_table_month = extract_month(curr_sheet),
                     product_table_year = year,
-                    product_sheet_name = CurrSheet
+                    product_sheet_name = curr_sheet
                 )
 
             # Check if the entry dates for the balance match the month/year on the sheet
-            check_entry_dates(product_df, CurrSheet)
+            check_entry_dates(product_df, curr_sheet)
 
-            logDebug("Finished processing the following sheet: ", CurrSheet)
+            logDebug("Finish processing sheet: ", curr_sheet)
 
             # combine all months
             if (!exists("df_final")) {
@@ -141,8 +146,9 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
 #'
 #' @return This function does not return a value. It logs a warning message if there are any dates in 'product_entry_date' that don't match the month/year on the sheet.
 check_entry_dates <- function(df, Sheet) {
+    logDebug("Start check_entry_dates.")
     # Check if the entry dates for the balance match the month/year on the sheet
-    entry_dates_df <- df %>% filter(grepl("^[0-9]+$", product_entry_date))
+    entry_dates_df <- df %>% dplyr::filter(grepl("^[0-9]+$", product_entry_date))
 
     entry_dates_df$product_entry_date <- as.numeric(entry_dates_df$product_entry_date)
     entry_dates_df$product_table_month <- as.numeric(entry_dates_df$product_table_month)
@@ -163,6 +169,7 @@ check_entry_dates <- function(df, Sheet) {
             paste(not_same$ed_date, collapse = ", ")
         )
     }
+    logDebug("Finish check_entry_dates.")
 }
 
 #' @title Remove Rows with NA Values in Specified Columns.
