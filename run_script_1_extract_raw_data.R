@@ -152,6 +152,7 @@ process_product_data <-
         logDebug("Finish process_product_data.")
     }
 
+#profvis(main())
 main()
 
 clearLoggers()

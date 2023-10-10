@@ -86,8 +86,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         path = tracker_data_file,
         sheet = sheet,
         range = readxl::cell_limits(c(row_min, NA), c(row_max, length(header_cols))),
-        trim_ws = T,
+        trim_ws = F,
         col_names = F,
+        col_types = c("text"),
         .name_repair = "unique_quiet"
     )
     logDebug("Finish readxl::read_excel.")
@@ -117,8 +118,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         df_patient[rowSums(is.na(df_patient)) != ncol(df_patient), ]
 
     logDebug("Finish extract_patient_data.")
-    # store every column as character to avoid wrong data transformations
-    df_patient[] <- lapply(df_patient, as.character)
 
     df_patient
 }

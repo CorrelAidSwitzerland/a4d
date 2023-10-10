@@ -13,8 +13,8 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- get_tracker_year(tracker_data_file, month_list)
 
-        logDebug("Found ", length(sheet_list), " sheets: ", cat(sheet_list, sep=", "), ".")
-        logDebug("Found ", length(month_list), " month sheets: ", cat(month_list, sep=", "), ".")
+        logDebug("Found ", length(sheet_list), " sheets: ", paste(sheet_list, collapse = ", "), ".")
+        logDebug("Found ", length(month_list), " month sheets: ", paste(month_list, collapse = ", "), ".")
 
 
         # loop through all months
@@ -22,9 +22,14 @@ reading_product_data_step1 <-
             logDebug("Start processing the following sheet: ", curr_sheet)
 
             # open tracker data
-            tracker_data <- data.frame(readxl::read_xlsx(tracker_data_file, curr_sheet,
-                .name_repair = "unique_quiet"
-            ))
+            tracker_data <- data.frame(
+                readxl::read_xlsx(
+                    path=tracker_data_file,
+                    sheet=curr_sheet,
+                    col_types=c("text"),
+                    .name_repair="unique_quiet"
+                    )
+                )
 
             # Jump to next tab sheet if there are no product data
             if (
