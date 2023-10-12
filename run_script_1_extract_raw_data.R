@@ -41,40 +41,48 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
         tracker_name
     )
 
+
     logfile <- paste0(tracker_name, "_", "patient")
-    setup_file_logger(paths$output_root, logfile)
-    tryCatch(
-        process_patient_data(
-            tracker_name = tracker_name,
-            tracker_data_file = tracker_data_file,
-            output_root = paths$patient_data_raw,
-            synonyms_patient = synonyms$patient
-        ),
-        error = function(e) {
-            logError("Could not process patient data. Error = ", e$message, ".")
+    with_file_logger(logfile,
+        {
+            tryCatch(
+                process_patient_data(
+                    tracker_name = tracker_name,
+                    tracker_data_file = tracker_data_file,
+                    output_root = paths$patient_data_raw,
+                    synonyms_patient = synonyms$patient
+                ),
+                error = function(e) {
+                    logError("Could not process patient data. Error = ", e$message, ".")
+                },
+                warning = function(w) {
+                    logWarn("Could not process patient data. Warning = ", w$message, ".")
+                }
+            )
         },
-        warning = function(w) {
-            logWarn("Could not process patient data. Warning = ", w$message, ".")
-        },
-        finally = unregisterLogger(logfile)
+        output_root = paths$output_root
     )
 
     logfile <- paste0(tracker_name, "_", "product")
-    setup_file_logger(paths$output_root, logfile)
-    tryCatch(
-        process_product_data(
-            tracker_name = tracker_name,
-            tracker_data_file = tracker_data_file,
-            output_root = paths$product_data_raw,
-            synonyms_product = synonyms$product
-        ),
-        error = function(e) {
-            logError("Could not process product data. Error = ", e$message, ".")
+
+    with_file_logger(logfile,
+        {
+            tryCatch(
+                process_product_data(
+                    tracker_name = tracker_name,
+                    tracker_data_file = tracker_data_file,
+                    output_root = paths$product_data_raw,
+                    synonyms_product = synonyms$product
+                ),
+                error = function(e) {
+                    logError("Could not process product data. Error = ", e$message, ".")
+                },
+                warning = function(w) {
+                    logWarn("Could not process product data. Warning = ", w$message, ".")
+                }
+            )
         },
-        warning = function(w) {
-            logWarn("Could not process product data. Warning = ", w$message, ".")
-        },
-        finally = unregisterLogger(logfile)
+        output_root = paths$output_root
     )
 
     logInfo("Finish process_tracker_file.")
@@ -152,7 +160,7 @@ process_product_data <-
         logDebug("Finish process_product_data.")
     }
 
-#profvis(main())
+# profvis(main())
 main()
 
 clearLoggers()

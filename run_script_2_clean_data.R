@@ -29,16 +29,19 @@ main <- function() {
     for (patient_file in patient_data_files) {
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
         logfile <- paste0(patient_file_name)
-        setup_file_logger(paths$output_root, logfile)
-        tryCatch(
-            process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
-            error = function(e) {
-                logError("Could not process raw patient data. Error = ", e$message, ".")
+        with_file_logger(logfile,
+            {
+                tryCatch(
+                    process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
+                    error = function(e) {
+                        logError("Could not process raw patient data. Error = ", e$message, ".")
+                    },
+                    warning = function(w) {
+                        logWarn("Could not process raw patient data. Warning = ", w$message, ".")
+                    }
+                )
             },
-            warning = function(w) {
-                logWarn("Could not process raw patient data. Warning = ", w$message, ".")
-            },
-            finally = unregisterLogger(logfile)
+            output_root = paths$output_root
         )
     }
 
@@ -51,16 +54,20 @@ main <- function() {
     for (product_file in product_data_files) {
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
         logfile <- paste0(product_file_name)
-        setup_file_logger(paths$output_root, logfile)
-        tryCatch(
-            process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
-            error = function(e) {
-                logError("Could not process raw product data. Error = ", e$message, ".")
+
+        with_file_logger(logfile,
+            {
+                tryCatch(
+                    process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
+                    error = function(e) {
+                        logError("Could not process raw product data. Error = ", e$message, ".")
+                    },
+                    warning = function(w) {
+                        logWarn("Could not process raw product data. Warning = ", w$message, ".")
+                    }
+                )
             },
-            warning = function(w) {
-                logWarn("Could not process raw product data. Warning = ", w$message, ".")
-            },
-            finally = unregisterLogger(logfile)
+            output_root = paths$output_root
         )
     }
 
