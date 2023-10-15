@@ -361,25 +361,29 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
         df_patient <- df_patient %>%
-            dplyr::filter(fbg_baseline_mg != ERROR_VAL_NUMERIC) %>%
-            mutate(fbg_baseline_mmol = fbg_baseline_mg / 18)
+            mutate(fbg_baseline_mmol = case_when(
+                fbg_baseline_mg != ERROR_VAL_NUMERIC ~ fbg_baseline_mg / 18
+            ))
     }
     if (all(is.na(df_patient$fbg_updated_mmol))) {
         df_patient <- df_patient %>%
-            dplyr::filter(fbg_updated_mg != ERROR_VAL_NUMERIC) %>%
-            mutate(fbg_updated_mmol = fbg_updated_mg / 18)
+            mutate(fbg_updated_mmol = case_when(
+                fbg_updated_mg != ERROR_VAL_NUMERIC ~ fbg_updated_mg / 18
+            ))
     }
 
     # Formula to calculate mg/dl from mmol/l: mg/dl = 18 × mmol/l
     if (all(is.na(df_patient$fbg_baseline_mg))) {
         df_patient <- df_patient %>%
-            dplyr::filter(fbg_baseline_mmol != ERROR_VAL_NUMERIC) %>%
-            mutate(fbg_baseline_mg = fbg_baseline_mmol * 18)
+            mutate(fbg_baseline_mg = case_when(
+                fbg_baseline_mmol != ERROR_VAL_NUMERIC ~ fbg_baseline_mmol * 18
+            ))
     }
     if (all(is.na(df_patient$fbg_updated_mg))) {
         df_patient <- df_patient %>%
-            dplyr::filter(fbg_updated_mmol != ERROR_VAL_NUMERIC) %>%
-            mutate(fbg_updated_mg = fbg_updated_mmol * 18)
+            mutate(fbg_updated_mg = case_when(
+                fbg_updated_mmol != ERROR_VAL_NUMERIC ~ fbg_updated_mmol * 18
+            ))
     }
 
     # sort by year and month like it is in the tracker files
