@@ -4,12 +4,15 @@
 \alias{setup_file_logger}
 \title{Add a basic default file logger for a newly processed file.}
 \usage{
-setup_file_logger(output_root, logfile)
+setup_file_logger(logfile, output_root)
 }
 \arguments{
-\item{output_root}{Output root directory for the current process.}
-
 \item{logfile}{The name of the log file.}
+
+\item{output_root}{Output root directory for the current process.}
+}
+\value{
+returns the loggers that where previously set for usage with with_
 }
 \description{
 Add a basic default file logger for a newly processed file.

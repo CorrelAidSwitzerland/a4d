@@ -23,48 +23,60 @@ main <- function() {
     logInfo("Start creating table csv files.")
 
     logfile <- "table_patient_data_static"
-    setup_file_logger(paths$output_root, logfile)
-    tryCatch(
+
+    with_file_logger(logfile,
         {
-            create_table_patient_data_static(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+            tryCatch(
+                {
+                    create_table_patient_data_static(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+                },
+                error = function(e) {
+                    logError("Could not create table csv for static patient data. Error: ", e$message)
+                },
+                warning = function(w) {
+                    logWarn("Could not create table csv for static patient data. Error: ", w$message)
+                }
+            )
         },
-        error = function(e) {
-            logError("Could not create table csv for static patient data. Error: ", e$message)
-        },
-        warning = function(w) {
-            logWarn("Could not create table csv for static patient data. Error: ", w$message)
-        },
-        finally = unregisterLogger(logfile)
+        output_root = paths$output_root
     )
 
     logfile <- "table_patient_data"
-    setup_file_logger(paths$output_root, logfile)
-    tryCatch(
+
+    with_file_logger(logfile,
         {
-            create_table_patient_data(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+            tryCatch(
+                {
+                    create_table_patient_data(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+                },
+                error = function(e) {
+                    logError("Could not create table csv for dynamic patient data. Error: ", e$message)
+                },
+                warning = function(w) {
+                    logWarn("Could not create table csv for dynamic patient data. Error: ", w$message)
+                }
+            )
         },
-        error = function(e) {
-            logError("Could not create table csv for dynamic patient data. Error: ", e$message)
-        },
-        warning = function(w) {
-            logWarn("Could not create table csv for dynamic patient data. Error: ", w$message)
-        },
-        finally = unregisterLogger(logfile)
+        output_root = paths$output_root
     )
 
     logfile <- "table_product_data"
-    setup_file_logger(paths$output_root, logfile)
-    tryCatch(
+
+    with_file_logger(logfile,
         {
-            create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
+            tryCatch(
+                {
+                    create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
+                },
+                error = function(e) {
+                    logError("Could not create table csv for product data. Error: ", e$message)
+                },
+                warning = function(w) {
+                    logWarn("Could not create table csv for product patient data. Error: ", w$message)
+                }
+            )
         },
-        error = function(e) {
-            logError("Could not create table csv for product data. Error: ", e$message)
-        },
-        warning = function(w) {
-            logWarn("Could not create table csv for product patient data. Error: ", w$message)
-        },
-        finally = unregisterLogger(logfile)
+        output_root = paths$output_root
     )
 
     logInfo("Finish creating table csv files.")
