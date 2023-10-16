@@ -1,5 +1,5 @@
-create_table_patient_data <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data.")
+create_table_patient_data_monthly <- function(patient_data_files, input_root, output_root) {
+    logInfo("Start creating single csv for table patient_data_monthly.")
 
     # THERE MIGHT BE STATIC COLUMNS MISSING - PLEASE ADD THEM
     dynamic_patient_columns <-
@@ -61,10 +61,10 @@ create_table_patient_data <- function(patient_data_files, input_root, output_roo
 
     export_data(
         data = patient_data_df,
-        filename = "patient_data",
+        filename = "patient_data_monthly",
         output_root = output_root,
         suffix = ""
     )
 
-    logInfo("Finish creating single csv for table patient_data.")
+    logInfo("Finish creating single csv for table patient_data_monthly.")
 }

@@ -63,9 +63,9 @@ upload_data(bucket = BUCKET_UPLOAD, data_dir = output_dir)
 ingest_data(
     project_id = PROJECT_ID,
     dataset = DATASET,
-    table = "patient_data",
-    source = file.path(table_dir, "patient_data.csv"),
-    schema = "./scripts/gcp/schema_patient_data.json"
+    table = "patient_data_monthly",
+    source = file.path(table_dir, "patient_data_monthly.csv"),
+    schema = "./scripts/gcp/schema_patient_data_monthly.json"
 )
 ingest_data(
     project_id = PROJECT_ID,
