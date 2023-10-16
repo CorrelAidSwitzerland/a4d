@@ -28,7 +28,7 @@ main <- function() {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
             }
         )
-        cat(paste("Processed ", i, " of ", length(tracker_files), " (", i / length(tracker_files)*100, "%) tracker files."))
+        cat(paste("Processed ", i, " of ", length(tracker_files), " (", round(i / length(tracker_files)*100, 0), "%) tracker files.\n"))
     }
     logInfo("Finish processing all tracker files.")
 }
