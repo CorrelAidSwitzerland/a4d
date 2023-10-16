@@ -16,7 +16,8 @@ main <- function() {
 
     logInfo("Start processing tracker files.")
 
-    for (tracker_file in tracker_files) {
+    for (i in seq_along(tracker_files)) {
+        tracker_file <- tracker_files[i]
         tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
@@ -27,6 +28,7 @@ main <- function() {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
             }
         )
+        cat(paste("Processed ", i, " of ", length(tracker_files), " (", i / length(tracker_files)*100, "%) tracker files."))
     }
     logInfo("Finish processing all tracker files.")
 }

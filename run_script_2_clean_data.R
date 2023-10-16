@@ -26,7 +26,8 @@ main <- function() {
 
     logInfo("Start processing patient csv files.")
 
-    for (patient_file in patient_data_files) {
+    for (i in seq_along(patient_data_files)) {
+        patient_file <- patient_data_files[i]
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
         logfile <- paste0(patient_file_name)
         with_file_logger(logfile,
@@ -43,6 +44,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
+        cat(paste("Processed ", i, " of ", length(patient_data_files), " (", i / length(patient_data_files)*100, "%) patient files."))
     }
 
     logInfo("Finish processing all patient csv files.")
@@ -51,7 +53,8 @@ main <- function() {
     synonyms <- get_synonyms()
     synonyms_product <- synonyms$product
 
-    for (product_file in product_data_files) {
+    for (i in seq_along(product_data_files)) {
+        product_file <- product_data_files[i]
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
         logfile <- paste0(product_file_name)
 
@@ -69,6 +72,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
+        cat(paste("Processed ", i, " of ", length(product_data_files), " (", i / length(product_data_files)*100, "%) product files."))
     }
 
     logInfo("Finish processing all csv files.")
