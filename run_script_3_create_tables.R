@@ -72,7 +72,7 @@ main <- function() {
                     logError("Could not create table csv for product data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for product patient data. Error: ", w$message)
+                    logWarn("Could not create table csv for product data. Error: ", w$message)
                 }
             )
         },
