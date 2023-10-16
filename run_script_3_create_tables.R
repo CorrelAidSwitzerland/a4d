@@ -41,19 +41,19 @@ main <- function() {
         output_root = paths$output_root
     )
 
-    logfile <- "table_patient_data"
+    logfile <- "table_patient_data_monthly"
 
     with_file_logger(logfile,
         {
             tryCatch(
                 {
-                    create_table_patient_data(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+                    create_table_patient_data_monthly(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for dynamic patient data. Error: ", e$message)
+                    logError("Could not create table csv for monthly patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for dynamic patient data. Error: ", w$message)
+                    logWarn("Could not create table csv for monthly patient data. Error: ", w$message)
                 }
             )
         },
