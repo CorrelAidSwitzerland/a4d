@@ -105,7 +105,7 @@ main <- function() {
         output_root = paths$output_root
     )
 
-    logInfo("Finish linking csv files for product and patient data.")
+    logInfo("Finished linking csv files for product and patient data.")
 }
 
 main()
