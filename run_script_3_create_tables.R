@@ -72,7 +72,7 @@ main <- function() {
                     logError("Could not create table csv for product data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for product data. Error: ", w$message)
+                    logWarn("Could not create table csv for product data. Warning: ", w$message)
                 }
             )
         },
@@ -80,6 +80,32 @@ main <- function() {
     )
 
     logInfo("Finish creating table csv files.")
+
+    logInfo("Trying to link csv files for product and patient data.")
+
+    logfile <- "link_product_patient_data"
+
+    with_file_logger(logfile,
+        {
+            tryCatch(
+                {
+                    link_product_patient(
+                        file.path(paths$tables, "product_data.csv"),
+                        file.path(paths$tables, "patient_data_monthly.csv")
+                    )
+                },
+                error = function(e) {
+                    logError("Could not link csv files for product and patient data. Error: ", e$message)
+                },
+                warning = function(w) {
+                    logWarn("Could not link csv files for product and patient data. Warning: ", w$message)
+                }
+            )
+        },
+        output_root = paths$output_root
+    )
+
+    logInfo("Finished linking csv files for product and patient data.")
 }
 
 main()
