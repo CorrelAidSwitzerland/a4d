@@ -42,6 +42,7 @@ ingest_data <- function(project_id, dataset, table, source, schema) {
         source,
         schema
     )
+    cat(command)
     exit_code <- system(command)
     if (exit_code != 0) {
         paste("Error while executing", command)
@@ -73,4 +74,11 @@ ingest_data(
     table = "patient_data_static",
     source = file.path(table_dir, "patient_data_static.csv"),
     schema = "./scripts/gcp/schema_patient_data_static.json"
+)
+ingest_data(
+    project_id = PROJECT_ID,
+    dataset = DATASET,
+    table = "product_data",
+    source = file.path(table_dir, "product_data.csv"),
+    schema = "./scripts/gcp/schema_product_data.json"
 )

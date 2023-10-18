@@ -1,0 +1,17 @@
+[
+    {"name": "product", "type": "STRING"},
+    {"name": "units_notes", "type": "STRING"},
+    {"name": "entry_date", "type": "DATE"},
+    {"name": "units_released", "type": "FLOAT"},
+    {"name": "released_to", "type": "STRING"},
+    {"name": "units_received", "type": "FLOAT"},
+    {"name": "received_from", "type": "STRING"},
+    {"name": "balance", "type": "FLOAT"},
+    {"name": "units_returned", "type": "FLOAT"},
+    {"name": "returned_by", "type": "STRING"},
+    {"name": "tracker_month", "type": "INTEGER"},
+    {"name": "tracker_year", "type": "INTEGER"},
+    {"name": "sheet_name", "type": "STRING"},
+    {"name": "file_name", "type": "STRING"},
+    {"name": "balance_status", "type": "STRING"}
+]
