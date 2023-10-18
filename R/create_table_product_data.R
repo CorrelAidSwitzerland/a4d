@@ -38,7 +38,8 @@ create_table_product_data <- function(input_root, output_root) {
     merged_data <- do.call(rbind, data_list)
 
     # Reorder the columns according to the list of fields
-    merged_data <- reorder_product_fields(merged_data)
+    # merged_data <- reorder_product_fields(merged_data)
+    merged_data <- preparing_product_fields(merged_data)
 
     # Write the merged data to a CSV file in the output_root directory
     export_data(
@@ -89,7 +90,9 @@ reorder_product_fields <- function(merged_data) {
         "file_name",
         "product_balance_status",
         "product_country",
-        "product_hospital"
+        "product_hospital",
+        "product_category",
+        "orig_product_released_to"
     )
 
     # Check if all fields are present in merged_data
@@ -102,6 +105,87 @@ reorder_product_fields <- function(merged_data) {
 
     # Reorder the columns according to the list of fields
     merged_data <- merged_data[, c(fields, setdiff(names(merged_data), fields))]
+
+    return(merged_data)
+}
+
+#' @title Preparing Product Fields
+#'
+#' @description
+#' This function processes fields for a single csv product_data.
+#' It checks if all fields are present in merged_data and adds missing fields with NA.
+#' It ensures the correct data type for each column and reorders the columns according to the list of fields.
+#' Any additional fields in the input dataframe are moved to the end.
+#'
+#' @param merged_data A data frame that needs to be processed.
+#'
+#' @return A data frame with processed fields.
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(product = c("A", "B"), product_units_notes = c("note1", "note2"))
+#' df <- preparing_product_fields(df)
+#' }
+#'
+preparing_product_fields <- function(merged_data) {
+    # List of fields and their corresponding data types
+    fields <- list(
+        "product" = "character",
+        "product_units_notes" = "character",
+        "product_entry_date" = "Date",
+        "product_units_released" = "numeric",
+        "product_released_to" = "character",
+        "product_units_received" = "numeric",
+        "product_received_from" = "character",
+        "product_balance" = "numeric",
+        "product_units_returned" = "numeric",
+        "product_returned_by" = "character",
+        "product_table_month" = "integer",
+        "product_table_year" = "integer",
+        "product_sheet_name" = "character",
+        "file_name" = "character",
+        "product_balance_status" = "character",
+        "product_country" = "character",
+        "product_hospital" = "character",
+        "product_category" = "character",
+        "orig_product_released_to" = "character"
+    )
+
+    logInfo("Start processing fields for the single csv product_data...")
+
+    # Check if all fields are present in merged_data
+    missing_fields <- setdiff(names(fields), names(merged_data))
+
+    # If there are missing fields, add them with NA
+    if (length(missing_fields) > 0) {
+        merged_data[missing_fields] <- NA
+    }
+
+    # Ensure the correct data type for each column
+    for (field in names(fields)) {
+        tryCatch({
+            if (fields[[field]] == "Date") {
+                merged_data[[field]] <- suppressWarnings(as.Date(merged_data[[field]]))
+            } else if (fields[[field]] == "numeric") {
+                merged_data[[field]] <- suppressWarnings(as.numeric(merged_data[[field]]))
+            } else if (fields[[field]] == "integer") {
+                merged_data[[field]] <- suppressWarnings(as.integer(merged_data[[field]]))
+            } else {
+                merged_data[[field]] <- as.character(merged_data[[field]])
+            }
+        }, warning = function(w) {
+            logError(paste("Warning in converting", field, ": ", w))
+        }, error = function(e) {
+            logWarn(paste("Error in converting", field, ": ", e))
+        }, finally = {
+            logDebug(paste("Finished converting", field))
+        })
+    }
+
+    # Reorder the columns according to the list of fields
+    merged_data <- merged_data[, c(names(fields), setdiff(names(merged_data), names(fields)))]
+
+    logInfo("Finished processing fields for the single csv product_data.")
 
     return(merged_data)
 }
