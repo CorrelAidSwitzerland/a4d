@@ -13,5 +13,9 @@
     {"name": "tracker_year", "type": "INTEGER"},
     {"name": "sheet_name", "type": "STRING"},
     {"name": "file_name", "type": "STRING"},
-    {"name": "balance_status", "type": "STRING"}
+    {"name": "balance_status", "type": "STRING"},
+    {"name": "country", "type": "STRING"},
+    {"name": "hospital", "type": "STRING"},
+    {"name": "category", "type": "STRING"},
+    {"name": "orig_released_to", "type": "STRING"}
 ]
