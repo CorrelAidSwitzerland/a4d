@@ -15,7 +15,8 @@ A data frame with processed fields.
 \description{
 This function processes fields for a single csv product_data.
 It checks if all fields are present in merged_data and adds missing fields with NA.
-It ensures the correct data type for each column and reorders the columns according to the list of fields.
+It ensures the correct data type for each column, replaces incorrect values with specified error values,
+and reorders the columns according to the list of fields.
 Any additional fields in the input dataframe are moved to the end.
 }
 \examples{

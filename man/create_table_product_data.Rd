@@ -17,7 +17,7 @@ This function does not return a value. It writes the merged data to a new CSV fi
 }
 \description{
 This function reads all CSV files in a specified directory, merges them into a single data frame,
-and writes the merged data to a new CSV file with reordered columns according to the list of fields.
+and writes the merged data to a new CSV file with reordered and processed columns according to the list of fields.
 If there are any columns that are present in some CSV files but not others,
 this function will add those missing columns to the data frames where they are missing and fill them with NA.
 }

@@ -2,7 +2,7 @@
 #'
 #' @description
 #' This function reads all CSV files in a specified directory, merges them into a single data frame,
-#' and writes the merged data to a new CSV file with reordered columns according to the list of fields.
+#' and writes the merged data to a new CSV file with reordered and processed columns according to the list of fields.
 #' If there are any columns that are present in some CSV files but not others,
 #' this function will add those missing columns to the data frames where they are missing and fill them with NA.
 #'
@@ -37,11 +37,22 @@ create_table_product_data <- function(input_root, output_root) {
     # Merge all data frames
     merged_data <- do.call(rbind, data_list)
 
-    # Reorder the columns according to the list of fields
-    # merged_data <- reorder_product_fields(merged_data)
+    logDebug("Copying original parient IDs...")
+    merged_data$orig_product_released_to <- merged_data$product_released_to
+
+    logDebug("Trying to fix patient IDs...")
+    merged_data$product_released_to <- sapply(merged_data$product_released_to, fix_id)
+
+    logDebug("Extracting product_county and product_hospisal from patients IDs...")
+    merged_data <- id_2_county_hospisal(
+        merged_data, "product_released_to",
+        "product_country", "product_hospital"
+    )
+
+    # Reorder, add, and ensures the correct data type for each column according to the list of fields
     merged_data <- preparing_product_fields(merged_data)
 
-    # Write the merged data to a CSV file in the output_root directory
+    # Write the merged and processed data to a CSV file in the output_root directory
     export_data(
         data = merged_data,
         filename = "product_data",
@@ -53,68 +64,45 @@ create_table_product_data <- function(input_root, output_root) {
 }
 
 
-#' @title Reorder and Add Missing Fields in a Dataframe
+#' @title Update country and hospital based on patient ID
 #'
 #' @description
-#' This function checks if all specified fields are present in the input dataframe.
-#' If any fields are missing, it adds them with NA values.
-#' It then reorders the columns according to the specified list of fields.
-#' Any additional fields in the input dataframe are moved to the end.
+#' This function updates the `country` and `hospital` columns in a dataframe based on the `ID` column.
+#' It looks for rows where `ID` matches a specific pattern (two letters, an underscore, two more letters, and then digits).
+#' For these rows, it puts the first two letters into `country` and the second two letters into `hospital`.
 #'
-#' @param merged_data A dataframe that needs its columns to be reordered and missing fields added.
-#'
-#' @return A dataframe with reordered columns and added missing fields.
-#'
+#' @param df A dataframe that contains the columns `ID`, `country`, and `hospital`.
+#' @param id The name of the column in df that contains the patients ID information.
+#' @param country The name of the column in df where the country information should be stored.
+#' @param hospital The name of the column in df where the hospital information should be stored.
+#' @return The original dataframe with updated `country` and `hospital` columns.
 #' @examples
-#' \dontrun{
-#' df <- data.frame(product = c("A", "B"), product_units_notes = c("note1", "note2"))
-#' df <- reorder_product_fields(df)
-#' }
-#'
-reorder_product_fields <- function(merged_data) {
-    # List of fields
-    fields <- c(
-        "product",
-        "product_units_notes",
-        "product_entry_date",
-        "product_units_released",
-        "product_released_to",
-        "product_units_received",
-        "product_received_from",
-        "product_balance",
-        "product_units_returned",
-        "product_returned_by",
-        "product_table_month",
-        "product_table_year",
-        "product_sheet_name",
-        "file_name",
-        "product_balance_status",
-        "product_country",
-        "product_hospital",
-        "product_category",
-        "orig_product_released_to"
-    )
+#' df <- data.frame(
+#'     id = c("US_CA123", "UK_LN456", "FR_PA789"),
+#'     country = NA,
+#'     hospital = NA,
+#'     stringsAsFactors = FALSE
+#' )
+#' df <- id_2_product_county_hospisal(df, "ID", "country", "hospital")
+id_2_county_hospisal <- function(df, id, country, hospital) {
+    # Find rows with id matching the pattern (2 letters + _ + 2 letters + digits)
+    matching_rows <- grepl("^[a-zA-Z]{2}_[a-zA-Z]{2}[0-9]+$", df[[id]])
 
-    # Check if all fields are present in merged_data
-    missing_fields <- setdiff(fields, names(merged_data))
+    # Extract and update the product_country and product_hospital columns
+    df[[country]][matching_rows] <- substr(df[[id]][matching_rows], 1, 2)
+    df[[hospital]][matching_rows] <- substr(df[[id]][matching_rows], 4, 5)
 
-    # If there are missing fields, add them with NA
-    if (length(missing_fields) > 0) {
-        merged_data[missing_fields] <- NA
-    }
-
-    # Reorder the columns according to the list of fields
-    merged_data <- merged_data[, c(fields, setdiff(names(merged_data), fields))]
-
-    return(merged_data)
+    return(df)
 }
+
 
 #' @title Preparing Product Fields
 #'
 #' @description
 #' This function processes fields for a single csv product_data.
 #' It checks if all fields are present in merged_data and adds missing fields with NA.
-#' It ensures the correct data type for each column and reorders the columns according to the list of fields.
+#' It ensures the correct data type for each column, replaces incorrect values with specified error values,
+#' and reorders the columns according to the list of fields.
 #' Any additional fields in the input dataframe are moved to the end.
 #'
 #' @param merged_data A data frame that needs to be processed.
@@ -151,6 +139,11 @@ preparing_product_fields <- function(merged_data) {
         "orig_product_released_to" = "character"
     )
 
+    # Error codes in run_script_2_clean_data.R
+    # ERROR_VAL_NUMERIC <- 999999
+    # ERROR_VAL_CHARACTER <- 'Other'
+    # ERROR_VAL_DATE <- '9999-09-09'
+
     logInfo("Start processing fields for the single csv product_data...")
 
     # Check if all fields are present in merged_data
@@ -165,13 +158,53 @@ preparing_product_fields <- function(merged_data) {
     for (field in names(fields)) {
         tryCatch({
             if (fields[[field]] == "Date") {
-                merged_data[[field]] <- suppressWarnings(as.Date(merged_data[[field]]))
+                original_values <- merged_data[[field]]
+                merged_data[[field]] <- suppressWarnings(as.Date(original_values))
+                incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
+                if (length(incorrect_rows) > 0) {
+                    logWarn(paste(
+                        "In", field, "incorrect date values were replaced with",
+                        ERROR_VAL_DATE, "in", length(incorrect_rows), "rows:",
+                        paste(incorrect_rows, collapse = ", ")
+                    ))
+                    merged_data[incorrect_rows, field] <- ERROR_VAL_DATE
+                }
             } else if (fields[[field]] == "numeric") {
-                merged_data[[field]] <- suppressWarnings(as.numeric(merged_data[[field]]))
+                original_values <- merged_data[[field]]
+                merged_data[[field]] <- suppressWarnings(as.numeric(original_values))
+                incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
+                if (length(incorrect_rows) > 0) {
+                    logWarn(paste(
+                        "In", field, "incorrect numeric values were replaced with",
+                        ERROR_VAL_NUMERIC, "in", length(incorrect_rows), "rows:",
+                        paste(incorrect_rows, collapse = ", ")
+                    ))
+                    merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
+                }
             } else if (fields[[field]] == "integer") {
-                merged_data[[field]] <- suppressWarnings(as.integer(merged_data[[field]]))
+                original_values <- merged_data[[field]]
+                merged_data[[field]] <- suppressWarnings(as.integer(original_values))
+                incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
+                if (length(incorrect_rows) > 0) {
+                    logWarn(paste(
+                        "In", field, "incorrect integer values were replaced with",
+                        ERROR_VAL_NUMERIC, "in", length(incorrect_rows), "rows:",
+                        paste(incorrect_rows, collapse = ", ")
+                    ))
+                    merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
+                }
             } else {
-                merged_data[[field]] <- as.character(merged_data[[field]])
+                original_values <- merged_data[[field]]
+                merged_data[[field]] <- as.character(original_values)
+                incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
+                if (length(incorrect_rows) > 0) {
+                    logWarn(paste(
+                        "In", field, "incorrect character values  were replaced with",
+                        ERROR_VAL_CHARACTER, "in", length(incorrect_rows), "rows:",
+                        paste(incorrect_rows, collapse = ", ")
+                    ))
+                    merged_data[incorrect_rows, field] <- ERROR_VAL_CHARACTER
+                }
             }
         }, warning = function(w) {
             logError(paste("Warning in converting", field, ": ", w))
@@ -183,6 +216,7 @@ preparing_product_fields <- function(merged_data) {
     }
 
     # Reorder the columns according to the list of fields
+    logInfo("Reorder the columns according to the list of fields...")
     merged_data <- merged_data[, c(names(fields), setdiff(names(merged_data), names(fields)))]
 
     logInfo("Finished processing fields for the single csv product_data.")
