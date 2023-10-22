@@ -313,10 +313,10 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
 #'
 #' @examples
 #' \dontrun {
-#' product_list <- load_stock_products()
-#' product_list <- load_stock_products("your_file.xlsx")
+#' product_list <- load_product_reference_data()
+#' product_list <- load_product_reference_data("your_file.xlsx")
 #' }
-load_stock_products <- function(stock_summary_xlsx = "master_tracker_variables.xlsx") {
+load_product_reference_data <- function(stock_summary_xlsx = "master_tracker_variables.xlsx") {
     logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
     tryCatch(
         {
@@ -329,6 +329,25 @@ load_stock_products <- function(stock_summary_xlsx = "master_tracker_variables.x
             logError("Error in loading stock product list: ", e)
         }
     )
+}
+
+#' Inserts product categories if contained in a provided mapping
+#'
+#' @description Product categories are added in the sense of a left join,
+#' meaning missing categories will result in NA values while products are never
+#' dropped.
+#'
+#' @param inventory_data A product inventory dataframe containing a "product" column
+#' @param product_category_mapping A dataframe mapping "product" to "category"
+#'
+#' @return A dataframe containing the inventory data with an additional product
+#' category column.
+add_product_categories <- function(inventory_data, product_category_mapping) {
+    inventory_data %>%
+        left_join(
+            rename(product_category_mapping, product_category='category'),
+            c("product")
+        )
 }
 
 
@@ -353,7 +372,9 @@ reading_product_data_step2 <-
         df_final <- c()
 
         # get product list from Stock_Summary
-        stock_product_names_df <- load_stock_products()
+        product_reference_data <- load_product_reference_data()
+        known_products <- product_reference_data %>% select(product)
+        product_category_mapping <- product_reference_data %>% select(product,category)
 
         # loop through all months
         for (sheet_month in unique(df$product_sheet_name)) {
@@ -444,9 +465,12 @@ reading_product_data_step2 <-
             check_negative_balance(product_df, sheet_month)
 
             # Report unknown product names
-            if (exists("stock_product_names_df") && !is.null(stock_product_names_df) && nrow(stock_product_names_df) > 0) {
-                report_unknown_products(product_df, sheet_month, stock_product_names_df)
+            if (exists("known_products") && !is.null(known_products) && nrow(known_products) > 0) {
+                report_unknown_products(product_df, sheet_month, known_products)
             }
+
+
+            product_df <- product_df %>% add_product_categories(product_category_mapping)
 
             #### hospital and country information missing here!!
 
