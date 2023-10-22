@@ -44,7 +44,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
-        cat(paste("Processed ", i, " of ", length(patient_data_files), " (", round(i / length(patient_data_files)*100, 0), "%) patient files.\n"))
+        cat(paste("Processed ", i, " of ", length(patient_data_files), " (", round(i / length(patient_data_files) * 100, 0), "%) patient files.\n"))
     }
 
     logInfo("Finish processing all patient csv files.")
@@ -72,7 +72,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
-        cat(paste("Processed ", i, " of ", length(product_data_files), " (", round(i / length(product_data_files)*100, 0), "%) product files.\n"))
+        cat(paste("Processed ", i, " of ", length(product_data_files), " (", round(i / length(product_data_files) * 100, 0), "%) product files.\n"))
     }
 
     logInfo("Finish processing all csv files.")
