@@ -401,7 +401,10 @@ compute_balance <- function(product_df, year) {
         }
     }
 
-    return(product_df)
+    # ToDo LOW (KW): Ungroup statement can possibly be moved a further up limiting
+    # the group scope for clarity. I added the ungroup as it was missing from the
+    # function, but did not look for the best position so far.
+    return(product_df %>% ungroup())
 }
 
 # @Description: Adjust classes of dataframe names
