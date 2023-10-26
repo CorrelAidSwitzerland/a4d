@@ -139,11 +139,6 @@ preparing_product_fields <- function(merged_data) {
         "orig_product_released_to" = "character"
     )
 
-    # Error codes in run_script_2_clean_data.R
-    # ERROR_VAL_NUMERIC <- 999999
-    # ERROR_VAL_CHARACTER <- 'Other'
-    # ERROR_VAL_DATE <- '9999-09-09'
-
     logInfo("Start processing fields for the single csv product_data...")
 
     # Check if all fields are present in merged_data
