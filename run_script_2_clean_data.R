@@ -1,7 +1,7 @@
 options(readxl.show_progress = FALSE)
 
 ERROR_VAL_NUMERIC <<- 999999
-ERROR_VAL_CHARACTER <<- "Other"
+ERROR_VAL_CHARACTER <<- "Undefined"
 ERROR_VAL_DATE <<- "9999-09-09"
 
 main <- function() {
