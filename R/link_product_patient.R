@@ -10,7 +10,9 @@
 #' @return This function does not return a value. It prints log messages about the linking process.
 #'
 #' @examples
+#' \dontrun{
 #' link_product_patient("path/to/product_data.csv", "path/to/patient_data.csv")
+#' }
 link_product_patient <- function(product_file, patient_file) {
     logInfo("Trying to link product csv file ", product_file, " with patient csv file ", patient_file)
 

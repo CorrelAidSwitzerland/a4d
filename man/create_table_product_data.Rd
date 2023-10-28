@@ -22,5 +22,7 @@ If there are any columns that are present in some CSV files but not others,
 this function will add those missing columns to the data frames where they are missing and fill them with NA.
 }
 \examples{
+\dontrun{
 create_table_product_data("path/to/input/directory", "path/to/output/directory")
+}
 }

@@ -30,5 +30,5 @@ df <- data.frame(
     hospital = NA,
     stringsAsFactors = FALSE
 )
-df <- id_2_product_county_hospisal(df, "ID", "country", "hospital")
+df <- id_2_county_hospisal(df, "ID", "country", "hospital")
 }

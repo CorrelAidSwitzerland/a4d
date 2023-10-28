@@ -100,7 +100,7 @@ get_synonyms <- function() {
 #' }
 read_column_synonyms <- function(synonym_file) {
     columns_synonyms <-
-        yaml::read_yaml(file.path("synonyms/", synonym_file)) %>%
+        yaml::read_yaml(here::here("reference_data", "synonyms", synonym_file)) %>%
         unlist() %>%
         as.data.frame() %>%
         rownames_to_column() %>%
@@ -186,6 +186,6 @@ read_raw_csv <- function(file) {
 #' @return A named character vector with all allowed provinces.
 get_allowed_provinces <- function() {
     ## Should new countries and provinces be added, update the YAML file
-    provinces <- yaml::read_yaml("provinces/allowed_provinces.yaml") %>% unlist()
+    provinces <- yaml::read_yaml("reference_data/provinces/allowed_provinces.yaml") %>% unlist()
     return(provinces)
 }
