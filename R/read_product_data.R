@@ -24,17 +24,17 @@ reading_product_data_step1 <-
             # open tracker data
             tracker_data <- data.frame(
                 readxl::read_xlsx(
-                    path=tracker_data_file,
-                    sheet=curr_sheet,
-                    col_types=c("text"),
-                    .name_repair="unique_quiet"
-                    )
+                    path = tracker_data_file,
+                    sheet = curr_sheet,
+                    col_types = c("text"),
+                    .name_repair = "unique_quiet"
                 )
+            )
 
             # Jump to next tab sheet if there are no product data
             if (
                 !any((grepl("Product", tracker_data[, ]) |
-                      grepl("Description of Support", tracker_data[, ])))
+                    grepl("Description of Support", tracker_data[, ])))
             ) {
                 # go to next month
                 logInfo("Could not find product data in tracker data. Skipping ", curr_sheet, ".")
@@ -307,16 +307,16 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
 #' @description
 #' This function loads the product list from 'Stock_Summary' sheet in an Excel file.
 #'
-#' @param stock_summary_xlsx A string that represents the path to the Excel file. Defaults to "master_tracker_variables.xlsx".
+#' @param stock_summary_xlsx A string that represents the path to the Excel file. Defaults to "reference_data/master_tracker_variables.xlsx".
 #'
 #' @return A data frame that contains the product names. If there is an error during the process, it logs the error message.
 #'
 #' @examples
-#' \dontrun {
+#' \dontrun{
 #' product_list <- load_product_reference_data()
 #' product_list <- load_product_reference_data("your_file.xlsx")
 #' }
-load_product_reference_data <- function(stock_summary_xlsx = "master_tracker_variables.xlsx") {
+load_product_reference_data <- function(stock_summary_xlsx = "reference_data/master_tracker_variables.xlsx") {
     logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
     tryCatch(
         {
@@ -345,7 +345,7 @@ load_product_reference_data <- function(stock_summary_xlsx = "master_tracker_var
 add_product_categories <- function(inventory_data, product_category_mapping) {
     inventory_data %>%
         left_join(
-            rename(product_category_mapping, product_category='category'),
+            rename(product_category_mapping, product_category = "category"),
             c("product")
         )
 }
@@ -374,7 +374,7 @@ reading_product_data_step2 <-
         # get product list from Stock_Summary
         product_reference_data <- load_product_reference_data()
         known_products <- product_reference_data %>% select(product)
-        product_category_mapping <- product_reference_data %>% select(product,category)
+        product_category_mapping <- product_reference_data %>% select(product, category)
 
         # loop through all months
         for (sheet_month in unique(df$product_sheet_name)) {
