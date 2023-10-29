@@ -4,10 +4,16 @@
 \alias{read_column_synonyms}
 \title{Get all synonyms for all variable names}
 \usage{
-read_column_synonyms(synonym_file)
+read_column_synonyms(
+  synonym_file,
+  path_prefixes = c("reference_data", "synonyms")
+)
 }
 \arguments{
 \item{synonym_file}{A YAML file containing the synonyms}
+
+\item{path_prefixes}{Path prefixes for searching for the yaml file. Usually
+this does not need to be set unless for testing purpouses.}
 }
 \value{
 A tibble containing unique column names and their synonyms.
