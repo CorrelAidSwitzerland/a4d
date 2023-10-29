@@ -89,6 +89,8 @@ get_synonyms <- function() {
 #' and generates a tibble containing unique column names and their synonyms.
 #'
 #' @param synonym_file A YAML file containing the synonyms
+#' @param path_prefixes Path prefixes for searching for the yaml file. Usually
+#' this does not need to be set unless for testing purpouses.
 #'
 #' @return A tibble containing unique column names and their synonyms.
 #' @export
@@ -98,9 +100,10 @@ get_synonyms <- function() {
 #' read_column_synonyms(synonym_file = "synonyms_patient.yaml")
 #' read_column_synonyms(synonym_file = "synonyms_product.yaml")
 #' }
-read_column_synonyms <- function(synonym_file) {
+read_column_synonyms <- function(synonym_file, path_prefixes = c("reference_data", "synonyms")) {
+    path <- do.call(file.path, as.list(c(path_prefixes, synonym_file)))
     columns_synonyms <-
-        yaml::read_yaml(here::here("reference_data", "synonyms", synonym_file)) %>%
+        yaml::read_yaml(path) %>%
         unlist() %>%
         as.data.frame() %>%
         rownames_to_column() %>%
