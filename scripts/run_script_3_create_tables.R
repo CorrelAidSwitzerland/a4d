@@ -1,5 +1,9 @@
 options(readxl.show_progress = FALSE)
 
+ERROR_VAL_NUMERIC <<- 999999
+ERROR_VAL_CHARACTER <<- "Undefined"
+ERROR_VAL_DATE <<- "9999-09-09"
+
 main <- function() {
     paths <- init_paths(c("tables"), delete = TRUE)
     setup_logger(paths$output_root, "script3")
@@ -23,7 +27,6 @@ main <- function() {
     logInfo("Start creating table csv files.")
 
     logfile <- "table_patient_data_static"
-
     with_file_logger(logfile,
         {
             tryCatch(
@@ -42,7 +45,6 @@ main <- function() {
     )
 
     logfile <- "table_patient_data_monthly"
-
     with_file_logger(logfile,
         {
             tryCatch(
@@ -60,8 +62,25 @@ main <- function() {
         output_root = paths$output_root
     )
 
-    logfile <- "table_product_data"
+    logfile <- "table_patient_data_changes_only"
+    with_file_logger(logfile,
+                     {
+                         tryCatch(
+                             {
+                                 create_table_patient_data_changes_only(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+                             },
+                             error = function(e) {
+                                 logError("Could not create table csv for patient data with changes only. Error: ", e$message)
+                             },
+                             warning = function(w) {
+                                 logWarn("Could not create table csv for patient data with changes only. Error: ", w$message)
+                             }
+                         )
+                     },
+                     output_root = paths$output_root
+    )
 
+    logfile <- "table_product_data"
     with_file_logger(logfile,
         {
             tryCatch(
