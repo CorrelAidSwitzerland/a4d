@@ -1,17 +1,16 @@
-#' @title Create CSV with monthly patient data
+#' @title Create CSV with patient data changes only
 #'
 #' @description
 #' Read in all cleaned patient data CSV and create a single data.frame.
-#' Only take dynamic columns.
+#' Group this data by id and take only the months when there is a change in the medical data.
 #'
 #'
 #' @param patient_data_files list of CSV files with cleaned patient data from step 2.
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
-create_table_patient_data_monthly <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data_monthly.")
+create_table_patient_data_changes_only <- function(patient_data_files, input_root, output_root) {
+    logInfo("Start creating single csv for table patient_data_changes_only.")
 
-    # THERE MIGHT BE MONTHLY COLUMNS MISSING - PLEASE ADD THEM
     dynamic_patient_columns <-
         c(
             "blood_pressure_dias_mmhg",
@@ -65,15 +64,26 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
     patient_data_df <- patient_data_list %>%
         bind_rows()
 
-    patient_data_df <- patient_data_df %>%
-        arrange(tracker_year, tracker_month, id)
+    # get latest static patient data overall
+    patient_data_changes_only <- patient_data_df %>%
+        drop_na(hba1c_updated) %>%
+        dplyr::filter(hba1c_updated != ERROR_VAL_NUMERIC) %>%
+        group_by(id) %>%
+        arrange(tracker_year, tracker_month) %>%
+        mutate(hba1c_updated_lag = dplyr::lag(hba1c_updated, default = NULL)) %>%
+        ungroup() %>%
+        mutate(hba1c_updated_lag=replace_na(hba1c_updated_lag, ERROR_VAL_NUMERIC)) %>%
+        dplyr::filter(hba1c_updated != hba1c_updated_lag ) %>%
+        select(-hba1c_updated_lag) %>%
+        arrange(id, tracker_year, tracker_month)
+
 
     export_data(
-        data = patient_data_df,
-        filename = "patient_data_monthly",
+        data = patient_data_changes_only,
+        filename = "patient_data_changes_only_hba1c",
         output_root = output_root,
         suffix = ""
     )
 
-    logInfo("Finish creating single csv for table patient_data_monthly.")
+    logInfo("Finish creating single csv for table patient_data_changes_only.")
 }
