@@ -41,13 +41,8 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
 
     # get the latest static patient data for each tracker file
     for (patient_file in patient_data_files) {
-        patient_data <- readr::read_csv(
-            file.path(input_root, patient_file),
-            locale = readr::locale(encoding = "UTF-16LE"),
-            show_col_types = F,
-            col_types = "iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn",
-            col_select = all_of(static_patient_columns)
-        )
+        patient_data <- read_parquet(
+            file.path(input_root, patient_file)) %>% select(all_of(static_patient_columns))
 
         static_patient_data_list[[patient_file]] <- patient_data
     }

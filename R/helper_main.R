@@ -134,22 +134,15 @@ read_column_synonyms <- function(synonym_file) {
 #' }
 export_data <- function(data, filename, output_root, suffix) {
     logDebug("Start export_data. Suffix = ", suffix, ".")
-    data %>%
-        write.csv(
-            file =
-                file.path(
-                    output_root,
-                    paste0(
-                        filename,
-                        suffix,
-                        ".csv"
-                    )
-                ),
-            row.names = F,
-            na = "",
-            fileEncoding = "UTF-16LE",
-            quote = T
-        )
+    data %>% arrow::write_parquet( sink =
+                              file.path(
+                                  output_root,
+                                  paste0(
+                                      filename,
+                                      suffix,
+                                      ".parquet"
+                                  )
+                              ))
     logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 

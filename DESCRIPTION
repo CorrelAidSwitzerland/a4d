@@ -13,6 +13,7 @@ Depends:
     ParallelLogger
 Imports: 
     data.table,
+    arrow,
     digest,
     dplyr,
     here,
