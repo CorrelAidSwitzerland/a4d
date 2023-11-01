@@ -13,7 +13,9 @@
 #' (with reordered columns according to the list of fields) in the output_root directory.
 #'
 #' @examples
+#' \dontrun{
 #' create_table_product_data("path/to/input/directory", "path/to/output/directory")
+#' }
 create_table_product_data <- function(input_root, output_root) {
     logInfo("Start creating single csv for table product_data.")
 
@@ -76,6 +78,7 @@ create_table_product_data <- function(input_root, output_root) {
 #' @param country The name of the column in df where the country information should be stored.
 #' @param hospital The name of the column in df where the hospital information should be stored.
 #' @return The original dataframe with updated `country` and `hospital` columns.
+#' @export
 #' @examples
 #' df <- data.frame(
 #'     id = c("US_CA123", "UK_LN456", "FR_PA789"),
@@ -83,7 +86,7 @@ create_table_product_data <- function(input_root, output_root) {
 #'     hospital = NA,
 #'     stringsAsFactors = FALSE
 #' )
-#' df <- id_2_product_county_hospisal(df, "ID", "country", "hospital")
+#' df <- id_2_county_hospisal(df, "ID", "country", "hospital")
 id_2_county_hospisal <- function(df, id, country, hospital) {
     # Find rows with id matching the pattern (2 letters + _ + 2 letters + digits)
     matching_rows <- grepl("^[a-zA-Z]{2}_[a-zA-Z]{2}[0-9]+$", df[[id]])

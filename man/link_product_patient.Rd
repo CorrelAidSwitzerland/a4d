@@ -19,5 +19,7 @@ This function links a product csv file with a patient csv file. It reads the csv
 finds the ids that are in the product data but not in the patient data, creates a summary of these ids, and logs the process.
 }
 \examples{
+\dontrun{
 link_product_patient("path/to/product_data.csv", "path/to/patient_data.csv")
+}
 }
