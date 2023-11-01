@@ -5,11 +5,11 @@
 \title{Load Product List from Stock Summary}
 \usage{
 load_product_reference_data(
-  stock_summary_xlsx = "master_tracker_variables.xlsx"
+  stock_summary_xlsx = "reference_data/master_tracker_variables.xlsx"
 )
 }
 \arguments{
-\item{stock_summary_xlsx}{A string that represents the path to the Excel file. Defaults to "master_tracker_variables.xlsx".}
+\item{stock_summary_xlsx}{A string that represents the path to the Excel file. Defaults to "reference_data/master_tracker_variables.xlsx".}
 }
 \value{
 A data frame that contains the product names. If there is an error during the process, it logs the error message.
@@ -18,7 +18,7 @@ A data frame that contains the product names. If there is an error during the pr
 This function loads the product list from 'Stock_Summary' sheet in an Excel file.
 }
 \examples{
-\dontrun {
+\dontrun{
 product_list <- load_product_reference_data()
 product_list <- load_product_reference_data("your_file.xlsx")
 }
