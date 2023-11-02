@@ -84,6 +84,13 @@ ingest_data(
 ingest_data(
     project_id = PROJECT_ID,
     dataset = DATASET,
+    table = "patient_data_hba1c_changes",
+    source = file.path(table_dir, "patient_data_hba1c_changes.csv"),
+    schema = "./gcp/schema_patient_data_monthly.json"
+)
+ingest_data(
+    project_id = PROJECT_ID,
+    dataset = DATASET,
     table = "product_data",
     source = file.path(table_dir, "product_data.csv"),
     schema = "./gcp/schema_product_data.json"
