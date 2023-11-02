@@ -2,7 +2,13 @@
 Sys.setenv(A4D_DATA_ROOT = "/home/rstudio/data") # on GCP VM
 BUCKET_DOWLOAD <- "a4dphase2_upload"
 BUCKET_UPLOAD <- "a4dphase2_output"
+
+# VM
 PROJECT_ID <- "a4dphase2"
+DATASET <- "tracker"
+
+# local
+PROJECT_ID <- "a4d-315220"
 DATASET <- "tracker"
 
 download_data <- function(bucket, data_dir) {
