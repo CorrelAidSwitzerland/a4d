@@ -62,12 +62,18 @@ main <- function() {
         output_root = paths$output_root
     )
 
-    logfile <- "table_patient_data_changes_only"
+    logfile <- "table_patient_data_hba1c_changes"
     with_file_logger(logfile,
                      {
                          tryCatch(
                              {
-                                 create_table_patient_data_changes_only(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
+                                 create_table_patient_data_changes_only(
+                                     patient_data_files,
+                                     file.path(paths$output_root, "patient_data_cleaned"),
+                                     paths$tables,
+                                     "hba1c_updated",
+                                     "hba1c"
+                                 )
                              },
                              error = function(e) {
                                  logError("Could not create table csv for patient data with changes only. Error: ", e$message)
