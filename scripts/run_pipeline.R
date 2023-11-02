@@ -1,7 +1,13 @@
-# Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d") # lokal
-Sys.setenv(A4D_DATA_ROOT = "/home/rstudio/data") # on GCP VM
 BUCKET_DOWLOAD <- "a4dphase2_upload"
 BUCKET_UPLOAD <- "a4dphase2_output"
+
+# local
+Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d")
+PROJECT_ID <- "a4d-315220"
+DATASET <- "tracker"
+
+# VM
+Sys.setenv(A4D_DATA_ROOT = "/home/rstudio/data")
 PROJECT_ID <- "a4dphase2"
 DATASET <- "tracker"
 
