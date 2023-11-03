@@ -1,4 +1,4 @@
-#' @title Create CSV with patient data changes only
+#' @title Create CSV with longitudinal patient data for a single variable.
 #'
 #' @description
 #' Read in all cleaned patient data CSV and create a single data.frame.
@@ -10,7 +10,7 @@
 #' @param output_root root directory of the output folder.
 #' @param variable name of the column that should be exported.
 #' @param name name used to create the export file name.
-create_table_patient_data_changes_only <-
+create_table_longitudinal_data <-
     function(patient_data_files,
              input_root,
              output_root,
@@ -72,8 +72,8 @@ create_table_patient_data_changes_only <-
             bind_rows()
 
         # get latest static patient data overall
-        variable_lag = paste0(variable, "_lag")
-        patient_data_changes_only <- patient_data_df %>%
+        variable_lag <- paste0(variable, "_lag")
+        longitudinal_data <- patient_data_df %>%
             drop_na(!!variable) %>%
             dplyr::filter(!!variable != ERROR_VAL_NUMERIC) %>%
             group_by(id) %>%
@@ -87,8 +87,8 @@ create_table_patient_data_changes_only <-
 
 
         export_data(
-            data = patient_data_changes_only,
-            filename = paste0("patient_data_", name, "_changes"),
+            data = longitudinal_data,
+            filename = paste0("longitudinal_data_", name),
             output_root = output_root,
             suffix = ""
         )

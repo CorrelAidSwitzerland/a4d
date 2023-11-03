@@ -62,12 +62,12 @@ main <- function() {
         output_root = paths$output_root
     )
 
-    logfile <- "table_patient_data_hba1c_changes"
+    logfile <- "table_longitudinal_data_hba1c"
     with_file_logger(logfile,
                      {
                          tryCatch(
                              {
-                                 create_table_patient_data_changes_only(
+                                 create_table_longitudinal_data(
                                      patient_data_files,
                                      file.path(paths$output_root, "patient_data_cleaned"),
                                      paths$tables,
@@ -76,10 +76,10 @@ main <- function() {
                                  )
                              },
                              error = function(e) {
-                                 logError("Could not create table csv for patient data with changes only. Error: ", e$message)
+                                 logError("Could not create table csv for longitudinal patient data. Error: ", e$message)
                              },
                              warning = function(w) {
-                                 logWarn("Could not create table csv for patient data with changes only. Error: ", w$message)
+                                 logWarn("Could not create table csv for longitudinal patient data. Error: ", w$message)
                              }
                          )
                      },
