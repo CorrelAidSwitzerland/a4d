@@ -37,37 +37,22 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
         )
 
 
-    static_patient_data_list <- list()
-
-    # get the latest static patient data for each tracker file
-    for (patient_file in patient_data_files) {
-        patient_data <- readr::read_csv(
-            file.path(input_root, patient_file),
-            locale = readr::locale(encoding = "UTF-16LE"),
-            show_col_types = F,
-            col_types = "iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn",
-            col_select = all_of(static_patient_columns)
-        )
-
-        static_patient_data_list[[patient_file]] <- patient_data
-    }
-
-    # Complete dataframe
-    static_patient_data_df <- static_patient_data_list %>%
-        bind_rows()
+    static_patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
+        select(all_of(static_patient_columns))
 
     # get latest static patient data overall
-    static_patient_data_df <- static_patient_data_df %>%
+    static_patient_data <- static_patient_data %>%
         group_by(id) %>%
         slice_max(tracker_year, n = 1) %>%
         slice_max(tracker_month, n = 1) %>%
         slice_head(n = 1) %>%
-        ungroup()
+        ungroup() %>%
+        arrange(tracker_year, tracker_month, id)
 
-    testit::assert(sum(duplicated(static_patient_data_df$id)) == 0)
+    testit::assert(sum(duplicated(static_patient_data$id)) == 0)
 
     export_data(
-        data = static_patient_data_df,
+        data = static_patient_data,
         filename = "patient_data",
         output_root = output_root,
         suffix = "_static"
