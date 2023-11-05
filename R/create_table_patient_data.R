@@ -46,30 +46,12 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
             "weight"
         )
 
-    patient_data_list <- list()
-
-    # get the latest static patient data for each tracker file
-    for (patient_file in patient_data_files) {
-        patient_data <- read_csv(
-            file.path(input_root, patient_file),
-            locale = readr::locale(encoding = "UTF-16LE"),
-            show_col_types = F,
-            col_types = "iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn",
-            col_select = all_of(dynamic_patient_columns)
-        )
-
-        patient_data_list[[patient_file]] <- patient_data
-    }
-
-    # Complete dataframe
-    patient_data_df <- patient_data_list %>%
-        bind_rows()
-
-    patient_data_df <- patient_data_df %>%
+    patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
+        select(all_of(dynamic_patient_columns)) %>%
         arrange(tracker_year, tracker_month, id)
 
     export_data(
-        data = patient_data_df,
+        data = patient_data,
         filename = "patient_data_monthly",
         output_root = output_root,
         suffix = ""

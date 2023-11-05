@@ -52,39 +52,24 @@ create_table_longitudinal_data <-
                 "weight"
             )
 
-        patient_data_list <- list()
-
-        # get the latest static patient data for each tracker file
-        for (patient_file in patient_data_files) {
-            patient_data <- read_csv(
-                file.path(input_root, patient_file),
-                locale = readr::locale(encoding = "UTF-16LE"),
-                show_col_types = F,
-                col_types = "iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn",
-                col_select = all_of(dynamic_patient_columns)
-            )
-
-            patient_data_list[[patient_file]] <- patient_data
-        }
-
-        # Complete dataframe
-        patient_data_df <- patient_data_list %>%
-            bind_rows()
+        patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
+            select(all_of(dynamic_patient_columns))
 
         # get latest static patient data overall
         variable_lag <- paste0(variable, "_lag")
-        longitudinal_data <- patient_data_df %>%
+        longitudinal_data <- patient_data %>%
             drop_na(!!variable) %>%
-            dplyr::filter(!!variable != ERROR_VAL_NUMERIC) %>%
+            dplyr::filter(get(variable) != ERROR_VAL_NUMERIC) %>%
             group_by(id) %>%
             arrange(tracker_year, tracker_month) %>%
-            mutate(!!variable_lag := dplyr::lag(get(variable), default = NULL)) %>%
+            dplyr::filter(
+                get(variable) != replace_na(
+                    dplyr::lag(get(variable), default = NULL),
+                    ERROR_VAL_NUMERIC
+                )
+            ) %>%
             ungroup() %>%
-            mutate(!!variable_lag := replace_na(get(variable_lag), ERROR_VAL_NUMERIC)) %>%
-            dplyr::filter(get(variable) != get(variable_lag)) %>%
-            select(-!!variable_lag) %>%
             arrange(id, tracker_year, tracker_month)
-
 
         export_data(
             data = longitudinal_data,
