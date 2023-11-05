@@ -1,7 +1,17 @@
+#' @title Create CSV with monthly patient data
+#'
+#' @description
+#' Read in all cleaned patient data CSV and create a single data.frame.
+#' Only take dynamic columns.
+#'
+#'
+#' @param patient_data_files list of CSV files with cleaned patient data from step 2.
+#' @param input_root root directory of the input CSV files.
+#' @param output_root root directory of the output folder.
 create_table_patient_data_monthly <- function(patient_data_files, input_root, output_root) {
     logInfo("Start creating single csv for table patient_data_monthly.")
 
-    # THERE MIGHT BE STATIC COLUMNS MISSING - PLEASE ADD THEM
+    # THERE MIGHT BE MONTHLY COLUMNS MISSING - PLEASE ADD THEM
     dynamic_patient_columns <-
         c(
             "blood_pressure_dias_mmhg",
@@ -36,31 +46,12 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
             "weight"
         )
 
-    patient_data_list <- list()
-
-    # get the latest static patient data for each tracker file
-    for (patient_file in patient_data_files) {
-        patient_data <- read_csv(
-            file.path(input_root, patient_file),
-            locale = readr::locale(encoding = "UTF-16LE"),
-            show_col_types = F,
-            col_types = "iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn",
-            col_select = all_of(dynamic_patient_columns)
-        )
-
-        patient_data_list[[patient_file]] <- patient_data
-    }
-
-    # Complete dataframe
-    patient_data_df <- patient_data_list %>%
-        bind_rows()
-
-    # get latest static patient data overall
-    patient_data_df <- patient_data_df %>%
+    patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
+        select(all_of(dynamic_patient_columns)) %>%
         arrange(tracker_year, tracker_month, id)
 
     export_data(
-        data = patient_data_df,
+        data = patient_data,
         filename = "patient_data_monthly",
         output_root = output_root,
         suffix = ""
