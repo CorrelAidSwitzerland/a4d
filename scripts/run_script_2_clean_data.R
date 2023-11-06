@@ -147,7 +147,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),
-        # complication_screening_date = as.Date(1),
+        # complication_screening_date = as_date(1),
         # complication_screening_results = character(),
         # dm_complication_comment = character(), # TODO
         # dm_complication_eye = character(), # TODO
@@ -157,7 +157,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         # family_support_scale = character(), # TODO
         # inactive_reason = character(),
         # insulin_dosage = character(),
-        # meter_received_date = as.Date(1), # TODO
+        # meter_received_date = as_date(1), # TODO
         # remarks = character(),
         # remote_followup = logical(),
         # additional_support = character(),
@@ -165,14 +165,14 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         blood_pressure_dias_mmhg = integer(),
         blood_pressure_sys_mmhg = integer(),
         bmi = numeric(),
-        bmi_date = as.Date(1),
+        bmi_date = as_date(1),
         clinic_code = character(),
         country_code = character(),
-        dob = as.Date(1),
+        dob = as_date(1),
         edu_occ = character(),
         fbg_baseline_mg = numeric(),
         fbg_baseline_mmol = numeric(),
-        fbg_updated_date = as.Date(1),
+        fbg_updated_date = as_date(1),
         fbg_updated_mg = numeric(),
         fbg_updated_mmol = numeric(),
         file_name = character(),
@@ -180,32 +180,32 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         hba1c_baseline_exceeds = logical(),
         hba1c_updated = numeric(),
         hba1c_updated_exceeds = logical(),
-        hba1c_updated_date = as.Date(1),
+        hba1c_updated_date = as_date(1),
         height = numeric(),
         hospitalisation_cause = character(),
-        hospitalisation_date = as.Date(1),
+        hospitalisation_date = as_date(1),
         id = character(),
         insulin_regimen = character(),
-        last_clinic_visit_date = as.Date(1),
-        last_remote_followup_date = as.Date(1),
-        lost_date = as.Date(1),
+        last_clinic_visit_date = as_date(1),
+        last_remote_followup_date = as_date(1),
+        lost_date = as_date(1),
         name = character(),
         observations = character(),
         observations_category = character(),
         province = character(),
-        recruitment_date = as.Date(1),
+        recruitment_date = as_date(1),
         sex = character(),
         sheet_name = character(),
         status = character(),
         status_out = character(),
         support_from_a4d = character(),
         t1d_diagnosis_age = integer(),
-        t1d_diagnosis_date = as.Date(1),
+        t1d_diagnosis_date = as_date(1),
         t1d_diagnosis_with_dka = character(),
         testing_frequency = integer(),
         tracker_month = integer(),
         tracker_year = integer(),
-        updated_2022_date = as.Date(1),
+        updated_2022_date = as_date(1),
         weight = numeric()
     )
 
@@ -275,69 +275,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             fbg_updated_mmol = cut_numeric_value(fbg_updated_mmol, min = 0, max = 136.5, "fbg_updated_mmol"),
             blood_pressure_sys_mmhg = cut_numeric_value(blood_pressure_sys_mmhg, min = 20, max = 250, "blood_pressure_sys_mmhg"),
             blood_pressure_dias_mmhg = cut_numeric_value(blood_pressure_dias_mmhg, min = 20, max = 220, "blood_pressure_dias_mmhg"),
-            support_from_a4d = check_allowed_values(
-                support_from_a4d,
-                c(
-                    "Standard",
-                    "Partial",
-                    "Semi-Partial",
-                    "SAC",
-                    "Monitoring"
-                ),
-                ERROR_VAL_CHARACTER,
-                id,
-                "support_from_a4d"
-            ),
-            status = check_allowed_values(
-                status,
-                c(
-                    "Active",
-                    "Active - Remote",
-                    "Query",
-                    "Inactive",
-                    "Lost Follow Up",
-                    "Deceased",
-                    "Discontinued"
-                ),
-                ERROR_VAL_CHARACTER,
-                id,
-                "status"
-            ),
-            insulin_regimen = check_allowed_values(
-                insulin_regimen,
-                c(
-                    "Basal-bolus",
-                    "Basal-bolus MDI (AN)",
-                    "Basal-bolus MDI (HI)",
-                    "Premixed 30/70 BD",
-                    "Self-mixed BD",
-                    "Modified conventional TID",
-                    "Other"
-                ),
-                NA_character_,
-                id,
-                "insulin_regimen"
-            ),
-            t1d_diagnosis_with_dka = check_allowed_values(
-                t1d_diagnosis_with_dka,
-                c("N", "Y"),
-                id,
-                "t1d_diagnosis_with_dka"
-            ),
-            hospitalisation_cause = check_allowed_values(
-                hospitalisation_cause,
-                c("DKA", "HYPO", "OTHER"),
-                NA_character_,
-                id,
-                "hospitalisation_cause"
-            ),
-            province = check_allowed_values(
-                province,
-                allowed_provinces,
-                ERROR_VAL_CHARACTER,
-                id,
-                "province"
-            ),
+            !!!parse_character_cleaning_config(a4d:::config$cleaning),
             # should be fixed last as other fix functions use id to log invalid rows!
             id = fix_id(id)
         ) %>%
