@@ -1,0 +1,65 @@
+support_from_a4d:
+  steps:
+    - type: allowed_values
+      allowed_values:
+        - Standard
+        - Partial
+        - Semi-Partial
+        - SAC
+        - Monitoring
+      replace_invalid:
+        TRUE
+status:
+  steps:
+    - type: basic_function
+      function_name: str_to_lower
+    - type: allowed_values
+      allowed_values:
+        - Active
+        - "Active - Remote"
+        - Query
+        - Inactive
+        - Lost Follow Up
+        - Deceased
+        - Discontinued
+      replace_invalid:
+        TRUE
+insulin_regimen:
+  steps:
+    - type: basic_function
+      function_name: str_to_lower
+    - type: allowed_values
+      allowed_values:
+        - "Basal-bolus"
+        - "Basal-bolus MDI (AN)"
+        - "Basal-bolus MDI (HI)"
+        - "Premixed 30/70 BD"
+        - "Self-mixed BD"
+        - "Modified conventional TID"
+        - "Other"
+      replace_invalid:
+        FALSE
+t1d_diagnosis_with_dka:
+  steps:
+    - type: allowed_values
+      allowed_values:
+        - N
+        - Y
+      replace_invalid:
+        FALSE
+hospitalisation_cause:
+  steps:
+    - type: allowed_values
+      allowed_values:
+        - DKA
+        - HYPO
+        - OTHER
+      replace_invalid:
+        FALSE
+province:
+  steps:
+    - type: allowed_values
+      allowed_values:
+        - PLACEHOLDER
+      replace_invalid:
+        TRUE
