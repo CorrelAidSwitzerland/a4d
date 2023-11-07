@@ -1,0 +1,97 @@
+---
+title: "Error Report"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(dplyr)
+```
+
+
+```{r data, include = FALSE}
+
+# list of log files
+logs <- list.files(path = here::here("data", "output", "logs"),
+                   # probably redundant, as logs only contains log files?
+                   pattern = "*t.log"
+                   )
+
+# read all log files and combine into one dataframe
+all_logs <- purrr::map(seq_along(logs), function(i) {
+
+    df <- readr::read_delim(here::here("data", "output", "logs", logs[[i]]),
+                      delim = "\t", col_names = FALSE,
+                      show_col_types = FALSE)
+
+    df <- df %>%
+        dplyr::mutate(file = logs[[i]])
+
+    return(df)
+})
+
+# filter for relevant messages (errors and warnings)
+logs_df <- bind_rows(all_logs) %>%
+    dplyr::filter(X3 %in% c("WARN", "ERROR")) %>% 
+    dplyr::mutate(file = stringr::str_replace(file, ".log", ""))
+
+summary <- logs_df %>% 
+    count(file, X3)
+
+```
+
+Last compiled on `r format(Sys.time(), '%d %B, %Y')`
+
+### Summary
+
+total files processed:
+
+#### `r length(all_logs)`
+
+files sucessfully processed:
+
+#### `r length(all_logs) - nrow(distinct(logs_df, file))`
+
+files with errors:
+
+#### `r sum(summary$X3 == "ERROR")`
+
+files with warnings:
+
+#### `r sum(summary$X3 == "WARN")`
+
+
+
+### Errors
+
+```{r error_table, include = FALSE}
+
+errors <- logs_df %>% 
+    dplyr::filter(X3 == "ERROR") %>% 
+    dplyr::select(file, "type" = X5, "message" = X6) %>% 
+    dplyr::distinct()
+
+text <- "No errors occured."
+
+```
+
+
+`r if (nrow(errors) > 0) {knitr::kable(errors)} else {text}`
+
+### Warnings
+
+
+```{r warn_table, include = FALSE}
+
+warns <- logs_df %>% 
+    dplyr::filter(X3 == "WARN") %>% 
+    dplyr::select(file, "type" = X5, "message" = X6) %>% 
+    dplyr::distinct()
+
+text <- "No warnings occured."
+
+```
+
+
+`r if (nrow(warns) > 0) {knitr::kable(warns)} else {text}`
