@@ -7,8 +7,8 @@ ERROR_VAL_DATE <<- "9999-09-09"
 main <- function() {
     paths <- init_paths(c("tables"), delete = TRUE)
     setup_logger(paths$output_root, "script3")
-    patient_data_files <- get_files(file.path(paths$output_root, "patient_data_cleaned"), pattern = "\\.csv$")
-    product_data_files <- get_files(file.path(paths$output_root, "product_data_cleaned"), pattern = "\\.csv$")
+    patient_data_files <- get_files(file.path(paths$output_root, "patient_data_cleaned"), pattern = "\\.parquet$")
+    product_data_files <- get_files(file.path(paths$output_root, "product_data_cleaned"), pattern = "\\.parquet$")
     logInfo(
         "Found ",
         length(patient_data_files),

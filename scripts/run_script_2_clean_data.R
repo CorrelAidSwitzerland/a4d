@@ -7,8 +7,8 @@ ERROR_VAL_DATE <<- "9999-09-09"
 main <- function() {
     paths <- init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
     setup_logger(paths$output_root, "script2")
-    patient_data_files <- get_files(paths$tracker_root, pattern = "patient_raw.csv$")
-    product_data_files <- get_files(paths$tracker_root, pattern = "product_raw.csv$")
+    patient_data_files <- get_files(paths$tracker_root, pattern = "patient_raw.parquet$")
+    product_data_files <- get_files(paths$tracker_root, pattern = "product_raw.parquet$")
     logInfo(
         "Found ",
         length(patient_data_files),
@@ -90,7 +90,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     allowed_provinces <- get_allowed_provinces()
 
-    df_patient_raw <- read_raw_csv(patient_file_path)
+    df_patient_raw <- arrow::read_parquet(patient_file_path)
 
     # filter all rows with no patient id or patient name
     df_patient_raw <- df_patient_raw %>%
@@ -400,7 +400,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         "."
     )
 
-    export_data(
+    export_data_parquet(
         data = df_patient,
         filename = str_replace(patient_file_name, "_patient_raw", ""),
         output_root = output_root,
@@ -420,7 +420,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         product_file_name
     )
 
-    df_product_raw <- read_raw_csv(product_file_path)
+    df_product_raw <- arrow::read_parquet(product_file_path)
 
     df_product_raw <- reading_product_data_step2(df_product_raw, synonyms_product)
 
@@ -430,7 +430,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         "."
     )
 
-    export_data(
+    export_data_parquet(
         data = df_product_raw,
         filename = str_replace(product_file_name, "_product_raw", ""),
         output_root = output_root,
