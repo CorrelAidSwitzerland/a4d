@@ -112,7 +112,7 @@ process_patient_data <-
             "."
         )
 
-        export_data(
+        export_data_parquet(
             data = df_raw_patient,
             filename = tracker_name,
             output_root = output_root,
@@ -150,7 +150,7 @@ process_product_data <-
 
         # product set sensitive column to NA and add tracker file name as a column
         if (!is.null(df_raw_product)) {
-            export_data(
+            export_data_parquet(
                 data = df_raw_product,
                 filename = tracker_name,
                 output_root = output_root,
