@@ -55,7 +55,7 @@ create_table_product_data <- function(input_root, output_root) {
     merged_data <- preparing_product_fields(merged_data)
 
     # Write the merged and processed data to a CSV file in the output_root directory
-    export_data_parquet(
+    export_data_as_parquet(
         data = merged_data,
         filename = "product_data",
         output_root = output_root,
