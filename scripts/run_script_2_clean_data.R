@@ -400,7 +400,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         "."
     )
 
-    export_data_parquet(
+    export_data_as_parquet(
         data = df_patient,
         filename = str_replace(patient_file_name, "_patient_raw", ""),
         output_root = output_root,
@@ -430,7 +430,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         "."
     )
 
-    export_data_parquet(
+    export_data_as_parquet(
         data = df_product_raw,
         filename = str_replace(product_file_name, "_product_raw", ""),
         output_root = output_root,
