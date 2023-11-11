@@ -50,7 +50,7 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         select(all_of(dynamic_patient_columns)) %>%
         arrange(tracker_year, tracker_month, id)
 
-    export_data(
+    export_data_as_parquet(
         data = patient_data,
         filename = "patient_data_monthly",
         output_root = output_root,

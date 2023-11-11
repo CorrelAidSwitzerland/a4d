@@ -6,16 +6,16 @@
 #' @return data frame holding all cleaned patient data with correct column types.
 #' @export
 read_cleaned_patient_data <-
-  function(input_root, patient_data_files) {
-    logInfo("Start read_cleaned_patient_data")
+    function(input_root, patient_data_files) {
+        logInfo("Start read_cleaned_patient_data")
 
-    patient_data <- patient_data_files %>%
-      purrr::map(function(patient_file) {
-        arrow::read_parquet(file.path(input_root, patient_file))
-      })
+        patient_data <- patient_data_files %>%
+            purrr::map(function(patient_file) {
+                arrow::read_parquet(file.path(input_root, patient_file))
+            }) %>% bind_rows()
 
 
 
-    logInfo("Finish read_cleaned_patient_data")
-    patient_data
-  }
+        logInfo("Finish read_cleaned_patient_data")
+        patient_data
+    }

@@ -71,7 +71,7 @@ create_table_longitudinal_data <-
             ungroup() %>%
             arrange(id, tracker_year, tracker_month)
 
-        export_data_parquet(
+        export_data_as_parquet(
             data = longitudinal_data,
             filename = paste0("longitudinal_data_", name),
             output_root = output_root,
