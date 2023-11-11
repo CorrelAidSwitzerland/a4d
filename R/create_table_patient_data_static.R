@@ -51,7 +51,7 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
 
     testit::assert(sum(duplicated(static_patient_data$id)) == 0)
 
-    export_data_parquet(
+    export_data_as_parquet(
         data = static_patient_data,
         filename = "patient_data",
         output_root = output_root,
