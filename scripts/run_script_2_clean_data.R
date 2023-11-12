@@ -224,7 +224,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     # the cleaning, fixing and validating happens in three major steps:
     # 1. make sure we fix any known problems in the raw character columns
-    logInfo("Applying fix functions phase 1: mutate df_patient row-wise to fix all problems with character columns.")
     df_patient <-
         df_patient %>%
         rowwise() %>%
@@ -239,13 +238,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             fbg_updated_mmol = fix_fbg(fbg_updated_mmol),
             testing_frequency = fix_testing_frequency(testing_frequency)
         ) %>%
-        ungroup()
-
-    # 2. convert the refined character columns into the target data type
-    logInfo("Applying fix functions phase 2: mutate df_patient row-wise to convert character columns into target type.")
-    df_patient <-
-        df_patient %>%
-        rowwise() %>%
+        # 2. convert the refined character columns into the target data type
         mutate(
             across(
                 schema %>% select(where(is.numeric)) %>% names(),
@@ -264,13 +257,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column(), id = id)
             )
         ) %>%
-        ungroup()
-
-    # 3. fix any remaining issues in the target data type
-    logInfo("Applying fix functions phase 3: mutate df_patient row-wise to fix all problems in the target data type.")
-    df_patient <-
-        df_patient %>%
-        rowwise() %>%
         # 3. fix remaining problems in the target data type
         mutate(
             # height and weight are needed to calculate bmi
