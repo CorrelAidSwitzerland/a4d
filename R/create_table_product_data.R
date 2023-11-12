@@ -20,10 +20,10 @@ create_table_product_data <- function(input_root, output_root) {
     logInfo("Start creating single csv for table product_data.")
 
     # Get a list of all CSV files in the input_root directory
-    files <- list.files(input_root, pattern = "*.csv", full.names = TRUE)
+    files <- list.files(input_root, pattern = "*.parquet", full.names = TRUE)
 
     # Read all CSV files and store them in a list
-    data_list <- lapply(files, function(x) read.csv(x, fileEncoding = "UTF-16LE"))
+    data_list <- lapply(files, function(x) arrow::read_parquet(x))
 
     logInfo(length(data_list), " csv files will be processed for creating the single csv for table product_data.")
 
@@ -55,7 +55,7 @@ create_table_product_data <- function(input_root, output_root) {
     merged_data <- preparing_product_fields(merged_data)
 
     # Write the merged and processed data to a CSV file in the output_root directory
-    export_data(
+    export_data_as_parquet(
         data = merged_data,
         filename = "product_data",
         output_root = output_root,

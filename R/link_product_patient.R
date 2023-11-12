@@ -16,8 +16,8 @@
 link_product_patient <- function(product_file, patient_file) {
     logInfo("Trying to link product csv file ", product_file, " with patient csv file ", patient_file)
 
-    patient_data <- read.csv(patient_file, fileEncoding = "UTF-16LE")
-    product_data <- read.csv(product_file, fileEncoding = "UTF-16LE")
+    patient_data <- arrow::read_parquet(patient_file)
+    product_data <- arrow::read_parquet(product_file)
 
     # Merge the data frames by file_name and patients ids
     merged_data <- merge(product_data, patient_data,
