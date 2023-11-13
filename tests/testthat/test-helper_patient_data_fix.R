@@ -223,7 +223,7 @@ test_that("extract_date_from_measurement works", {
             "3"
         )
     )
-    expected_df <- as_tibble(data.frame(
+    expected_df <- dplyr::as_tibble(data.frame(
         measurement = c(
             "8.53 ",
             "10,75 ",

@@ -33,20 +33,17 @@ upload_data <- function(bucket, data_dir) {
     print("Finished uploading data to GCP Storage")
 }
 
-ingest_data <- function(project_id, dataset, table, source, schema) {
+ingest_data <- function(project_id, cluster_fields, dataset, table, source) {
     print("Ingesting data to GCP Big Query")
     command <- paste(
         "bq load",
-        "--source_format=CSV",
-        "--encoding=UTF-16LE",
+        "--source_format=PARQUET",
         paste0("--project_id=", project_id),
-        "--skip_leading_rows=1",
         "--max_bad_records=0",
-        "--allow_quoted_newlines=true",
         "--replace=true",
+        paste0("--clustering_fields=", cluster_fields),
         paste0(dataset, ".", table),
-        source,
-        schema
+        source
     )
     cat(command)
     exit_code <- system(command)
@@ -63,35 +60,36 @@ unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
 
 download_data(bucket = BUCKET_DOWLOAD, data_dir = data_dir)
-source("run_script_1_extract_raw_data.R") # creates CSV files in subfolders patient_data_raw and product_data_raw
-source("run_script_2_clean_data.R") # creates CSV files in subfolders patient_data_cleaned and product_data_cleaned
-source("run_script_3_create_tables.R") # creates final CSV files in subfolder tables
+source("scripts/run_script_1_extract_raw_data.R") # creates CSV files in subfolders patient_data_raw and product_data_raw
+source("scripts/run_script_2_clean_data.R") # creates CSV files in subfolders patient_data_cleaned and product_data_cleaned
+source("scripts/run_script_3_create_tables.R") # creates final CSV files in subfolder tables
 upload_data(bucket = BUCKET_UPLOAD, data_dir = output_dir)
 ingest_data(
     project_id = PROJECT_ID,
+    cluster_fields = "clinic_code,id,tracker_year,tracker_month",
     dataset = DATASET,
     table = "patient_data_monthly",
-    source = file.path(table_dir, "patient_data_monthly.csv"),
-    schema = "./gcp/schema_patient_data_monthly.json"
+    source = file.path(table_dir, "patient_data_monthly.parquet"),
+
 )
 ingest_data(
     project_id = PROJECT_ID,
+    cluster_fields = "id,tracker_year,tracker_month",
     dataset = DATASET,
     table = "patient_data_static",
-    source = file.path(table_dir, "patient_data_static.csv"),
-    schema = "./gcp/schema_patient_data_static.json"
+    source = file.path(table_dir, "patient_data_static.parquet")
 )
 ingest_data(
     project_id = PROJECT_ID,
+    cluster_fields = "clinic_code,id,tracker_year,tracker_month",
     dataset = DATASET,
     table = "longitudinal_data_hba1c",
-    source = file.path(table_dir, "longitudinal_data_hba1c.csv"),
-    schema = "./gcp/schema_patient_data_monthly.json"
+    source = file.path(table_dir, "longitudinal_data_hba1c.parquet")
 )
 ingest_data(
     project_id = PROJECT_ID,
+    cluster_fields = "product_hospital,product_released_to,product_table_year,product_table_month",
     dataset = DATASET,
     table = "product_data",
-    source = file.path(table_dir, "product_data.csv"),
-    schema = "./gcp/schema_product_data.json"
+    source = file.path(table_dir, "product_data.parquet")
 )

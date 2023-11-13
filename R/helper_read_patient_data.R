@@ -69,9 +69,9 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     testit::assert(row_min <= row_max) # <= because there could only be a single patient
 
     header_cols <-
-        str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
+        stringr::str_replace_all(as.vector(t(tracker_data[row_min - 1, ])), "[\r\n]", "")
     header_cols_2 <-
-        str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
+        stringr::str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
 
     # trackers from 2020 and newer have an empty first row
     # and openxlsx always skips empty rows at the start of the file

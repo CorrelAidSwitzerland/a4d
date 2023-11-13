@@ -44,15 +44,17 @@ reading_patient_data <-
             if (anyDuplicated(colnames(df_patient)) > 0) {
                 duplicated_cols <- colnames(df_patient) %>%
                     table() %>%
-                    as_tibble() %>%
+                    dplyr::as_tibble() %>%
                     dplyr::filter(n > 1) %>%
-                    select(1) %>%
-                    pull()
+                    dplyr::select(1) %>%
+                    dplyr::pull()
                 for (col in duplicated_cols) {
                     mask <- colnames(df_patient) == col
-                    merged_col <- df_patient[mask] %>% unite(!!col, sep = ",")
+                    merged_col <- df_patient[mask] %>%
+                        tidyr::unite(!!col, sep = ",")
                     df_patient <- df_patient[!mask]
-                    df_patient <- df_patient %>% add_column(!!col := pull(merged_col), .name_repair = "minimal")
+                    df_patient <- df_patient %>%
+                        tibble::add_column(!!col := pull(merged_col), .name_repair = "minimal")
                 }
             }
 

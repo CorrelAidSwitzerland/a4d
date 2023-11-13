@@ -73,7 +73,7 @@ cut_numeric_value <- function(x,
 #' @return character representation with a correct decimal sign.
 #' @export
 correct_decimal_sign <- function(x) {
-    str_replace(x, ",", ".")
+    stringr::str_replace(x, ",", ".")
 }
 
 
@@ -90,19 +90,21 @@ correct_decimal_sign <- function(x) {
 #' @return data frame with the original column and a new colname_date column.
 extract_date_from_measurement <-
     function(df, colname) {
-        df <- df %>% separate_wider_regex(
-            !!colname,
-            c(
-                set_names(".*", colname),
-                "[(]",
-                set_names(".*?", paste0(colname, "_date")),
-                "[)]?"
-            ),
-            too_few = "align_start"
-        )
+        df <- df %>%
+            tidyr::separate_wider_regex(
+                !!colname,
+                c(
+                    set_names(".*", colname),
+                    "[(]",
+                    set_names(".*?", paste0(colname, "_date")),
+                    "[)]?"
+                ),
+                too_few = "align_start"
+            )
 
         if (colname %in% c("fbg_updated_mmol", "fbg_updated_mg")) {
-            df <- df %>% rename_with(~ str_replace(.x, "_mmol_date|_mg_date", "_date"))
+            df <- df %>%
+                dplyr::rename_with(~ stringr::str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
         df
@@ -128,7 +130,7 @@ fix_digit_date <-
             return(NA_Date_)
         }
 
-        if (str_detect(string = date, pattern = "^[:digit:]{5}$")) {
+        if (stringr::str_detect(string = date, pattern = "^[:digit:]{5}$")) {
             date <- as.character(openxlsx::convertToDate(date))
         }
         date
@@ -262,7 +264,7 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
 #' @return calculated bmi value.
 #' @export
 fix_bmi <- function(weight, height, id) {
-    bmi <- case_when(
+    bmi <- dplyr::case_when(
         is.na(weight) || is.na(height) ~ NA_real_,
         weight == ERROR_VAL_NUMERIC || height == ERROR_VAL_NUMERIC ~ ERROR_VAL_NUMERIC,
         .default = weight / height^2
@@ -293,7 +295,7 @@ fix_sex <- function(sex, id) {
     synonyms_female <- c("female", "girl", "woman", "fem", "feminine", "f")
     synonyms_male <- c("male", "boy", "man", "masculine", "m")
 
-    fixed_sex <- case_when(
+    fixed_sex <- dplyr::case_when(
         is.na(sex) | sex == "" ~ NA_character_,
         tolower(sex) %in% synonyms_female ~ "F",
         tolower(sex) %in% synonyms_male ~ "M",
@@ -317,7 +319,7 @@ fix_sex <- function(sex, id) {
 #' @return Corrected value with text replacement.
 #' @export
 fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, id) {
-    age_corrected <- case_when(
+    age_corrected <- dplyr::case_when(
         is.na(t1d_diagnosis_age) ~ NA_character_,
         grepl("birth|born|month", tolower(t1d_diagnosis_age)) ~ "0",
         grepl("y", tolower(t1d_diagnosis_age)) ~ extract_year_from_age(t1d_diagnosis_age),
@@ -361,7 +363,7 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
         )
 
     # If not unit "mmol/L" is assumed
-    fbg_mmol <- case_when(
+    fbg_mmol <- dplyr::case_when(
         measure_unit == "mg/dL" ~ fbg / factor_mmol_in_mg,
         measure_unit == "mmol/L" ~ fbg,
         is.na(measure_unit) ~ fbg,
@@ -384,7 +386,7 @@ fix_fbg <- function(fbg) {
     }
 
     # Source for levels: https://www.cdc.gov/diabetes/basics/getting-tested.html
-    fbg <- case_when(
+    fbg <- dplyr::case_when(
         grepl("high|bad|hi", tolower(fbg)) ~ "200",
         grepl("med|medium", tolower(fbg)) ~ "170",
         grepl("low|good|okay", tolower(fbg)) ~ "140",
@@ -442,8 +444,8 @@ replace_range_with_mean <- function(x) {
 split_bp_in_sys_and_dias <- function(df) {
     logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df <- df %>% mutate(
-        blood_pressure_mmhg = case_when(
-            str_detect(blood_pressure_mmhg, "/", negate = T) ~ paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/"),
+        blood_pressure_mmhg = dplyr::case_when(
+            stringr::str_detect(blood_pressure_mmhg, "/", negate = T) ~ paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/"),
             TRUE ~ blood_pressure_mmhg
         )
     )
@@ -494,7 +496,7 @@ fix_id <- function(id) {
         return(NA_character_)
     }
 
-    id <- str_replace(id, "-", "_")
+    id <- stringr::str_replace(id, "-", "_")
 
     if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
         logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
