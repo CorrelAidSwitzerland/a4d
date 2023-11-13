@@ -18,8 +18,8 @@
 #' @export
 sanitize_str <- function(text) {
     text <- text %>%
-        str_to_lower() %>%
-        str_replace_all(fixed(" "), "") %>%
-        str_replace_all("[^[:alnum:]]", "")
+        stringr::str_to_lower() %>%
+        stringr::str_replace_all(stringr::fixed(" "), "") %>%
+        stringr::str_replace_all("[^[:alnum:]]", "")
     text
 }

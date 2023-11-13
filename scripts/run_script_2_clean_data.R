@@ -228,10 +228,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         df_patient %>%
         rowwise() %>%
         # 1. handle known problems before converting to target type
-        mutate(
+        dplyr::mutate(
             t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, id),
-            hba1c_baseline = str_replace(hba1c_baseline, "<|>", ""),
-            hba1c_updated = str_replace(hba1c_updated, "<|>", ""),
+            hba1c_baseline = stringr::str_replace(hba1c_baseline, "<|>", ""),
+            hba1c_updated = stringr::str_replace(hba1c_updated, "<|>", ""),
             fbg_baseline_mg = fix_fbg(fbg_baseline_mg),
             fbg_baseline_mmol = fix_fbg(fbg_baseline_mmol),
             fbg_updated_mg = fix_fbg(fbg_updated_mg),
@@ -239,26 +239,26 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             testing_frequency = fix_testing_frequency(testing_frequency)
         ) %>%
         # 2. convert the refined character columns into the target data type
-        mutate(
+        dplyr::mutate(
             across(
-                schema %>% select(where(is.numeric)) %>% names(),
+                schema %>% dplyr::select(tidyselect::where(is.numeric)) %>% names(),
                 \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, cur_column(), id = id)
             ),
             across(
-                schema %>% select(where(is.logical)) %>% names(),
+                schema %>% dplyr::select(tidyselect::where(is.logical)) %>% names(),
                 \(x) convert_to(x, as.logical, FALSE, cur_column(), id = id)
             ),
             across(
-                schema %>% select(where(is.Date)) %>% names(),
+                schema %>% dplyr::select(tidyselect::where(is.Date)) %>% names(),
                 \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), cur_column(), id = id)
             ),
             across(
-                schema %>% select(where(is.integer)) %>% names(),
+                schema %>% dplyr::select(tidyselect::where(is.integer)) %>% names(),
                 \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column(), id = id)
             )
         ) %>%
         # 3. fix remaining problems in the target data type
-        mutate(
+        dplyr::mutate(
             # height and weight are needed to calculate bmi
             height = transform_cm_to_m(height) %>%
                 cut_numeric_value(min = 0, max = 2.3, col_name = "height"),
@@ -341,7 +341,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             # should be fixed last as other fix functions use id to log invalid rows!
             id = fix_id(id)
         ) %>%
-        ungroup()
+        dplyr::ungroup()
 
     # add clinic and country code after having fixed all issues with patient id
     cc_codes <- extract_country_clinic_code(df_patient)
@@ -351,13 +351,13 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
         df_patient <- df_patient %>%
-            mutate(fbg_baseline_mmol = case_when(
+            dplyr::mutate(fbg_baseline_mmol = case_when(
                 fbg_baseline_mg != ERROR_VAL_NUMERIC ~ fbg_baseline_mg / 18
             ))
     }
     if (all(is.na(df_patient$fbg_updated_mmol))) {
         df_patient <- df_patient %>%
-            mutate(fbg_updated_mmol = case_when(
+            dplyr::mutate(fbg_updated_mmol = case_when(
                 fbg_updated_mg != ERROR_VAL_NUMERIC ~ fbg_updated_mg / 18
             ))
     }
@@ -365,20 +365,20 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # Formula to calculate mg/dl from mmol/l: mg/dl = 18 × mmol/l
     if (all(is.na(df_patient$fbg_baseline_mg))) {
         df_patient <- df_patient %>%
-            mutate(fbg_baseline_mg = case_when(
+            dplyr::mutate(fbg_baseline_mg = case_when(
                 fbg_baseline_mmol != ERROR_VAL_NUMERIC ~ fbg_baseline_mmol * 18
             ))
     }
     if (all(is.na(df_patient$fbg_updated_mg))) {
         df_patient <- df_patient %>%
-            mutate(fbg_updated_mg = case_when(
+            dplyr::mutate(fbg_updated_mg = case_when(
                 fbg_updated_mmol != ERROR_VAL_NUMERIC ~ fbg_updated_mmol * 18
             ))
     }
 
     # sort by year and month like it is in the tracker files
     df_patient <- df_patient %>%
-        arrange(tracker_month, id)
+        dplyr::arrange(tracker_month, id)
 
     logDebug(
         "df_patient dim: ",

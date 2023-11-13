@@ -60,7 +60,7 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
 get_files <- function(tracker_root, pattern = "\\.xlsx$") {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = pattern)
     tracker_files <-
-        tracker_files[str_detect(tracker_files, "~", negate = T)]
+        tracker_files[stringr::str_detect(tracker_files, "~", negate = T)]
 }
 
 
@@ -106,16 +106,16 @@ read_column_synonyms <- function(synonym_file, path_prefixes = c("reference_data
         yaml::read_yaml(path) %>%
         unlist() %>%
         as.data.frame() %>%
-        rownames_to_column() %>%
+        tibble::rownames_to_column() %>%
         # remove digits that were created when converting to data frame
-        mutate(
-            rowname = str_replace(rowname, pattern = "[:digit:]$", "")
+        dplyr::mutate(
+            rowname = stringr::str_replace(rowname, pattern = "[:digit:]$", "")
         ) %>%
-        rename(
+        dplyr::rename(
             "variable_name" = "rowname",
             "tracker_name" = "."
         ) %>%
-        as_tibble()
+        dplyr::as_tibble()
 }
 
 
@@ -176,7 +176,9 @@ export_data <- function(data, filename, output_root, suffix) {
 export_data_as_parquet <- function(data, filename, output_root, suffix) {
     logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
-        arrow::write_parquet(sink = file.path(output_root, paste0(filename, suffix, ".parquet")))
+        arrow::write_parquet(
+            sink = file.path(output_root, paste0(filename, suffix, ".parquet")),
+        )
     logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 

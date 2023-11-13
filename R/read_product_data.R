@@ -236,7 +236,7 @@ check_negative_balance <- function(df, Sheet) {
 #' @return Dataframe with columns switched (renamed)
 switch_columns_stock <-
     function(df) {
-        if (sum(str_detect(df$product_units_received[!is.na(df$product_units_received)], "Remaining Stock")) > 0) {
+        if (sum(stringr::str_detect(df$product_units_received[!is.na(df$product_units_received)], "Remaining Stock")) > 0) {
             df <- df %>%
                 rename(
                     "product_units_received" = "product_received_from",
@@ -373,8 +373,8 @@ reading_product_data_step2 <-
 
         # get product list from Stock_Summary
         product_reference_data <- load_product_reference_data()
-        known_products <- product_reference_data %>% select(product)
-        product_category_mapping <- product_reference_data %>% select(product, category)
+        known_products <- product_reference_data %>% dplyr::select(product)
+        product_category_mapping <- product_reference_data %>% dplyr::select(product, category)
 
         # loop through all months
         for (sheet_month in unique(df$product_sheet_name)) {
@@ -389,8 +389,8 @@ reading_product_data_step2 <-
 
             # Add columns that should be in final dataframe but are still missing
             columns_missing <- columns_synonyms %>%
-                group_by(name_clean) %>%
-                distinct(., name_clean) %>%
+                dplyr::group_by(name_clean) %>%
+                dplyr::distinct(., name_clean) %>%
                 unlist() %>%
                 as.character()
 
@@ -419,17 +419,17 @@ reading_product_data_step2 <-
             # Extend product name and sort by product
             # Keep first row and last row and order the rest by date
             product_df <- product_df %>%
-                ungroup() %>%
+                dplyr::ungroup() %>%
                 tidyr::fill(c(product), .direction = "down") %>%
-                group_by(product) %>%
-                mutate(rank = ifelse(row_number() == 1, 1,
-                    if_else(row_number() == n(), n() + 2,
-                        if_else(is.na(product_entry_date), row_number(), dense_rank(product_entry_date) + 1)
+                dplyr::group_by(product) %>%
+                dplyr::mutate(rank = ifelse(row_number() == 1, 1,
+                    dplyr::if_else(dplyr::row_number() == n(), n() + 2,
+                        dplyr::if_else(is.na(product_entry_date), dplyr::row_number(), dplyr::dense_rank(product_entry_date) + 1)
                     )
                 )) %>%
-                arrange(product, rank) %>%
-                ungroup() %>%
-                select(-rank)
+                dplyr::arrange(product, rank) %>%
+                dplyr::ungroup() %>%
+                dplyr::select(-rank)
 
             # extract start/end balance when they are in the sheet (e.g. 2019_PKH and 2020_STH examples)
             product_df <- update_receivedfrom(product_df)
