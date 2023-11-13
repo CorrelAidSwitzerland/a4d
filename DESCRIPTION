@@ -19,10 +19,10 @@ Imports:
     openxlsx,
     readr,
     readxl,
+    stringr,
     styler,
     testit,
     tidyr,
-    tidyverse,
     yaml,
     zoo,
     arrow
