@@ -10,7 +10,7 @@
 #' @return The year of the tracker
 #' @export
 get_tracker_year <- function(tracker_data_file, month_list) {
-    year <- suppressWarnings(2000 + unique(readr::parse_number(month_list)))
+    year <- suppressWarnings(2000 + unique(readr::parse_number(month_list)[1]))
     if (is.na(year)) {
         year <- as.integer(stringr::str_match(tracker_data_file, "[:digit:]{4}"))
     }
