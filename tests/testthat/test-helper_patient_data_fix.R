@@ -20,17 +20,24 @@ test_that("fix_bmi works", {
         id = c("1", "2", "3", "4", "5", "6")
     )
     expected_bmi <- c(1, 10 / 4, NA, NA, NA, 999999)
-    expect_equal(test_df %>% rowwise() %>% mutate(bmi = fix_bmi(weight, height, id)) %>% select(bmi) %>% pull(), expected_bmi)
+    expect_equal(
+        test_df %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(bmi = fix_bmi(weight, height, id)) %>%
+            dplyr::select(bmi) %>%
+            dplyr::pull(),
+        expected_bmi
+    )
 })
 
 
 test_that("split_bp_in_sys_and_dias works", {
     test_df <- data.frame(blood_pressure_mmhg = c("96/55", "101/57", NA))
-    expected_df <- tibble(blood_pressure_sys_mmhg = c("96", "101", NA), blood_pressure_dias_mmhg = c("55", "57", NA))
+    expected_df <- dplyr::tibble(blood_pressure_sys_mmhg = c("96", "101", NA), blood_pressure_dias_mmhg = c("55", "57", NA))
     expect_equal(split_bp_in_sys_and_dias(test_df), expected_df)
 
     test_df <- data.frame(blood_pressure_mmhg = c("96", "1,6"))
-    expected_df <- tibble(
+    expected_df <- dplyr::tibble(
         blood_pressure_sys_mmhg = c(as.character(ERROR_VAL_NUMERIC), as.character(ERROR_VAL_NUMERIC)),
         blood_pressure_dias_mmhg = c(as.character(ERROR_VAL_NUMERIC), as.character(ERROR_VAL_NUMERIC))
     )

@@ -94,9 +94,9 @@ extract_date_from_measurement <-
             tidyr::separate_wider_regex(
                 !!colname,
                 c(
-                    set_names(".*", colname),
+                    magrittr::set_names(".*", colname),
                     "[(]",
-                    set_names(".*?", paste0(colname, "_date")),
+                    magrittr::set_names(".*?", paste0(colname, "_date")),
                     "[)]?"
                 ),
                 too_few = "align_start"
@@ -430,7 +430,7 @@ fix_testing_frequency <- function(test_frq) {
 #'
 #' @return mean of that range
 replace_range_with_mean <- function(x) {
-    mean(as.numeric(unlist(str_split(x, "-"))))
+    mean(as.numeric(unlist(stringr::str_split(x, "-"))))
 }
 
 
@@ -443,12 +443,13 @@ replace_range_with_mean <- function(x) {
 #' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
 split_bp_in_sys_and_dias <- function(df) {
     logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
-    df <- df %>% mutate(
-        blood_pressure_mmhg = dplyr::case_when(
-            stringr::str_detect(blood_pressure_mmhg, "/", negate = T) ~ paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/"),
-            TRUE ~ blood_pressure_mmhg
+    df <- df %>%
+        dplyr::mutate(
+            blood_pressure_mmhg = dplyr::case_when(
+                stringr::str_detect(blood_pressure_mmhg, "/", negate = T) ~ paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/"),
+                TRUE ~ blood_pressure_mmhg
+            )
         )
-    )
 
     if (paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/") %in% df$blood_pressure_mmhg) {
         logWarn(
@@ -458,7 +459,7 @@ split_bp_in_sys_and_dias <- function(df) {
     }
 
     df <- df %>%
-        separate_wider_delim(
+        tidyr::separate_wider_delim(
             cols = blood_pressure_mmhg,
             delim = "/",
             names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
@@ -500,9 +501,9 @@ fix_id <- function(id) {
 
     if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
         logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
-        if (str_length(id) > 8) {
+        if (stringr::str_length(id) > 8) {
             logWarn("Patient ", id, ": id was truncated because it is longer than 8 characters.")
-            id <- str_sub(id, 1, 8)
+            id <- stringr::str_sub(id, 1, 8)
         } else {
             logError("Patient ", id, ": id is not valid.")
             id <- ERROR_VAL_CHARACTER
