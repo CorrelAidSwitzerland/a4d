@@ -12,7 +12,7 @@ support_from_a4d:
 status:
   steps:
     - type: basic_function
-      function_name: str_to_lower
+      function_name: (stringr::str_to_lower)
     - type: allowed_values
       allowed_values:
         - Active
@@ -27,7 +27,7 @@ status:
 insulin_regimen:
   steps:
     - type: basic_function
-      function_name: str_to_lower
+      function_name: (stringr::str_to_lower)
     - type: allowed_values
       allowed_values:
         - "Basal-bolus"

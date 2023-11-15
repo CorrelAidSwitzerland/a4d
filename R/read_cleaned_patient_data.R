@@ -13,7 +13,7 @@ read_cleaned_patient_data <-
             purrr::map(function(patient_file) {
                 arrow::read_parquet(file.path(input_root, patient_file))
             }) %>%
-            bind_rows()
+            dplyr::bind_rows()
 
 
 

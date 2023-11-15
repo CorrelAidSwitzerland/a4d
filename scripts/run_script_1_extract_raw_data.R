@@ -104,7 +104,7 @@ process_patient_data <-
                 columns_synonyms = synonyms_patient
             )
 
-        df_raw_patient <- df_raw_patient %>% mutate(file_name = tracker_name)
+        df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
         logDebug(
             "df_raw_patient dim: ",
@@ -137,7 +137,7 @@ process_product_data <-
             )
 
         if (!is.null(df_raw_product)) {
-            df_raw_product <- df_raw_product %>% mutate(file_name = tracker_name)
+            df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
         } else {
             logDebug("Empty product data")
         }
