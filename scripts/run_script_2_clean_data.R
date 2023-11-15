@@ -133,7 +133,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # we would prefer to retain this character in the database as it is important for data analysis.
     logInfo("Adding columns hba1c_baseline_exceeds and hba1c_updated_exceeds.")
     df_patient_raw <- df_patient_raw %>%
-        mutate(
+        dplyr::mutate(
             hba1c_baseline_exceeds = ifelse(grepl(">|<", hba1c_baseline), TRUE, FALSE),
             hba1c_updated_exceeds = ifelse(grepl(">|<", hba1c_updated), TRUE, FALSE)
         )
@@ -147,7 +147,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     schema <- tibble::tibble(
         # clinic_visit = logical(),
         # complication_screening = character(),
-        # complication_screening_date = as_date(1),
+        # complication_screening_date = lubridate::as_date(1),
         # complication_screening_results = character(),
         # dm_complication_comment = character(), # TODO
         # dm_complication_eye = character(), # TODO
@@ -157,7 +157,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         # family_support_scale = character(), # TODO
         # inactive_reason = character(),
         # insulin_dosage = character(),
-        # meter_received_date = as_date(1), # TODO
+        # meter_received_date = lubridate::as_date(1), # TODO
         # remarks = character(),
         # remote_followup = logical(),
         # additional_support = character(),
@@ -165,14 +165,14 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         blood_pressure_dias_mmhg = integer(),
         blood_pressure_sys_mmhg = integer(),
         bmi = numeric(),
-        bmi_date = as_date(1),
+        bmi_date = lubridate::as_date(1),
         clinic_code = character(),
         country_code = character(),
-        dob = as_date(1),
+        dob = lubridate::as_date(1),
         edu_occ = character(),
         fbg_baseline_mg = numeric(),
         fbg_baseline_mmol = numeric(),
-        fbg_updated_date = as_date(1),
+        fbg_updated_date = lubridate::as_date(1),
         fbg_updated_mg = numeric(),
         fbg_updated_mmol = numeric(),
         file_name = character(),
@@ -180,32 +180,32 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         hba1c_baseline_exceeds = logical(),
         hba1c_updated = numeric(),
         hba1c_updated_exceeds = logical(),
-        hba1c_updated_date = as_date(1),
+        hba1c_updated_date = lubridate::as_date(1),
         height = numeric(),
         hospitalisation_cause = character(),
-        hospitalisation_date = as_date(1),
+        hospitalisation_date = lubridate::as_date(1),
         id = character(),
         insulin_regimen = character(),
-        last_clinic_visit_date = as_date(1),
-        last_remote_followup_date = as_date(1),
-        lost_date = as_date(1),
+        last_clinic_visit_date = lubridate::as_date(1),
+        last_remote_followup_date = lubridate::as_date(1),
+        lost_date = lubridate::as_date(1),
         name = character(),
         observations = character(),
         observations_category = character(),
         province = character(),
-        recruitment_date = as_date(1),
+        recruitment_date = lubridate::as_date(1),
         sex = character(),
         sheet_name = character(),
         status = character(),
         status_out = character(),
         support_from_a4d = character(),
         t1d_diagnosis_age = integer(),
-        t1d_diagnosis_date = as_date(1),
+        t1d_diagnosis_date = lubridate::as_date(1),
         t1d_diagnosis_with_dka = character(),
         testing_frequency = integer(),
         tracker_month = integer(),
         tracker_year = integer(),
-        updated_2022_date = as_date(1),
+        updated_2022_date = lubridate::as_date(1),
         weight = numeric()
     )
 
@@ -226,7 +226,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # 1. make sure we fix any known problems in the raw character columns
     df_patient <-
         df_patient %>%
-        rowwise() %>%
+        dplyr::rowwise() %>%
         # 1. handle known problems before converting to target type
         dplyr::mutate(
             t1d_diagnosis_age = fix_t1d_diagnosis_age(t1d_diagnosis_age, id),
@@ -240,21 +240,21 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         ) %>%
         # 2. convert the refined character columns into the target data type
         dplyr::mutate(
-            across(
+            dplyr::across(
                 schema %>% dplyr::select(tidyselect::where(is.numeric)) %>% names(),
-                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, cur_column(), id = id)
+                \(x) convert_to(correct_decimal_sign(x), as.numeric, ERROR_VAL_NUMERIC, dplyr::cur_column(), id = id)
             ),
-            across(
+            dplyr::across(
                 schema %>% dplyr::select(tidyselect::where(is.logical)) %>% names(),
-                \(x) convert_to(x, as.logical, FALSE, cur_column(), id = id)
+                \(x) convert_to(x, as.logical, FALSE, dplyr::cur_column(), id = id)
             ),
-            across(
-                schema %>% dplyr::select(tidyselect::where(is.Date)) %>% names(),
-                \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), cur_column(), id = id)
+            dplyr::across(
+                schema %>% dplyr::select(tidyselect::where(lubridate::is.Date)) %>% names(),
+                \(x) convert_to(fix_digit_date(x), parse_dates, as.Date(ERROR_VAL_DATE), dplyr::cur_column(), id = id)
             ),
-            across(
+            dplyr::across(
                 schema %>% dplyr::select(tidyselect::where(is.integer)) %>% names(),
-                \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, cur_column(), id = id)
+                \(x) convert_to(x, function(x) as.integer(round(as.double(x))), ERROR_VAL_NUMERIC, dplyr::cur_column(), id = id)
             )
         ) %>%
         # 3. fix remaining problems in the target data type
@@ -289,13 +289,13 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
         df_patient <- df_patient %>%
-            dplyr::mutate(fbg_baseline_mmol = case_when(
+            dplyr::mutate(fbg_baseline_mmol = dplyr::case_when(
                 fbg_baseline_mg != ERROR_VAL_NUMERIC ~ fbg_baseline_mg / 18
             ))
     }
     if (all(is.na(df_patient$fbg_updated_mmol))) {
         df_patient <- df_patient %>%
-            dplyr::mutate(fbg_updated_mmol = case_when(
+            dplyr::mutate(fbg_updated_mmol = dplyr::case_when(
                 fbg_updated_mg != ERROR_VAL_NUMERIC ~ fbg_updated_mg / 18
             ))
     }
@@ -326,7 +326,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     export_data_as_parquet(
         data = df_patient,
-        filename = str_replace(patient_file_name, "_patient_raw", ""),
+        filename = stringr::str_replace(patient_file_name, "_patient_raw", ""),
         output_root = output_root,
         suffix = "_patient_cleaned"
     )
@@ -356,7 +356,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
 
     export_data_as_parquet(
         data = df_product_raw,
-        filename = str_replace(product_file_name, "_product_raw", ""),
+        filename = stringr::str_replace(product_file_name, "_product_raw", ""),
         output_root = output_root,
         suffix = "_product_cleaned"
     )

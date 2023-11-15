@@ -127,7 +127,7 @@ extract_date_from_measurement <-
 fix_digit_date <-
     function(date) {
         if (is.na(date)) {
-            return(NA_Date_)
+            return(lubridate::NA_Date_)
         }
 
         if (stringr::str_detect(string = date, pattern = "^[:digit:]{5}$")) {
@@ -233,11 +233,11 @@ parse_allowed_value_check <- function(column_name, check_details) {
 }
 
 parse_character_cleaning_pipeline <- function(column_name, column_config) {
-    pipeline <- expr(
+    pipeline <- rlang::expr(
         !!rlang::parse_expr(column_name)
     )
     for (step in column_config$steps) {
-        pipeline <- expr(!!pipeline %>% !!parse_step(column_name, step))
+        pipeline <- rlang::expr(!!pipeline %>% !!parse_step(column_name, step))
     }
     pipeline
 }
@@ -245,7 +245,7 @@ parse_character_cleaning_pipeline <- function(column_name, column_config) {
 parse_step <- function(column_name, step) {
     switch(step$type,
         allowed_values = parse_allowed_value_check(column_name, step),
-        basic_function = expr(!!rlang::parse_expr(step$function_name))
+        basic_function = rlang::expr(!!rlang::parse_expr(step$function_name))
     )
 }
 
