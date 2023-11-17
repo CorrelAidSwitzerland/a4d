@@ -22,7 +22,7 @@ check_allowed_values(
 
 \item{replace_invalid}{A flag controlling whether to also replace invalid .}
 
-\item{error_val}{value that is used to signal invalid values.}
+\item{error_val}{value that replaces invalid values.}
 
 \item{col}{column name when used with mutate/across.}
 }

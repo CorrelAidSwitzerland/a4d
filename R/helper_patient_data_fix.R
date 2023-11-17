@@ -183,7 +183,7 @@ parse_dates <- function(date) {
 #' @param valid_values list of valid options.
 #' @param id patient id.
 #' @param replace_invalid A flag controlling whether to also replace invalid .
-#' @param error_val value that is used to signal invalid values.
+#' @param error_val value that replaces invalid values.
 #' @param col column name when used with mutate/across.
 #'
 #' @return Either x or "Other".
@@ -207,31 +207,6 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
     valid_value_mapping[[sanitize_str(x)]]
 }
 
-parse_allowed_value_check <- function(column_name, check_details) {
-    if ("error_value" %in% check_details) {
-        error_expr <- rlang::parse_expr(check_details$error_value)
-        check <- rlang::expr(
-            check_allowed_values(
-                !!check_details$allowed_values,
-                id,
-                !!check_details$replace_invalid,
-                !!error_expr,
-                !!column_name
-            )
-        )
-    } else {
-        check <- rlang::expr(
-            check_allowed_values(
-                !!check_details$allowed_values,
-                id,
-                !!check_details$replace_invalid,
-                col = !!column_name
-            )
-        )
-    }
-    check
-}
-
 parse_character_cleaning_pipeline <- function(column_name, column_config) {
     pipeline <- rlang::expr(
         !!rlang::parse_expr(column_name)
@@ -245,8 +220,21 @@ parse_character_cleaning_pipeline <- function(column_name, column_config) {
 parse_step <- function(column_name, step) {
     switch(step$type,
         allowed_values = parse_allowed_value_check(column_name, step),
-        basic_function = rlang::expr(!!rlang::parse_expr(step$function_name))
+        basic_function = rlang::expr((!!rlang::parse_expr(step$function_name))())
     )
+}
+
+parse_allowed_value_check <- function(column_name, check_details) {
+    args <- rlang::exprs(
+        valid_values = !!check_details$allowed_values,
+        id = id,
+        replace_invalid = !!check_details$replace_invalid,
+        col = !!column_name
+    )
+    if ("error_value" %in% check_details) {
+        args$error_val <- rlang::parse_expr(check_details$error_value)
+    }
+    rlang::expr(check_allowed_values(!!!args))
 }
 
 parse_character_cleaning_config <- function(config) {
