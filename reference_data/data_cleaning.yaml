@@ -11,8 +11,11 @@ support_from_a4d:
         TRUE
 status:
   steps:
+  # str_to_lower does not actually have an effect together with
+  # the allowed values chech, which is case insensitive. The step
+  # is kept anyways to illustrate the yaml usage.
     - type: basic_function
-      function_name: (stringr::str_to_lower)
+      function_name: stringr::str_to_lower
     - type: allowed_values
       allowed_values:
         - Active
@@ -27,7 +30,7 @@ status:
 insulin_regimen:
   steps:
     - type: basic_function
-      function_name: (stringr::str_to_lower)
+      function_name: stringr::str_to_lower
     - type: allowed_values
       allowed_values:
         - "Basal-bolus"
