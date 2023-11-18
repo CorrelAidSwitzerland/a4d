@@ -127,7 +127,7 @@ extract_date_from_measurement <-
 fix_digit_date <-
     function(date) {
         if (is.na(date)) {
-            return(NA_Date_)
+            return(lubridate::NA_Date_)
         }
 
         if (stringr::str_detect(string = date, pattern = "^[:digit:]{5}$")) {
@@ -172,27 +172,77 @@ parse_dates <- function(date) {
 
 #' @title Check value against list of allowed values.
 #'
+#' @description
+#' Invalid values are logged and depending on the replace invalid flag
+#' also replaced with an error value. When checking for the validity of values
+#' the case of the string is not considered nor are spaces and non-alphanumeric
+#' characters. If the value matches an entry in the allowed_values list
+#' that match is returned as the result.
+#'
 #' @param x character value to check.
 #' @param valid_values list of valid options.
-#' @param error_val value that is used to signal invalid values.
 #' @param id patient id.
+#' @param replace_invalid A flag controlling whether to also replace invalid .
+#' @param error_val value that replaces invalid values.
 #' @param col column name when used with mutate/across.
 #'
 #' @return Either x or "Other".
-check_allowed_values <- function(x, valid_values, error_val, id, col = "") {
+check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, error_val = "Undefined", col = "") {
     if (is.na(x) || x == "") {
         return(NA_character_)
     }
 
-    if (!tolower(x) %in% tolower(valid_values)) {
+    valid_value_mapping <- setNames(as.list(valid_values), sanitize_str(valid_values))
+
+    if (!sanitize_str(x) %in% names(valid_value_mapping)) {
         logWarn("Patient ", id, ": Value ", x, " for column ", col, " is not in the list of allowed values. ")
-        if (!is.na(error_val)) {
+        if (replace_invalid) {
             logInfo("Replacing ", x, " with ", error_val, ".")
-            x <- error_val
+            return(error_val)
+        } else {
+            return(x)
         }
     }
 
-    x
+    valid_value_mapping[[sanitize_str(x)]]
+}
+
+parse_character_cleaning_pipeline <- function(column_name, column_config) {
+    pipeline <- rlang::expr(
+        !!rlang::parse_expr(column_name)
+    )
+    for (step in column_config$steps) {
+        pipeline <- rlang::expr(!!pipeline %>% !!parse_step(column_name, step))
+    }
+    pipeline
+}
+
+parse_step <- function(column_name, step) {
+    switch(step$type,
+        allowed_values = parse_allowed_value_check(column_name, step),
+        basic_function = rlang::expr((!!rlang::parse_expr(step$function_name))())
+    )
+}
+
+parse_allowed_value_check <- function(column_name, check_details) {
+    args <- rlang::exprs(
+        valid_values = !!check_details$allowed_values,
+        id = id,
+        replace_invalid = !!check_details$replace_invalid,
+        col = !!column_name
+    )
+    if ("error_value" %in% check_details) {
+        args$error_val <- rlang::parse_expr(check_details$error_value)
+    }
+    rlang::expr(check_allowed_values(!!!args))
+}
+
+parse_character_cleaning_config <- function(config) {
+    allowed_value_expr <- list()
+    for (column in names(config)) {
+        allowed_value_expr[[column]] <- parse_character_cleaning_pipeline(column, config[[column]])
+    }
+    allowed_value_expr
 }
 
 

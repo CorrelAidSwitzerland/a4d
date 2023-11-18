@@ -91,10 +91,10 @@ extract_product_data <- function(monthly_tracker_df) {
         start <- get_msd_start(monthly_tracker_df, i)
         end <- get_msd_end(monthly_tracker_df, i)
 
-        if (!is_empty(start) & is_empty(start_df_msd)) {
+        if (!purrr::is_empty(start) & purrr::is_empty(start_df_msd)) {
             start_df_msd <- start - 1
         }
-        if (!is_empty(end) & is_empty(end_df_msd)) {
+        if (!purrr::is_empty(end) & purrr::is_empty(end_df_msd)) {
             end_df_msd <- end
         }
     }
@@ -211,7 +211,7 @@ format_date_excelnum <- function(product_df) {
 # @Description: Reformates dates entered into excel in wrong format (e.g., dd-mm-yyyy) to final date format (yyyy-mm-dd)
 format_date_exceldate <- function(product_df) {
     rel_rows <- which(grepl("-", product_df$product_entry_date) | grepl("\\.", product_df$product_entry_date))
-    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(dmy(unlist(product_df[rel_rows, "product_entry_date"]))))
+    product_df[rel_rows, "product_entry_date"] <- suppressWarnings(as.character(lubridate::dmy(unlist(product_df[rel_rows, "product_entry_date"]))))
     return(product_df)
 }
 
@@ -244,7 +244,7 @@ extract_month <- function(sheetname) {
 # @Description: Recode NAs to 0 in all "unit columns"
 recode_unitcolumnstozero <- function(product_df) {
     product_df <- product_df %>%
-        dplyr::mutate_at(vars(c("product_units_received", "product_units_released", "product_units_returned")), ~ replace(., is.na(.), 0))
+        dplyr::mutate_at(dplyr::vars(c("product_units_received", "product_units_released", "product_units_returned")), ~ replace(., is.na(.), 0))
     return(product_df)
 }
 
@@ -464,7 +464,7 @@ extract_product_multiple <- function(product_df) {
         dplyr::rowwise() %>%
         dplyr::mutate(
             product_units_notes = dplyr::case_when( # e.g., "1 box" or "1 unit". Other units (e.g., 2ml x5) are not extracted.
-                (grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product))) ~ as.character(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1))[1],
+                (grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product))) ~ as.character(substring(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1))[1],
                 TRUE ~ product_units_notes
             )
         )

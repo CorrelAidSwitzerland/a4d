@@ -4,16 +4,25 @@
 \alias{check_allowed_values}
 \title{Check value against list of allowed values.}
 \usage{
-check_allowed_values(x, valid_values, error_val, id, col = "")
+check_allowed_values(
+  x,
+  valid_values,
+  id,
+  replace_invalid = TRUE,
+  error_val = "Undefined",
+  col = ""
+)
 }
 \arguments{
 \item{x}{character value to check.}
 
 \item{valid_values}{list of valid options.}
 
-\item{error_val}{value that is used to signal invalid values.}
-
 \item{id}{patient id.}
+
+\item{replace_invalid}{A flag controlling whether to also replace invalid .}
+
+\item{error_val}{value that replaces invalid values.}
 
 \item{col}{column name when used with mutate/across.}
 }
@@ -21,5 +30,9 @@ check_allowed_values(x, valid_values, error_val, id, col = "")
 Either x or "Other".
 }
 \description{
-Check value against list of allowed values.
+Invalid values are logged and depending on the replace invalid flag
+also replaced with an error value. When checking for the validity of values
+the case of the string is not considered nor are spaces and non-alphanumeric
+characters. If the value matches an entry in the allowed_values list
+that match is returned as the result.
 }
