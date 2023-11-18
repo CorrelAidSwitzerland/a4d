@@ -59,7 +59,7 @@ reading_product_data_step1 <-
 
             product_df <- product_df %>%
                 dplyr::slice(., -del_rows) %>%
-                filter_all(any_vars(complete.cases(.))) %>% # Remove empty rows
+                dplyr::filter_all(dplyr::any_vars(complete.cases(.))) %>% # Remove empty rows
                 dplyr::filter((product != "Product" | is.na(product)) & (product != "PATIENT DATA SUMMARY" | is.na(product))) # remove new headers from data 2022 onwards
 
             # Checking if the patient's name is missing next to the released units
@@ -98,7 +98,7 @@ reading_product_data_step1 <-
 
             # Add country, hospital, month, year, tabname
             product_df <- product_df %>%
-                mutate(
+                dplyr::mutate(
                     product_table_month = extract_month(curr_sheet),
                     product_table_year = year,
                     product_sheet_name = curr_sheet
@@ -113,7 +113,7 @@ reading_product_data_step1 <-
             if (!exists("df_final")) {
                 df_final <- product_df
             } else {
-                df_final <- bind_rows(df_final, product_df)
+                df_final <- dplyr::bind_rows(df_final, product_df)
             }
         }
         if (exists("df_final")) {
@@ -238,7 +238,7 @@ switch_columns_stock <-
     function(df) {
         if (sum(stringr::str_detect(df$product_units_received[!is.na(df$product_units_received)], "Remaining Stock")) > 0) {
             df <- df %>%
-                rename(
+                dplyr::rename(
                     "product_units_received" = "product_received_from",
                     "product_received_from" = "product_units_received"
                 )
@@ -344,8 +344,8 @@ load_product_reference_data <- function(stock_summary_xlsx = "reference_data/mas
 #' category column.
 add_product_categories <- function(inventory_data, product_category_mapping) {
     inventory_data %>%
-        left_join(
-            rename(product_category_mapping, product_category = "category"),
+        dplyr::left_join(
+            dplyr::rename(product_category_mapping, product_category = "category"),
             c("product")
         )
 }
@@ -422,8 +422,8 @@ reading_product_data_step2 <-
                 dplyr::ungroup() %>%
                 tidyr::fill(c(product), .direction = "down") %>%
                 dplyr::group_by(product) %>%
-                dplyr::mutate(rank = ifelse(row_number() == 1, 1,
-                    dplyr::if_else(dplyr::row_number() == n(), n() + 2,
+                dplyr::mutate(rank = ifelse(dplyr::row_number() == 1, 1,
+                    dplyr::if_else(dplyr::row_number() == dplyr::n(), dplyr::n() + 2,
                         dplyr::if_else(is.na(product_entry_date), dplyr::row_number(), dplyr::dense_rank(product_entry_date) + 1)
                     )
                 )) %>%

@@ -9,7 +9,7 @@
 #' @param colname column that has invalid dates.
 parse_invalid_dates <- function(df, colname) {
     orders <- c("dmy", "dmY", "by", "bY")
-    df <- df %>% mutate(across(!!colname, function(x) {
+    df <- df %>% dplyr::mutate(across(!!colname, function(x) {
         lubridate::parse_date_time(x, orders)
     }))
 }

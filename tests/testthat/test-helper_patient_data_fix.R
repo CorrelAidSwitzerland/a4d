@@ -195,13 +195,13 @@ test_that("check_allowed_values works", {
         "SAC",
         "Monitoring"
     )
-    expect_equal(check_allowed_values("partial", valid_support_values, ERROR_VAL_CHARACTER, "1"), "partial")
-    expect_equal(check_allowed_values("Standard", valid_support_values, ERROR_VAL_CHARACTER, "1"), "Standard")
-    expect_equal(check_allowed_values("SAc", valid_support_values, ERROR_VAL_CHARACTER, "1"), "SAc")
-    expect_true(is.na(check_allowed_values("", valid_support_values, ERROR_VAL_CHARACTER, "1")))
-    expect_true(is.na(check_allowed_values(NA, valid_support_values, ERROR_VAL_CHARACTER, "1")))
-    expect_equal(check_allowed_values("abc", valid_support_values, ERROR_VAL_CHARACTER, "1"), ERROR_VAL_CHARACTER)
-    expect_equal(check_allowed_values("abc", valid_support_values, NA, "1"), "abc")
+    expect_equal(check_allowed_values("partial", valid_support_values, 1), "Partial")
+    expect_equal(check_allowed_values("Standard", valid_support_values, 1), "Standard")
+    expect_equal(check_allowed_values("SAc", valid_support_values, 1, ), "SAC")
+    expect_true(is.na(check_allowed_values("", valid_support_values, 1)))
+    expect_true(is.na(check_allowed_values(NA, valid_support_values, 1)))
+    expect_equal(check_allowed_values("abc", valid_support_values, 1, error_val = ERROR_VAL_CHARACTER), ERROR_VAL_CHARACTER)
+    expect_equal(check_allowed_values("abc", valid_support_values, 1, replace_invalid = FALSE), "abc")
 })
 
 
