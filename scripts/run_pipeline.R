@@ -70,7 +70,6 @@ ingest_data(
     dataset = DATASET,
     table = "patient_data_monthly",
     source = file.path(table_dir, "patient_data_monthly.parquet"),
-
 )
 ingest_data(
     project_id = PROJECT_ID,
