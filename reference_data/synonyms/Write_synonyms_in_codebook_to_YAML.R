@@ -1,6 +1,6 @@
 # Small script that shows how to write the Excel sheets to a YAML  --------
 
-codebook_data_file <- here::here("reference_data","master_tracker_variables.xlsx")
+codebook_data_file <- here::here("reference_data", "master_tracker_variables.xlsx")
 
 codebook_data_file %>%
     readxl::read_xlsx(sheet = "synonyms_PatientData") %>%
