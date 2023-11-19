@@ -7,19 +7,19 @@
 link_product_patient(product_file, patient_file)
 }
 \arguments{
-\item{product_file}{A string specifying the path to the product csv file.}
+\item{product_file}{A string specifying the path to the product file.}
 
-\item{patient_file}{A string specifying the path to the patient csv file.}
+\item{patient_file}{A string specifying the path to the patient file.}
 }
 \value{
 This function does not return a value. It prints log messages about the linking process.
 }
 \description{
-This function links a product csv file with a patient csv file. It reads the csv files, merges them based on 'file_name' and patient 'id',
+This function links a product file with a patient file. It reads the files, merges them based on 'file_name' and patient 'id',
 finds the ids that are in the product data but not in the patient data, creates a summary of these ids, and logs the process.
 }
 \examples{
 \dontrun{
-link_product_patient("path/to/product_data.csv", "path/to/patient_data.csv")
+link_product_patient("path/to/product_data.parquet", "path/to/patient_data.parquet")
 }
 }
