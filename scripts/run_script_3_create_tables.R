@@ -94,19 +94,19 @@ main <- function() {
                     create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for product data. Error: ", e$message)
+                    logError("Could not create table for product data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for product data. Warning: ", w$message)
+                    logWarn("Could not create table for product data. Warning: ", w$message)
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    logInfo("Finish creating table csv files.")
+    logInfo("Finish creating table files.")
 
-    logInfo("Trying to link csv files for product and patient data.")
+    logInfo("Trying to link files for product and patient data.")
 
     logfile <- "link_product_patient_data"
 
@@ -115,22 +115,22 @@ main <- function() {
             tryCatch(
                 {
                     link_product_patient(
-                        file.path(paths$tables, "product_data.csv"),
-                        file.path(paths$tables, "patient_data_monthly.csv")
+                        file.path(paths$tables, "product_data.parquet"),
+                        file.path(paths$tables, "patient_data_monthly.parquet")
                     )
                 },
                 error = function(e) {
-                    logError("Could not link csv files for product and patient data. Error: ", e$message)
+                    logError("Could not link files for product and patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not link csv files for product and patient data. Warning: ", w$message)
+                    logWarn("Could not link files for product and patient data. Warning: ", w$message)
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    logInfo("Finished linking csv files for product and patient data.")
+    logInfo("Finished linking files for product and patient data.")
 }
 
 main()

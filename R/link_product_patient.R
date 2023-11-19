@@ -1,20 +1,20 @@
 #' @title Link Product and Patient Data
 #'
 #' @description
-#' This function links a product csv file with a patient csv file. It reads the csv files, merges them based on 'file_name' and patient 'id',
+#' This function links a product file with a patient file. It reads the files, merges them based on 'file_name' and patient 'id',
 #' finds the ids that are in the product data but not in the patient data, creates a summary of these ids, and logs the process.
 #'
-#' @param product_file A string specifying the path to the product csv file.
-#' @param patient_file A string specifying the path to the patient csv file.
+#' @param product_file A string specifying the path to the product file.
+#' @param patient_file A string specifying the path to the patient file.
 #'
 #' @return This function does not return a value. It prints log messages about the linking process.
 #'
 #' @examples
 #' \dontrun{
-#' link_product_patient("path/to/product_data.csv", "path/to/patient_data.csv")
+#' link_product_patient("path/to/product_data.parquet", "path/to/patient_data.parquet")
 #' }
 link_product_patient <- function(product_file, patient_file) {
-    logInfo("Trying to link product csv file ", product_file, " with patient csv file ", patient_file)
+    logInfo("Trying to link product file ", product_file, " with patient file ", patient_file)
 
     patient_data <- arrow::read_parquet(patient_file)
     product_data <- arrow::read_parquet(product_file)
