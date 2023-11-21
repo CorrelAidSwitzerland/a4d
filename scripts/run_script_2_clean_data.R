@@ -303,13 +303,13 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # Formula to calculate mg/dl from mmol/l: mg/dl = 18 × mmol/l
     if (all(is.na(df_patient$fbg_baseline_mg))) {
         df_patient <- df_patient %>%
-            dplyr::mutate(fbg_baseline_mg = case_when(
+            dplyr::mutate(fbg_baseline_mg = dplyr::case_when(
                 fbg_baseline_mmol != ERROR_VAL_NUMERIC ~ fbg_baseline_mmol * 18
             ))
     }
     if (all(is.na(df_patient$fbg_updated_mg))) {
         df_patient <- df_patient %>%
-            dplyr::mutate(fbg_updated_mg = case_when(
+            dplyr::mutate(fbg_updated_mg = dplyr::case_when(
                 fbg_updated_mmol != ERROR_VAL_NUMERIC ~ fbg_updated_mmol * 18
             ))
     }

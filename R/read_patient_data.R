@@ -54,7 +54,7 @@ reading_patient_data <-
                         tidyr::unite(!!col, sep = ",")
                     df_patient <- df_patient[!mask]
                     df_patient <- df_patient %>%
-                        tibble::add_column(!!col := pull(merged_col), .name_repair = "minimal")
+                        tibble::add_column(!!col := dplyr::pull(merged_col), .name_repair = "minimal")
                 }
             }
 
