@@ -53,23 +53,23 @@ create_table_longitudinal_data <-
             )
 
         patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
-            select(all_of(dynamic_patient_columns))
+            dplyr::select(tidyselect::all_of(dynamic_patient_columns))
 
         # get latest static patient data overall
         variable_lag <- paste0(variable, "_lag")
         longitudinal_data <- patient_data %>%
-            drop_na(!!variable) %>%
+            tidyr::drop_na(!!variable) %>%
             dplyr::filter(get(variable) != ERROR_VAL_NUMERIC) %>%
-            group_by(id) %>%
-            arrange(tracker_year, tracker_month) %>%
+            dplyr::group_by(id) %>%
+            dplyr::arrange(tracker_year, tracker_month) %>%
             dplyr::filter(
-                get(variable) != replace_na(
+                get(variable) != tidyr::replace_na(
                     dplyr::lag(get(variable), default = NULL),
                     ERROR_VAL_NUMERIC
                 )
             ) %>%
-            ungroup() %>%
-            arrange(id, tracker_year, tracker_month)
+            dplyr::ungroup() %>%
+            dplyr::arrange(id, tracker_year, tracker_month)
 
         export_data_as_parquet(
             data = longitudinal_data,

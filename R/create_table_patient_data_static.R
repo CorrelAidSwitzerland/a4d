@@ -38,16 +38,16 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
 
 
     static_patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
-        select(all_of(static_patient_columns))
+        dplyr::select(tidyselect::all_of(static_patient_columns))
 
     # get latest static patient data overall
     static_patient_data <- static_patient_data %>%
-        group_by(id) %>%
-        slice_max(tracker_year, n = 1) %>%
-        slice_max(tracker_month, n = 1) %>%
-        slice_head(n = 1) %>%
-        ungroup() %>%
-        arrange(tracker_year, tracker_month, id)
+        dplyr::group_by(id) %>%
+        dplyr::slice_max(tracker_year, n = 1) %>%
+        dplyr::slice_max(tracker_month, n = 1) %>%
+        dplyr::slice_head(n = 1) %>%
+        dplyr::ungroup() %>%
+        dplyr::arrange(tracker_year, tracker_month, id)
 
     testit::assert(sum(duplicated(static_patient_data$id)) == 0)
 
