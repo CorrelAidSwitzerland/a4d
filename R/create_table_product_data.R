@@ -139,7 +139,8 @@ preparing_product_fields <- function(merged_data) {
         "product_country" = "character",
         "product_hospital" = "character",
         "product_category" = "character",
-        "orig_product_released_to" = "character"
+        "orig_product_released_to" = "character",
+        "product_unit_capacity" = "integer"
     )
 
     logInfo("Start processing fields for the single csv product_data...")
