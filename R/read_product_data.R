@@ -350,6 +350,47 @@ add_product_categories <- function(inventory_data, product_category_mapping) {
         )
 }
 
+#' @title Extract Unit Capacity from a Specified Column
+#'
+#' @description
+#' This function extracts the unit capacity from a specified column in a dataframe.
+#' It assumes that the unit capacity is represented by numbers immediately before 's or s within parentheses.
+#' Non-numeric characters are removed and the extracted values are converted to numeric.
+#' NA values are replaced with 1.
+#'
+#' @param df A dataframe that contains the column to extract unit capacity from.
+#' @param column_name The name of the column to extract unit capacity from.
+#'
+#' @return A dataframe with an additional column 'product_unit_capacity' that contains the extracted unit capacity.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(product = c("Product A (2s)", "Product B (3's)", "Product C"))
+#' df <- extract_unit_capacity(df, "product")
+#' }
+extract_unit_capacity <- function(df, column_name) {
+    logDebug("Trying to extract Unit Capacity from ", column_name, " column")
+
+    # Extract all symbols between parentheses
+    df$product_unit_capacity <- stringr::str_extract(df[[column_name]], "\\(([^)]+)\\)")
+
+    # Extract numbers that are immediately before 's or s
+    df$product_unit_capacity <- stringr::str_extract(df$product_unit_capacity, "\\d+(?=s|'s)")
+
+    # Remove non-numeric characters
+    df$product_unit_capacity <- gsub("[^0-9]", "", df$product_unit_capacity)
+
+    # Convert the new field to numeric
+    df$product_unit_capacity <- as.numeric(df$product_unit_capacity)
+
+    # Add 1 to NA values
+    df$product_unit_capacity[is.na(df$product_unit_capacity)] <- 1
+
+    logDebug("Finished extracting Unit Capacity from ", column_name, " column")
+
+    return(df)
+}
 
 #' @title Process product data in script 2.
 #'
@@ -469,8 +510,10 @@ reading_product_data_step2 <-
                 report_unknown_products(product_df, sheet_month, known_products)
             }
 
-
             product_df <- product_df %>% add_product_categories(product_category_mapping)
+
+            # extract Unit Capacity from product column
+            product_df <- extract_unit_capacity(product_df, "product")
 
             #### hospital and country information missing here!!
 
