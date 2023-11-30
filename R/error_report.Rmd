@@ -7,19 +7,24 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 
 library(dplyr)
+devtools::load_all()
 ```
 
 
 ```{r data, include = FALSE}
 
 # list of log files
-logs <- list.files(path = here::here("data", "output", "logs"),
-                   pattern = "*t.log")
+paths <- init_paths(c("patient_data_raw", "product_data_raw"), delete = FALSE)
+log_path <- file.path(paths$tracker_root,"output","logs")
+logs <- list.files(path = log_path,
+                   # probably redundant, as logs only contains log files?
+                   pattern = "*.log"
+                   )
 
 # read all log files and combine into one dataframe
 all_logs <- purrr::map(seq_along(logs), function(i) {
 
-    df <- readr::read_delim(here::here("data", "output", "logs", logs[[i]]),
+    df <- readr::read_delim(file.path(log_path, logs[[i]]),
                       delim = "\t", col_names = FALSE,
                       show_col_types = FALSE)
 
