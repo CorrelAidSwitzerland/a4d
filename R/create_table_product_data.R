@@ -51,10 +51,16 @@ create_table_product_data <- function(input_root, output_root) {
         "product_country", "product_hospital"
     )
 
+    logDebug("Calculating the most frequent ‘product_hospital’ for each ‘file_name'...")
+    merged_data <- calculate_most_frequent(merged_data, "file_name", "product_hospital", "table_hospital")
+
+    logDebug("Calculating the most frequent ‘product_country’ for each ‘file_name'...")
+    merged_data <- calculate_most_frequent(merged_data, "file_name", "product_country", "table_country")
+
     # Reorder, add, and ensures the correct data type for each column according to the list of fields
     merged_data <- preparing_product_fields(merged_data)
 
-    # Write the merged and processed data to a CSV file in the output_root directory
+    # Write the merged and processed data to a file in the output_root directory
     export_data_as_parquet(
         data = merged_data,
         filename = "product_data",
@@ -140,7 +146,9 @@ preparing_product_fields <- function(merged_data) {
         "product_hospital" = "character",
         "product_category" = "character",
         "orig_product_released_to" = "character",
-        "product_unit_capacity" = "integer"
+        "product_unit_capacity" = "integer",
+        "table_country" = "character",
+        "table_hospital" = "character"
     )
 
     logInfo("Start processing fields for the single csv product_data...")
@@ -221,4 +229,40 @@ preparing_product_fields <- function(merged_data) {
     logInfo("Finished processing fields for the single csv product_data.")
 
     return(merged_data)
+}
+
+#' @title Calculate the Most Frequent Value in a Data Frame
+#'
+#' @description
+#' This function calculates the most frequent value of a specified column for each group in a data frame.
+#' It then adds a new column to the data frame with these most frequent values.
+#'
+#' @param df A data frame.
+#' @param group_column The name of the column to group by.
+#' @param value_column The name of the column to calculate the most frequent value from.
+#' @param new_column The name of the new column to add to the data frame.
+#'
+#' @return A data frame with an additional column containing the most frequent value of the specified column for each group.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(dplyr)
+#' data(mtcars)
+#' result <- calculate_most_frequent(mtcars, "cyl", "gear", "most_frequent_gear")
+#' }
+calculate_most_frequent <- function(df, group_column, value_column, new_column) {
+    # Group by 'group_column' and find the most frequent 'value_column' value for each group
+    most_frequent_value <- df %>%
+        dplyr::filter(!is.na(.data[[value_column]])) %>%
+        dplyr::group_by(.data[[group_column]]) %>%
+        dplyr::summarise(across(.data[[value_column]], ~ names(which.max(table(.)))))
+
+    most_frequent_value <- dplyr::rename(most_frequent_value, !!new_column := .data[[value_column]])
+
+    # Join the original dataframe with the most frequent value dataframe
+    df <- df %>%
+        dplyr::left_join(most_frequent_value, by = group_column)
+
+    return(df)
 }
