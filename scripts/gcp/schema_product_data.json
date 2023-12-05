@@ -18,5 +18,7 @@
     {"name": "hospital", "type": "STRING"},
     {"name": "category", "type": "STRING"},
     {"name": "orig_released_to", "type": "STRING"},
-    {"name": "unit_capacity", "type": "INTEGER"}
+    {"name": "unit_capacity", "type": "INTEGER"},
+    {"name": "table_country", "type": "STRING"},
+    {"name": "table_hospital", "type": "STRING"}
 ]
