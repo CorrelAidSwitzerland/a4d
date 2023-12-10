@@ -47,8 +47,8 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         )
 
     patient_data <- read_cleaned_patient_data(input_root, patient_data_files) %>%
-        select(all_of(dynamic_patient_columns)) %>%
-        arrange(tracker_year, tracker_month, id)
+        dplyr::select(tidyselect::all_of(dynamic_patient_columns)) %>%
+        dplyr::arrange(tracker_year, tracker_month, id)
 
     export_data_as_parquet(
         data = patient_data,
