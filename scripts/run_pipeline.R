@@ -34,6 +34,20 @@ upload_data <- function(bucket, data_dir) {
 }
 
 ingest_data <- function(project_id, cluster_fields, dataset, table, source) {
+    print("Deleting old table in GCP Big Query")
+    command <- paste(
+        "bq rm",
+        "-f",
+        "-t",
+        paste0(project_id, ":", dataset, ".", table)
+    )
+    cat(command)
+    exit_code <- system(command)
+    if (exit_code != 0) {
+        paste("Error while executing", command)
+        stop("Error during ingesting data")
+    }
+
     print("Ingesting data to GCP Big Query")
     command <- paste(
         "bq load",
@@ -82,7 +96,7 @@ ingest_data(
     project_id = PROJECT_ID,
     cluster_fields = "clinic_code,id,tracker_year,tracker_month",
     dataset = DATASET,
-    table = "longitudinal_data_hba1c",
+    table = "patient_data_hba1c",
     source = file.path(table_dir, "longitudinal_data_hba1c.parquet")
 )
 ingest_data(

@@ -485,12 +485,12 @@ extract_product_multiple <- function(product_df) {
 
         # recode product_units_received
         if ((grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product)) & is.na(product_received_from) == FALSE) & (!grepl("\\/", product))) {
-            df_product_test_x[row, "product_units_received"] <- as.character(as.numeric(stringi::stri_extract_all_regex(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1), "[1-9]+")[[1]][1]))
+            df_product_test_x[row, "product_units_received"] <- as.character(as.numeric(stringi::stri_extract_all_regex(substring(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1), "[1-9]+")[[1]][1]))
         }
 
         # recode product_units_released
         if ((grepl("\\(", product) & grepl("\\)", product) & (grepl("box", product) | grepl("unit", product)) & is.na(product_released_to) == FALSE) & (!grepl("\\/", product))) {
-            df_product_test_x[row, "product_units_released"] <- as.numeric(stringi::stri_extract_all_regex(substring(str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1), "[1-9]+")[[1]][1])
+            df_product_test_x[row, "product_units_released"] <- as.numeric(stringi::stri_extract_all_regex(substring(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]], 2, nchar(stringr::str_extract_all(product, "\\([^()]+\\)")[[1]]) - 1), "[1-9]+")[[1]][1])
         }
     }
 
