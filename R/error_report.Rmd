@@ -8,10 +8,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
 library(dplyr)
 devtools::load_all()
+
 ```
 
 
-```{r data, include = FALSE}
+```{r data, include=FALSE}
 
 # list of log files
 paths <- init_paths(c("patient_data_raw", "product_data_raw"), delete = FALSE)
@@ -37,50 +38,130 @@ all_logs <- purrr::map(seq_along(logs), function(i) {
 
 # filter for relevant messages (errors and warnings)
 logs_df <- bind_rows(all_logs) %>%
-    dplyr::filter(X3 %in% c("WARN", "ERROR")) %>% 
-    dplyr::mutate(file = stringr::str_replace(file, ".log", "")) %>% 
+   # dplyr::filter(X3 %in% c("WARN", "ERROR")) %>% 
+    # shorten file names to avoid dublicates
+    dplyr::mutate(file = stringr::str_replace(file, "_raw.log", ""),
+                  file = stringr::str_replace(file, "outputs_", ""),
+                  file = stringr::str_replace(file, "output_logs_", ""),
+                  file = stringr::str_replace(file, ".log", "")) %>% 
     dplyr::rename(type = X3,
                   issue = X5,
                   message = X6)
 
+
 # sum up errors / warns per file
 summary <- logs_df %>% 
-    dplyr::count(file, type)
+    dplyr::mutate(
+        data = case_when(
+            stringr::str_detect(file, "product") ~ "product",
+            stringr::str_detect(file, "patient") ~ "patient",
+            TRUE ~ "other"),
+        type = ifelse(type %in% c("ERROR", "WARN"), type, "total")
+    ) %>% 
+    dplyr::count(data, file, type) %>% 
+    tidyr::pivot_wider(names_from = type, values_from = n,
+                       ) %>% 
+    dplyr::mutate(ERROR = ifelse(is.na(ERROR), 0, ERROR),
+                  WARN = ifelse(is.na(WARN), 0, WARN),
+                  total = ERROR + WARN)
 
+# function to create overview table along var data (product / patient)
 
-details <- logs_df %>% 
-    dplyr::select(type, file, issue, message) %>% 
-    dplyr::distinct() %>% 
-    dplyr::arrange(type, file)
+create_table_error_report <- function(data){
+
+    df <- logs_df %>% 
+        dplyr::filter(str_detect(file, data),
+                      type %in% c("WARN", "ERROR")) %>%
+        # indicator E / W for type - do we need this?
+        dplyr::mutate(issue = ifelse(type == "WARN",
+                                      paste0(issue, " (warning)"),
+                                      paste0(issue, " (error)"))) %>% 
+        dplyr::count(file, issue) %>% 
+        tidyr::pivot_wider(names_from = issue,
+                           values_from = n)
+        
+        
+    df[is.na(df)] <- 0
+        
+    
+    df <- df %>% 
+        dplyr::mutate(total = rowSums(df[, -1], na.rm = TRUE)) %>% 
+        dplyr::arrange(dplyr::desc(total)) %>% 
+        dplyr::bind_rows(colSums(df[,-1], na.rm = TRUE)) %>% 
+        dplyr::mutate(file = ifelse(is.na(file), "total", file))
+    
+    df$total[nrow(df)] <- sum(df$total, na.rm = TRUE)
+    
+    return(df)
+}
+
 
 ```
 
 
+
 Last compiled on `r format(Sys.Date(), '%d %B, %Y')`
 
-### Summary
 
-#### Files
+* `r nrow(summary)` files processed
+(`r sum(summary$data == "patient")` patient data, 
+`r sum(summary$data == "product")` product data, 
+`r sum(summary$data == "other")` other)
 
-* `r length(all_logs)` files processed
-
-* `r length(all_logs) - nrow(distinct(logs_df, file))` files sucessfully
+* `r sum(summary$total == 0)` files successfully
 processed (without errors or warnings)
 
-* `r sum(summary$type == "ERROR")` files with errors
+* `r sum(summary$ERROR > 0)` files with errors
 
-* `r sum(summary$type == "WARN")` files with warnings
+* `r sum(summary$WARN > 0)` files with warnings
 
-<br>
 
-#### Errors and warnings
+### Product Data
+ 
+```{r product_error}
 
-* Total errors: `r sum(details$type == "ERROR")`
 
-* Total warnings: `r sum(details$type == "WARN")`
+table <- create_table_error_report(data = "product")
 
-<br>
+# create legend to use as shorter colnames
+legend <- dplyr::tibble(
+    name = colnames(table),
+    x = c(0:(length(table)-1))
+    ) %>% 
+    dplyr::mutate(short = ifelse(name %in% c("file", "total"), name,
+                                 paste0("issue_", x))
+        )
 
-### List of errors and warnings
+legend %>% 
+    dplyr::select(short, name) %>% 
+    dplyr::filter(stringr::str_detect(short, "issue")) %>% 
+    knitr::kable(caption = "legend")
 
-`r knitr::kable(details)`
+knitr::kable(table, col.names = legend$short)
+
+```
+
+
+### Patient Data
+
+```{r patient_error}
+
+table <- create_table_error_report(data = "patient")
+
+# create legend to use as shorter colnames
+legend <- dplyr::tibble(
+    name = colnames(table),
+    x = c(0:(length(table)-1))
+    ) %>% 
+    dplyr::mutate(short = ifelse(name %in% c("file", "total", "NA"), name,
+                          paste0("issue_", x)))
+
+legend %>% 
+    dplyr::select(short, name) %>% 
+    dplyr::filter(stringr::str_detect(short, "issue")) %>% 
+    knitr::kable(caption = "legend")
+
+knitr::kable(table, col.names = legend$short)
+
+```
+
