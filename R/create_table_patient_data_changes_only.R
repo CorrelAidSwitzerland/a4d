@@ -46,6 +46,7 @@ create_table_longitudinal_data <-
                 "status",
                 "support_from_a4d",
                 "testing_frequency",
+                "tracker_date",
                 "tracker_month",
                 "tracker_year",
                 "updated_2022_date",

@@ -32,6 +32,7 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
             "t1d_diagnosis_age",
             "t1d_diagnosis_date",
             "t1d_diagnosis_with_dka",
+            "tracker_date",
             "tracker_month",
             "tracker_year"
         )

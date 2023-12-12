@@ -40,6 +40,7 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
             "status",
             "support_from_a4d",
             "testing_frequency",
+            "tracker_date",
             "tracker_month",
             "tracker_year",
             "updated_2022_date",
