@@ -355,6 +355,7 @@ add_product_categories <- function(inventory_data, product_category_mapping) {
 #' @description
 #' This function extracts the unit capacity from a specified column in a dataframe.
 #' It assumes that the unit capacity is represented by numbers immediately before 's or s within parentheses.
+#' All strings which contain the word 'singles' extracted as 1.
 #' Non-numeric characters are removed and the extracted values are converted to numeric.
 #' NA values are replaced with 1.
 #'
@@ -374,6 +375,11 @@ extract_unit_capacity <- function(df, column_name) {
 
     # Extract all symbols between parentheses
     df$product_unit_capacity <- stringr::str_extract(df[[column_name]], "\\(([^)]+)\\)")
+
+    # Recode all strings which contain the word 'singles' into '1s'
+    df$product_unit_capacity <- ifelse(grepl("singles", df$product_unit_capacity, ignore.case = TRUE),
+        "1s", df$product_unit_capacity
+    )
 
     # Extract numbers that are immediately before 's or s
     df$product_unit_capacity <- stringr::str_extract(df$product_unit_capacity, "\\d+(?=s|'s)")

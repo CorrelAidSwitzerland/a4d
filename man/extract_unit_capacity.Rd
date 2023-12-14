@@ -17,6 +17,7 @@ A dataframe with an additional column 'product_unit_capacity' that contains the 
 \description{
 This function extracts the unit capacity from a specified column in a dataframe.
 It assumes that the unit capacity is represented by numbers immediately before 's or s within parentheses.
+All strings which contain the word 'singles' extracted as 1.
 Non-numeric characters are removed and the extracted values are converted to numeric.
 NA values are replaced with 1.
 }
