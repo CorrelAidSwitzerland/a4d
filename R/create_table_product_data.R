@@ -51,14 +51,31 @@ create_table_product_data <- function(input_root, output_root) {
         "product_country", "product_hospital"
     )
 
-    logDebug("Calculating the most frequent ‘product_hospital’ for each ‘file_name'...")
-    merged_data <- calculate_most_frequent(merged_data, "file_name", "product_hospital", "table_hospital")
+    logDebug("Calculating the most frequent 'product_hospital' for each 'file_name'...")
+    tryCatch(
+        {
+            merged_data <- calculate_most_frequent(merged_data, "file_name", "product_hospital", "table_hospital")
+        },
+        error = function(e) {
+            logError("Error in calculating the most frequent 'product_hospital': ", e)
+        }
+    )
 
-    logDebug("Calculating the most frequent ‘product_country’ for each ‘file_name'...")
-    merged_data <- calculate_most_frequent(merged_data, "file_name", "product_country", "table_country")
+    logDebug("Calculating the most frequent 'product_country' for each 'file_name'...")
+    tryCatch(
+        {
+            merged_data <- calculate_most_frequent(merged_data, "file_name", "product_country", "table_country")
+        },
+        error = function(e) {
+            logError("Error in calculating the most frequent 'product_country': ", e)
+        }
+    )
 
     # Reorder, add, and ensures the correct data type for each column according to the list of fields
     merged_data <- preparing_product_fields(merged_data)
+
+    logDebug("Checking 'table_country' for each 'file_name'...")
+    report_empty_intersections(merged_data, "file_name", "table_country")
 
     # Write the merged and processed data to a file in the output_root directory
     export_data_as_parquet(
@@ -265,4 +282,41 @@ calculate_most_frequent <- function(df, group_column, value_column, new_column) 
         dplyr::left_join(most_frequent_value, by = group_column)
 
     return(df)
+}
+
+#' @title Report Empty Intersections
+#'
+#' @description
+#' This function reports the names of the rows in a cross-tabulation of two columns
+#' from a dataframe where the sum is 0.
+#'
+#' @param df A dataframe.
+#' @param row_category The name of the column in df to use for the rows of the cross-tabulation.
+#' @param col_category The name of the column in df to use for the columns of the cross-tabulation.
+#'
+#' @return A warning message with the number of row_category values that have a sum of 0 in col_category, and a list of these row_category values.
+#' @export
+#'
+#' @examples
+#' df <- data.frame(file_name = c("file1", "file2", "file3"), table_country = c("country1", "country2", NA))
+#' report_empty_intersections(df, "file_name", "table_country")
+report_empty_intersections <- function(df, row_category, col_category) {
+    crosstab <- table(df[[row_category]], df[[col_category]])
+
+    # Calculate the sum by each row
+    row_sums <- rowSums(crosstab)
+
+    # Convert to a data frame
+    df_row_sums <- data.frame(row_name = rownames(crosstab), sum = row_sums)
+
+    # Filter the rows where 'sum' is 0
+    df_row_sums <- df_row_sums[df_row_sums$sum == 0, ]
+
+    if (nrow(df_row_sums) > 0) {
+        logWarn(
+            "The number of ", row_category, " with empty ", col_category, " is ",
+            nrow(df_row_sums), ": ",
+            paste(df_row_sums$row_name, sep = "", collapse = ", ")
+        )
+    }
 }
