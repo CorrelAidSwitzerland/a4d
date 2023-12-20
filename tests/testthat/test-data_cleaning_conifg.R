@@ -39,7 +39,7 @@ test_that("data cleaning config for insulin_regimen yields valid R", {
             ),
             env
         ),
-        "Basal-bolus"
+        "Basal-bolus (MDI)"
     )
 })
 

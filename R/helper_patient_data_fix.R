@@ -564,6 +564,17 @@ fix_id <- function(id) {
 }
 
 
+#### insulin regimen ####
+
+extract_regimen <- function(raw_input) {
+    output <- sub("^.*basal.*$", "Basal-bolus (MDI)", raw_input, ignore.case = TRUE)
+    output <- sub("^.*premixed.*$", "Premixed 30/70 BD", output, ignore.case = TRUE)
+    output <- sub("^.*self-mixed.*$", "Self-mixed BD", output, ignore.case = TRUE)
+    output <- sub("^.*conventional.*$", "Modified conventional TID", output, ignore.case = TRUE)
+    output
+}
+
+
 # TEST --------------------------------------------------------------------
 
 # testing <- cleaning_a4d_tracker(data = dat)
