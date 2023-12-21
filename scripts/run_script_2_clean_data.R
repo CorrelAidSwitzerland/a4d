@@ -318,7 +318,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     # sort by year and month like it is in the tracker files
     df_patient <- df_patient %>%
-        dplyr::arrange(tracker_month, id)
+        dplyr::arrange(tracker_date, id)
 
     logDebug(
         "df_patient dim: ",
