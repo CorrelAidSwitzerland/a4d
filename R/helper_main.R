@@ -12,6 +12,7 @@
 #' @param delete If TRUE, delete all files under output.
 #'
 #' @return A list with tracker_root_path and output_root path
+#' @export
 init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
     paths <- list()
     tracker_root_path <- select_A4D_directory()
@@ -57,6 +58,7 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
 #' @param pattern The search pattern to filter files.
 #'
 #' @return A vector with file names.
+#' @export
 get_files <- function(tracker_root, pattern = "\\.xlsx$") {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = pattern)
     tracker_files <-
@@ -70,6 +72,7 @@ get_files <- function(tracker_root, pattern = "\\.xlsx$") {
 #' Read in all defined synonyms from the YAML files inside the synonyms folder.
 #'
 #' @return A list with both patient and product data synonyms as tibble.
+#' @export
 get_synonyms <- function() {
     ## Extract synonyms for products and patients
     ## If you encounter new columns, just add the synonyms to these YAML files
