@@ -3,5 +3,5 @@ source("renv/activate.R")
 if (interactive()) {
     require("devtools", quietly = TRUE)
     # automatically attaches usethis
-    devtools::install()
+    devtools::load_all()
 }

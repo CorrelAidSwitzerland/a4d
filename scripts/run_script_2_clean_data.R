@@ -1,6 +1,7 @@
 options(readxl.show_progress = FALSE)
 future::plan("multisession")
 
+
 paths <- a4d::init_paths(c("patient_data_cleaned", "product_data_cleaned"), delete = TRUE)
 a4d::setup_logger(paths$output_root, "script2")
 patient_data_files <- a4d::get_files(paths$tracker_root, pattern = "patient_raw.parquet$")
@@ -51,3 +52,5 @@ progressr::with_progress({
 ParallelLogger::logInfo("Finish processing all csv files.")
 
 ParallelLogger::clearLoggers()
+
+future::plan("sequential")
