@@ -24,11 +24,11 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
     x <- tryCatch(
         cast_fnc(x),
         error = function(e) {
-            logError("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
+            ParallelLogger::logError("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
             x <- error_val
         },
         warning = function(w) {
-            logWarn("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
+            ParallelLogger::logWarn("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
             x <- error_val
         }
     )
@@ -55,7 +55,7 @@ cut_numeric_value <- function(x,
     }
 
     if (x < min || x > max) {
-        logWarn(
+        ParallelLogger::logWarn(
             "Found invalid value ", x, " for column ", col_name, " outside [", min, ", ", max, "]. ",
             "Value was replaced with ", ERROR_VAL_NUMERIC, "."
         )
@@ -154,7 +154,7 @@ parse_dates <- function(date) {
     parsed_date <- suppressWarnings(lubridate::as_date(date))
 
     if (is.na(parsed_date)) {
-        logWarn(
+        ParallelLogger::logWarn(
             "Could not parse date value ", date, ". ",
             "Trying to parse with lubridate::parse_date_time and orders = c('dmy', 'dmY', 'by', 'bY')."
         )
@@ -195,9 +195,9 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
     valid_value_mapping <- setNames(as.list(valid_values), sanitize_str(valid_values))
 
     if (!sanitize_str(x) %in% names(valid_value_mapping)) {
-        logWarn("Patient ", id, ": Value ", x, " for column ", col, " is not in the list of allowed values. ")
+        ParallelLogger::logWarn("Patient ", id, ": Value ", x, " for column ", col, " is not in the list of allowed values. ")
         if (replace_invalid) {
-            logInfo("Replacing ", x, " with ", error_val, ".")
+            ParallelLogger::logInfo("Replacing ", x, " with ", error_val, ".")
             return(error_val)
         } else {
             return(x)
@@ -275,13 +275,13 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
         }
 
         if (is.na(age)) {
-            logWarn(
+            ParallelLogger::logWarn(
                 "Patient ", id, ": age is missing. Using calculated age ", calc_age,
                 " instead of original age."
             )
         } else {
             if (calc_age != age) {
-                logWarn(
+                ParallelLogger::logWarn(
                     "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
                     ". Using calculated age instead of original age."
                 )
@@ -289,7 +289,7 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
         }
 
         if (calc_age < 0) {
-            logWarn("Patient ", id, ": calculated age is negative. Something went wrong.")
+            ParallelLogger::logWarn("Patient ", id, ": calculated age is negative. Something went wrong.")
             calc_age <- ERROR_VAL_NUMERIC
         }
     }
@@ -322,11 +322,11 @@ fix_bmi <- function(weight, height, id) {
 
 
     if (!is.na(weight) && weight == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": the weight is out of bounds.")
+        ParallelLogger::logWarn("Patient ", id, ": the weight is out of bounds.")
     }
 
     if (!is.na(height) && height == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": the height is out of bounds.")
+        ParallelLogger::logWarn("Patient ", id, ": the height is out of bounds.")
     }
     bmi
 }
@@ -353,7 +353,7 @@ fix_sex <- function(sex, id) {
     )
 
     if (!is.na(fixed_sex) && fixed_sex == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": sex ", sex, " is not in the list of synonyms. Replacing it with ", fixed_sex, ".")
+        ParallelLogger::logWarn("Patient ", id, ": sex ", sex, " is not in the list of synonyms. Replacing it with ", fixed_sex, ".")
     }
     fixed_sex
 }
@@ -463,7 +463,7 @@ fix_testing_frequency <- function(test_frq) {
     }
 
     if (grepl("-", test_frq, fixed = TRUE)) {
-        logInfo("Found a range for testing_frequency. Replacing it with the mean.")
+        ParallelLogger::logInfo("Found a range for testing_frequency. Replacing it with the mean.")
         test_frq <- try(as.character(replace_range_with_mean(test_frq), silent = TRUE))
     }
 
@@ -492,7 +492,7 @@ replace_range_with_mean <- function(x) {
 #'
 #' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
 split_bp_in_sys_and_dias <- function(df) {
-    logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
+    ParallelLogger::logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df <- df %>%
         dplyr::mutate(
             blood_pressure_mmhg = dplyr::case_when(
@@ -502,7 +502,7 @@ split_bp_in_sys_and_dias <- function(df) {
         )
 
     if (paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/") %in% df$blood_pressure_mmhg) {
-        logWarn(
+        ParallelLogger::logWarn(
             "Found invalid values for column blood_pressure_mmhg that do not follow the format X/Y. ",
             "Values were replaced with ", ERROR_VAL_NUMERIC, "."
         )
@@ -514,7 +514,7 @@ split_bp_in_sys_and_dias <- function(df) {
             delim = "/",
             names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
         )
-    logDebug("Finished splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
+    ParallelLogger::logDebug("Finished splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df
 }
 
@@ -550,12 +550,12 @@ fix_id <- function(id) {
     id <- stringr::str_replace(id, "-", "_")
 
     if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
-        logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
+        ParallelLogger::logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
         if (stringr::str_length(id) > 8) {
-            logWarn("Patient ", id, ": id was truncated because it is longer than 8 characters.")
+            ParallelLogger::logWarn("Patient ", id, ": id was truncated because it is longer than 8 characters.")
             id <- stringr::str_sub(id, 1, 8)
         } else {
-            logError("Patient ", id, ": id is not valid.")
+            ParallelLogger::logError("Patient ", id, ": id is not valid.")
             id <- ERROR_VAL_CHARACTER
         }
     }

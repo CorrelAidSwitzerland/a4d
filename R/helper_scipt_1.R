@@ -1,5 +1,3 @@
-
-
 #' @title Process a single tracker file and extract patient and product data.
 #'
 #' @param tracker_file Filename of the tracler.
@@ -13,56 +11,57 @@ process_tracker_file <- function(tracker_file, paths, p) {
     synonyms <- get_synonyms()
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
-    logDebug("Start process_tracker_file.")
-    logInfo(
+
+    ParallelLogger::logDebug("Start process_tracker_file.")
+    ParallelLogger::logInfo(
         "Current file: ",
         tracker_name
     )
 
     logfile <- paste0(tracker_name, "_", "patient")
     with_file_logger(logfile,
-                     {
-                         tryCatch(
-                             process_patient_data(
-                                 tracker_name = tracker_name,
-                                 tracker_data_file = tracker_data_file,
-                                 output_root = paths$patient_data_raw,
-                                 synonyms_patient = synonyms$patient
-                             ),
-                             error = function(e) {
-                                 logError("Could not process patient data. Error = ", e$message, ".")
-                             },
-                             warning = function(w) {
-                                 logWarn("Could not process patient data. Warning = ", w$message, ".")
-                             }
-                         )
-                     },
-                     output_root = paths$output_root
+        {
+            tryCatch(
+                process_patient_data(
+                    tracker_name = tracker_name,
+                    tracker_data_file = tracker_data_file,
+                    output_root = paths$patient_data_raw,
+                    synonyms_patient = synonyms$patient
+                ),
+                error = function(e) {
+                    ParallelLogger::logError("Could not process patient data. Error = ", e$message, ".")
+                },
+                warning = function(w) {
+                    ParallelLogger::logWarn("Could not process patient data. Warning = ", w$message, ".")
+                }
+            )
+        },
+        output_root = paths$output_root
     )
 
     logfile <- paste0(tracker_name, "_", "product")
 
     with_file_logger(logfile,
-                     {
-                         tryCatch(
-                             process_product_data(
-                                 tracker_name = tracker_name,
-                                 tracker_data_file = tracker_data_file,
-                                 output_root = paths$product_data_raw,
-                                 synonyms_product = synonyms$product
-                             ),
-                             error = function(e) {
-                                 logError("Could not process product data. Error = ", e$message, ".")
-                             },
-                             warning = function(w) {
-                                 logWarn("Could not process product data. Warning = ", w$message, ".")
-                             }
-                         )
-                     },
-                     output_root = paths$output_root
+        {
+            tryCatch(
+                process_product_data(
+                    tracker_name = tracker_name,
+                    tracker_data_file = tracker_data_file,
+                    output_root = paths$product_data_raw,
+                    synonyms_product = synonyms$product
+                ),
+                error = function(e) {
+                    ParallelLogger::logError("Could not process product data. Error = ", e$message, ".")
+                },
+                warning = function(w) {
+                    ParallelLogger::logWarn("Could not process product data. Warning = ", w$message, ".")
+                }
+            )
+        },
+        output_root = paths$output_root
     )
 
-    logInfo("Finish process_tracker_file.")
+    ParallelLogger::logDebug("Finish process_tracker_file.")
 }
 
 
@@ -79,7 +78,7 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-        logDebug("Start process_patient_data.")
+        ParallelLogger::logDebug("Start process_patient_data.")
 
         df_raw_patient <-
             reading_patient_data(
@@ -89,7 +88,7 @@ process_patient_data <-
 
         df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
-        logDebug(
+        ParallelLogger::logDebug(
             "df_raw_patient dim: ",
             dim(df_raw_patient) %>% as.data.frame(),
             "."
@@ -102,7 +101,7 @@ process_patient_data <-
             suffix = "_patient_raw"
         )
 
-        logInfo("Finish process_patient_data.")
+        ParallelLogger::logDebug("Finish process_patient_data.")
     }
 
 
@@ -119,7 +118,7 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-        logDebug("Start process_product_data.")
+        ParallelLogger::logDebug("Start process_product_data.")
 
         df_raw_product <-
             reading_product_data_step1(
@@ -130,10 +129,10 @@ process_product_data <-
         if (!is.null(df_raw_product)) {
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
         } else {
-            logDebug("Empty product data")
+            ParallelLogger::logDebug("Empty product data")
         }
 
-        logDebug(
+        ParallelLogger::logDebug(
             "df_raw_product dim: ",
             dim(df_raw_product) %>% as.data.frame(),
             "."
@@ -148,7 +147,7 @@ process_product_data <-
                 suffix = "_product_raw"
             )
         } else {
-            logWarn("No product data in the file")
+            ParallelLogger::logWarn("No product data in the file")
         }
-        logDebug("Finish process_product_data.")
+        ParallelLogger::logDebug("Finish process_product_data.")
     }

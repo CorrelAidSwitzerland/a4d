@@ -139,7 +139,7 @@ read_column_synonyms <- function(synonym_file, path_prefixes = c("reference_data
 #' )
 #' }
 export_data <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
+    ParallelLogger::logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         write.csv(
             file =
@@ -156,7 +156,7 @@ export_data <- function(data, filename, output_root, suffix) {
             fileEncoding = "UTF-16LE",
             quote = T
         )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
+    ParallelLogger::logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 
 
@@ -177,12 +177,12 @@ export_data <- function(data, filename, output_root, suffix) {
 #' )
 #' }
 export_data_as_parquet <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
+    ParallelLogger::logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         arrow::write_parquet(
             sink = file.path(output_root, paste0(filename, suffix, ".parquet")),
         )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
+    ParallelLogger::logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 
 
@@ -193,7 +193,7 @@ export_data_as_parquet <- function(data, filename, output_root, suffix) {
 #'
 #' @return tibble with patient data
 read_raw_csv <- function(file) {
-    logDebug("Start reading data with read_csv.")
+    ParallelLogger::logDebug("Start reading data with read_csv.")
     df_patient_raw <- readr::read_csv(
         file,
         name_repair = "check_unique",
@@ -202,9 +202,9 @@ read_raw_csv <- function(file) {
         col_types = readr::cols(.default = "c"),
         locale = readr::locale(encoding = "UTF-16LE")
     )
-    logDebug("Finished loading data with read_csv.")
-    logInfo("Dim: ", dim(df_patient_raw))
-    logInfo("Columns: ", spec(df_patient_raw))
+    ParallelLogger::logDebug("Finished loading data with read_csv.")
+    ParallelLogger::logInfo("Dim: ", dim(df_patient_raw))
+    ParallelLogger::logInfo("Columns: ", spec(df_patient_raw))
 
     df_patient_raw
 }
@@ -218,6 +218,6 @@ read_raw_csv <- function(file) {
 #' @return A named character vector with all allowed provinces.
 get_allowed_provinces <- function() {
     ## Should new countries and provinces be added, update the YAML file
-    provinces <- yaml::read_yaml("reference_data/provinces/allowed_provinces.yaml") %>% unlist()
+    provinces <- yaml::read_yaml("reference_data/provinces/allowed_provinces.yaml") |> unlist()
     return(provinces)
 }

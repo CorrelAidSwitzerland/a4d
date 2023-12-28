@@ -4,14 +4,14 @@
 \alias{process_tracker_file}
 \title{Process a single tracker file and extract patient and product data.}
 \usage{
-process_tracker_file(paths, tracker_file, tracker_name)
+process_tracker_file(tracker_file, paths, p)
 }
 \arguments{
+\item{tracker_file}{Filename of the tracler.}
+
 \item{paths}{a list with the paths to the tracker root dir, the patient and product output dir and the root output dir.}
 
-\item{tracker_file}{filename.}
-
-\item{tracker_name}{filename without extension.}
+\item{p}{progressor from progressr package.}
 }
 \description{
 Process a single tracker file and extract patient and product data.

@@ -9,14 +9,14 @@ main <- function() {
     setup_logger(paths$output_root, "script3")
     patient_data_files <- get_files(file.path(paths$output_root, "patient_data_cleaned"), pattern = "\\.parquet$")
     product_data_files <- get_files(file.path(paths$output_root, "product_data_cleaned"), pattern = "\\.parquet$")
-    logInfo(
+    ParallelLogger::logInfo(
         "Found ",
         length(patient_data_files),
         " patient csv files under ",
         paths$tracker_root,
         "."
     )
-    logInfo(
+    ParallelLogger::logInfo(
         "Found ",
         length(product_data_files),
         " product csv files under ",
@@ -24,7 +24,7 @@ main <- function() {
         "."
     )
 
-    logInfo("Start creating table csv files.")
+    ParallelLogger::logInfo("Start creating table csv files.")
 
     logfile <- "table_patient_data_static"
     with_file_logger(logfile,
@@ -34,10 +34,10 @@ main <- function() {
                     create_table_patient_data_static(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for static patient data. Error: ", e$message)
+                    ParallelLogger::logError("Could not create table csv for static patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for static patient data. Error: ", w$message)
+                    ParallelLogger::logWarn("Could not create table csv for static patient data. Error: ", w$message)
                 }
             )
         },
@@ -52,10 +52,10 @@ main <- function() {
                     create_table_patient_data_monthly(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for monthly patient data. Error: ", e$message)
+                    ParallelLogger::logError("Could not create table csv for monthly patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for monthly patient data. Error: ", w$message)
+                    ParallelLogger::logWarn("Could not create table csv for monthly patient data. Error: ", w$message)
                 }
             )
         },
@@ -76,10 +76,10 @@ main <- function() {
                     )
                 },
                 error = function(e) {
-                    logError("Could not create table csv for longitudinal patient data. Error: ", e$message)
+                    ParallelLogger::logError("Could not create table csv for longitudinal patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for longitudinal patient data. Error: ", w$message)
+                    ParallelLogger::logWarn("Could not create table csv for longitudinal patient data. Error: ", w$message)
                 }
             )
         },
@@ -94,19 +94,19 @@ main <- function() {
                     create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table for product data. Error: ", e$message)
+                    ParallelLogger::logError("Could not create table for product data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not create table for product data. Warning: ", w$message)
+                    ParallelLogger::logWarn("Could not create table for product data. Warning: ", w$message)
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    logInfo("Finish creating table files.")
+    ParallelLogger::logInfo("Finish creating table files.")
 
-    logInfo("Trying to link files for product and patient data.")
+    ParallelLogger::logInfo("Trying to link files for product and patient data.")
 
     logfile <- "link_product_patient_data"
 
@@ -120,17 +120,17 @@ main <- function() {
                     )
                 },
                 error = function(e) {
-                    logError("Could not link files for product and patient data. Error: ", e$message)
+                    ParallelLogger::logError("Could not link files for product and patient data. Error: ", e$message)
                 },
                 warning = function(w) {
-                    logWarn("Could not link files for product and patient data. Warning: ", w$message)
+                    ParallelLogger::logWarn("Could not link files for product and patient data. Warning: ", w$message)
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    logInfo("Finished linking files for product and patient data.")
+    ParallelLogger::logInfo("Finished linking files for product and patient data.")
 }
 
 main()
