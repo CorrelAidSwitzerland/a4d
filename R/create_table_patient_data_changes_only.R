@@ -16,7 +16,7 @@ create_table_longitudinal_data <-
              output_root,
              variable,
              name) {
-        logInfo("Start creating single csv for table create_table_longitudinal_data and variable ", variable)
+        ParallelLogger::logInfo("Start creating single csv for table create_table_longitudinal_data and variable ", variable)
 
         dynamic_patient_columns <-
             c(
@@ -79,5 +79,5 @@ create_table_longitudinal_data <-
             suffix = ""
         )
 
-        logInfo("Finish creating single csv for table create_table_longitudinal_data and variable ", variable)
+        ParallelLogger::logInfo("Finish creating single csv for table create_table_longitudinal_data and variable ", variable)
     }
