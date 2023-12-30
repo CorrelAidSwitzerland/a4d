@@ -83,7 +83,7 @@ get_patient_end <- function(df, j) {
 
 # @Description: Reads product data from a monthly file based on extraction logic
 extract_product_data <- function(monthly_tracker_df) {
-    ParallelLogger::logDebug("Starting extract_product_data.")
+    logDebug("Starting extract_product_data.")
     start_df_msd <- NULL
     end_df_msd <- NULL
 
@@ -103,7 +103,7 @@ extract_product_data <- function(monthly_tracker_df) {
     # Clean empty remaining first row
     product_data_df <- set_second_row_as_headers_and_remove_first_row(product_data_df)
 
-    ParallelLogger::logDebug("Finish extract_product_data.")
+    logDebug("Finish extract_product_data.")
 
     return(product_data_df)
 }
@@ -134,7 +134,7 @@ extract_product_data <- function(monthly_tracker_df) {
 # column synonyms to unify column names
 # @columns_synonyms: Long format output of read_column_synonyms to match columns
 harmonize_input_data_columns <- function(product_df, columns_synonyms) {
-    ParallelLogger::logDebug("Start harmonize_input_data_columns.")
+    logDebug("Start harmonize_input_data_columns.")
     # In case that there is additional data in strange columns, keep only relevant columns
     # keep.cols <- names(product_df) %in% c("")
 
@@ -147,14 +147,14 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms) {
     ## report all column names which have not been found
     unknown_column_names <- colnames(product_df)[!colnames(product_df) %in% synonym_headers]
     if (length(unknown_column_names) > 0) {
-        ParallelLogger::logWarn("Unknown column names in sheet: ", paste(unknown_column_names, collapse = ", "))
+        logWarn("Unknown column names in sheet: ", paste(unknown_column_names, collapse = ", "))
     }
 
     # replacing var codes
     colnames_found <- match(colnames(product_df), synonym_headers, nomatch = 0)
     colnames(product_df)[colnames(product_df) %in% synonym_headers] <- columns_synonyms$name_clean[colnames_found]
 
-    ParallelLogger::logDebug("Finish harmonize_input_data_columns.")
+    logDebug("Finish harmonize_input_data_columns.")
     if (sum(colnames_found == 0) != 0) {
         "Non-matching column names found (see 0)"
         # SK: remove non matching column names
@@ -282,7 +282,7 @@ update_receivedfrom <- function(product_df) {
                 grepl("Balance", product_units_received, ignore.case = TRUE) & !is.na(product_received_from) ~ product_received_from
             )) %>%
             dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released))
-        ParallelLogger::logInfo("The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance")
+        logInfo("The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance")
     }
     return(product_df)
 }

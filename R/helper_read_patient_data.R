@@ -1,7 +1,7 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    ParallelLogger::logDebug("Start extract_country_clinic_code.")
+    logDebug("Start extract_country_clinic_code.")
     patient_ids <- patient_data["id"] %>%
         dplyr::filter(id != "0") %>%
         tidyr::drop_na() %>%
@@ -19,9 +19,9 @@ extract_country_clinic_code <- function(patient_data) {
     clinic_code <-
         names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
-    ParallelLogger::logDebug("country_code = ", country_code, ".")
-    ParallelLogger::logDebug("clinic_code = ", clinic_code, ".")
-    ParallelLogger::logDebug("Finish extract_country_clinic_code.")
+    logDebug("country_code = ", country_code, ".")
+    logDebug("clinic_code = ", clinic_code, ".")
+    logDebug("Finish extract_country_clinic_code.")
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
@@ -40,9 +40,9 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
-    ParallelLogger::logDebug("Start extract_patient_data for sheet = ", sheet, ".")
+    logDebug("Start extract_patient_data for sheet = ", sheet, ".")
 
-    ParallelLogger::logDebug("Start openxlsx::read.xlsx to get tracker_data.")
+    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
     tracker_data <- openxlsx::read.xlsx(
         xlsxFile = tracker_data_file,
         sheet = sheet,
@@ -59,7 +59,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     # col_names = F,
     # .name_repair = "unique_quiet"
     # )
-    ParallelLogger::logDebug("Finish openxlsx::read.xlsx.")
+    logDebug("Finish openxlsx::read.xlsx.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
@@ -80,8 +80,8 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         row_max <- row_max + 1
     }
 
-    ParallelLogger::logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
-    ParallelLogger::logDebug("Start readxl::read_excel to get patient data.")
+    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
+    logDebug("Start readxl::read_excel to get patient data.")
     df_patient <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
@@ -91,11 +91,11 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         col_types = c("text"),
         .name_repair = "unique_quiet"
     )
-    ParallelLogger::logDebug("Finish readxl::read_excel.")
+    logDebug("Finish readxl::read_excel.")
 
     if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        ParallelLogger::logInfo("Read in multiline header.")
+        logInfo("Read in multiline header.")
 
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
@@ -106,7 +106,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     }
 
     colnames(df_patient) <- header_cols
-    ParallelLogger::logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
+    logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
     # delete columns without a header (=NA)
     df_patient <- df_patient[, !is.na(colnames(df_patient))]
@@ -117,7 +117,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     df_patient <-
         df_patient[rowSums(is.na(df_patient)) != ncol(df_patient), ]
 
-    ParallelLogger::logDebug("Finish extract_patient_data.")
+    logDebug("Finish extract_patient_data.")
 
     df_patient
 }
@@ -137,7 +137,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #' @export
 harmonize_patient_data_columns <-
     function(patient_df, columns_synonyms) {
-        ParallelLogger::logDebug("Start harmonize_patient_data_columns.")
+        logDebug("Start harmonize_patient_data_columns.")
 
         patient_df <- patient_df[!is.na(names(patient_df))]
 
@@ -151,11 +151,11 @@ harmonize_patient_data_columns <-
 
         mismatching_column_ids <- which(colnames_found == 0)
         if (length(mismatching_column_ids) > 0) {
-            ParallelLogger::logWarn(
+            logWarn(
                 "Non-matching column names found: ", paste(colnames(patient_df)[mismatching_column_ids], collapse = ","), "."
             )
         }
 
-        ParallelLogger::logDebug("Finish harmonize_patient_data_columns.")
+        logDebug("Finish harmonize_patient_data_columns.")
         patient_df
     }

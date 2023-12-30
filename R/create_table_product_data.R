@@ -11,13 +11,14 @@
 #'
 #' @return This function does not return a value. It writes the merged data to a new CSV file
 #' (with reordered columns according to the list of fields) in the output_root directory.
+#' @export
 #'
 #' @examples
 #' \dontrun{
 #' create_table_product_data("path/to/input/directory", "path/to/output/directory")
 #' }
 create_table_product_data <- function(input_root, output_root) {
-    ParallelLogger::logInfo("Start creating single file for table product_data.")
+    logInfo("Start creating single file for table product_data.")
 
     # Get a list of all CSV files in the input_root directory
     files <- list.files(input_root, pattern = "*.parquet", full.names = TRUE)
@@ -25,7 +26,7 @@ create_table_product_data <- function(input_root, output_root) {
     # Read all CSV files and store them in a list
     data_list <- lapply(files, function(x) arrow::read_parquet(x))
 
-    ParallelLogger::logInfo(length(data_list), " files will be processed for creating the single file for table product_data.")
+    logInfo(length(data_list), " files will be processed for creating the single file for table product_data.")
 
     # Get the union of all column names
     all_names <- unique(unlist(lapply(data_list, colnames)))
@@ -39,25 +40,25 @@ create_table_product_data <- function(input_root, output_root) {
     # Merge all data frames
     merged_data <- do.call(rbind, data_list)
 
-    ParallelLogger::logDebug("Copying original parient IDs...")
+    logDebug("Copying original parient IDs...")
     merged_data$orig_product_released_to <- merged_data$product_released_to
 
-    ParallelLogger::logDebug("Trying to fix patient IDs...")
+    logDebug("Trying to fix patient IDs...")
     merged_data$product_released_to <- sapply(merged_data$product_released_to, fix_id)
 
-    ParallelLogger::logDebug("Extracting product_county and product_hospisal from patients IDs...")
+    logDebug("Extracting product_county and product_hospisal from patients IDs...")
     merged_data <- id_2_county_hospisal(
         merged_data, "product_released_to",
         "product_country", "product_hospital"
     )
 
-    ParallelLogger::logDebug("Calculating the most frequent 'product_hospital' for each 'file_name'...")
+    logDebug("Calculating the most frequent 'product_hospital' for each 'file_name'...")
     tryCatch(
         {
             merged_data <- calculate_most_frequent(merged_data, "file_name", "product_hospital", "table_hospital")
         },
         error = function(e) {
-            ParallelLogger::logError("Error in calculating the most frequent 'product_hospital': ", e)
+            logError("Error in calculating the most frequent 'product_hospital': ", e)
         }
     )
 
@@ -67,14 +68,14 @@ create_table_product_data <- function(input_root, output_root) {
             merged_data <- calculate_most_frequent(merged_data, "file_name", "product_country", "table_country")
         },
         error = function(e) {
-            ParallelLogger::logError("Error in calculating the most frequent 'product_country': ", e)
+            logError("Error in calculating the most frequent 'product_country': ", e)
         }
     )
 
     # Reorder, add, and ensures the correct data type for each column according to the list of fields
     merged_data <- preparing_product_fields(merged_data)
 
-    ParallelLogger::logDebug("Checking 'table_country' for each 'file_name'...")
+    logDebug("Checking 'table_country' for each 'file_name'...")
     report_empty_intersections(merged_data, "file_name", "table_country")
 
     # Write the merged and processed data to a file in the output_root directory
@@ -85,7 +86,7 @@ create_table_product_data <- function(input_root, output_root) {
         suffix = ""
     )
 
-    ParallelLogger::logInfo("Finish creating single file for table product_data.")
+    logInfo("Finish creating single file for table product_data.")
 }
 
 
@@ -168,7 +169,7 @@ preparing_product_fields <- function(merged_data) {
         "table_hospital" = "character"
     )
 
-    ParallelLogger::logInfo("Start processing fields for the single csv product_data...")
+    logInfo("Start processing fields for the single csv product_data...")
 
     # Check if all fields are present in merged_data
     missing_fields <- setdiff(names(fields), names(merged_data))
@@ -186,7 +187,7 @@ preparing_product_fields <- function(merged_data) {
                 merged_data[[field]] <- suppressWarnings(as.Date(original_values))
                 incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
                 if (length(incorrect_rows) > 0) {
-                    ParallelLogger::logWarn(paste(
+                    logWarn(paste(
                         "In", field, "incorrect date values were replaced with",
                         ERROR_VAL_DATE, "in", length(incorrect_rows), "rows:",
                         paste(incorrect_rows, collapse = ", ")
@@ -198,7 +199,7 @@ preparing_product_fields <- function(merged_data) {
                 merged_data[[field]] <- suppressWarnings(as.numeric(original_values))
                 incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
                 if (length(incorrect_rows) > 0) {
-                    ParallelLogger::logWarn(paste(
+                    logWarn(paste(
                         "In", field, "incorrect numeric values were replaced with",
                         ERROR_VAL_NUMERIC, "in", length(incorrect_rows), "rows:",
                         paste(incorrect_rows, collapse = ", ")
@@ -210,7 +211,7 @@ preparing_product_fields <- function(merged_data) {
                 merged_data[[field]] <- suppressWarnings(as.integer(original_values))
                 incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
                 if (length(incorrect_rows) > 0) {
-                    ParallelLogger::logWarn(paste(
+                    logWarn(paste(
                         "In", field, "incorrect integer values were replaced with",
                         ERROR_VAL_NUMERIC, "in", length(incorrect_rows), "rows:",
                         paste(incorrect_rows, collapse = ", ")
@@ -222,7 +223,7 @@ preparing_product_fields <- function(merged_data) {
                 merged_data[[field]] <- as.character(original_values)
                 incorrect_rows <- which(is.na(merged_data[[field]]) & !is.na(original_values))
                 if (length(incorrect_rows) > 0) {
-                    ParallelLogger::logWarn(paste(
+                    logWarn(paste(
                         "In", field, "incorrect character values  were replaced with",
                         ERROR_VAL_CHARACTER, "in", length(incorrect_rows), "rows:",
                         paste(incorrect_rows, collapse = ", ")
@@ -231,19 +232,19 @@ preparing_product_fields <- function(merged_data) {
                 }
             }
         }, warning = function(w) {
-            ParallelLogger::logError(paste("Warning in converting", field, ": ", w))
+            logError(paste("Warning in converting", field, ": ", w))
         }, error = function(e) {
-            ParallelLogger::logWarn(paste("Error in converting", field, ": ", e))
+            logWarn(paste("Error in converting", field, ": ", e))
         }, finally = {
-            ParallelLogger::logDebug(paste("Finished converting", field))
+            logDebug(paste("Finished converting", field))
         })
     }
 
     # Reorder the columns according to the list of fields
-    ParallelLogger::logInfo("Reorder the columns according to the list of fields...")
+    logInfo("Reorder the columns according to the list of fields...")
     merged_data <- merged_data[, c(names(fields), setdiff(names(merged_data), names(fields)))]
 
-    ParallelLogger::logInfo("Finished processing fields for the single csv product_data.")
+    logInfo("Finished processing fields for the single csv product_data.")
 
     return(merged_data)
 }
@@ -313,7 +314,7 @@ report_empty_intersections <- function(df, row_category, col_category) {
     df_row_sums <- df_row_sums[df_row_sums$sum == 0, ]
 
     if (nrow(df_row_sums) > 0) {
-        ParallelLogger::logWarn(
+        logWarn(
             "The number of ", row_category, " with empty ", col_category, " is ",
             nrow(df_row_sums), ": ",
             paste(df_row_sums$row_name, sep = "", collapse = ", ")

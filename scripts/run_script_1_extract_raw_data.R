@@ -1,12 +1,17 @@
+library(furrr)
+library(progressr)
+library(tictoc)
+
 options(readxl.show_progress = FALSE)
-future::plan("multisession")
+plan("multisession")
 
 
 paths <- a4d::init_paths(c("patient_data_raw", "product_data_raw"), delete = TRUE)
 a4d::setup_logger(paths$output_root, "script1")
 tracker_files <- a4d::get_files(paths$tracker_root)
+synonyms <- a4d::get_synonyms()
 
-ParallelLogger::logInfo(
+logInfo(
     "Found ",
     length(tracker_files),
     " xlsx files under ",
@@ -14,21 +19,26 @@ ParallelLogger::logInfo(
     "."
 )
 
-ParallelLogger::logInfo("Start processing tracker files.")
+logInfo("Start processing tracker files.")
 
-progressr::with_progress({
-    p <- progressr::progressor(steps = length(tracker_files))
+tic()
+with_progress({
+    p <- progressor(steps = length(tracker_files), label = "Tracker files")
 
-    result <- furrr::future_map(
+    future_map(
         tracker_files,
-        a4d::process_tracker_file,
-        paths = paths,
-        p = p
+        function(tracker_file) {
+            a4d::process_tracker_file(tracker_file, paths, synonyms)
+            p()
+            return()
+        },
+        .options = furrr_options(seed = NULL, packages = c("a4d", "ParallelLogger"), scheduling = FALSE)
     )
 })
+toc()
 
-ParallelLogger::logInfo("Finish processing all tracker files.")
+logInfo("Finish processing all tracker files.")
 
-ParallelLogger::clearLoggers()
+clearLoggers()
 
-future::plan("sequential")
+plan("sequential")

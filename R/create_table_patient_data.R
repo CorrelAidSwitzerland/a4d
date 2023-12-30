@@ -8,8 +8,10 @@
 #' @param patient_data_files list of CSV files with cleaned patient data from step 2.
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
+#'
+#' @export
 create_table_patient_data_monthly <- function(patient_data_files, input_root, output_root) {
-    ParallelLogger::logInfo("Start creating single csv for table patient_data_monthly.")
+    logInfo("Start creating single csv for table patient_data_monthly.")
 
     # THERE MIGHT BE MONTHLY COLUMNS MISSING - PLEASE ADD THEM
     dynamic_patient_columns <-
@@ -58,5 +60,5 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         suffix = ""
     )
 
-    ParallelLogger::logInfo("Finish creating single csv for table patient_data_monthly.")
+    logInfo("Finish creating single csv for table patient_data_monthly.")
 }

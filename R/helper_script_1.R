@@ -1,19 +1,17 @@
 #' @title Process a single tracker file and extract patient and product data.
 #'
-#' @param tracker_file Filename of the tracler.
+#' @param tracker_file File name of the tracker.
 #' @param paths a list with the paths to the tracker root dir, the patient and product output dir and the root output dir.
-#' @param p progressor from progressr package.
+#' @param synonyms a list with the synonyms for patient and product data header names.
 #'
 #' @export
-process_tracker_file <- function(tracker_file, paths, p) {
-    p()
+process_tracker_file <- function(tracker_file, paths, synonyms) {
     tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
-    synonyms <- get_synonyms()
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
 
-    ParallelLogger::logDebug("Start process_tracker_file.")
-    ParallelLogger::logInfo(
+    logDebug("Start process_tracker_file.")
+    logInfo(
         "Current file: ",
         tracker_name
     )
@@ -29,10 +27,10 @@ process_tracker_file <- function(tracker_file, paths, p) {
                     synonyms_patient = synonyms$patient
                 ),
                 error = function(e) {
-                    ParallelLogger::logError("Could not process patient data. Error = ", e$message, ".")
+                    logError("Could not process patient data. Error = ", e$message, ".")
                 },
                 warning = function(w) {
-                    ParallelLogger::logWarn("Could not process patient data. Warning = ", w$message, ".")
+                    logWarn("Could not process patient data. Warning = ", w$message, ".")
                 }
             )
         },
@@ -51,17 +49,17 @@ process_tracker_file <- function(tracker_file, paths, p) {
                     synonyms_product = synonyms$product
                 ),
                 error = function(e) {
-                    ParallelLogger::logError("Could not process product data. Error = ", e$message, ".")
+                    logError("Could not process product data. Error = ", e$message, ".")
                 },
                 warning = function(w) {
-                    ParallelLogger::logWarn("Could not process product data. Warning = ", w$message, ".")
+                    logWarn("Could not process product data. Warning = ", w$message, ".")
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    ParallelLogger::logDebug("Finish process_tracker_file.")
+    logDebug("Finish process_tracker_file.")
 }
 
 
@@ -78,7 +76,7 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-        ParallelLogger::logDebug("Start process_patient_data.")
+        logDebug("Start process_patient_data.")
 
         df_raw_patient <-
             reading_patient_data(
@@ -88,7 +86,7 @@ process_patient_data <-
 
         df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
-        ParallelLogger::logDebug(
+        logDebug(
             "df_raw_patient dim: ",
             dim(df_raw_patient) %>% as.data.frame(),
             "."
@@ -101,7 +99,7 @@ process_patient_data <-
             suffix = "_patient_raw"
         )
 
-        ParallelLogger::logDebug("Finish process_patient_data.")
+        logDebug("Finish process_patient_data.")
     }
 
 
@@ -118,7 +116,7 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-        ParallelLogger::logDebug("Start process_product_data.")
+        logDebug("Start process_product_data.")
 
         df_raw_product <-
             reading_product_data_step1(
@@ -129,10 +127,10 @@ process_product_data <-
         if (!is.null(df_raw_product)) {
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
         } else {
-            ParallelLogger::logDebug("Empty product data")
+            logDebug("Empty product data")
         }
 
-        ParallelLogger::logDebug(
+        logDebug(
             "df_raw_product dim: ",
             dim(df_raw_product) %>% as.data.frame(),
             "."
@@ -147,7 +145,7 @@ process_product_data <-
                 suffix = "_product_raw"
             )
         } else {
-            ParallelLogger::logWarn("No product data in the file")
+            logWarn("No product data in the file")
         }
-        ParallelLogger::logDebug("Finish process_product_data.")
+        logDebug("Finish process_product_data.")
     }

@@ -8,13 +8,14 @@
 #' @param patient_file A string specifying the path to the patient file.
 #'
 #' @return This function does not return a value. It prints log messages about the linking process.
+#' @export
 #'
 #' @examples
 #' \dontrun{
 #' link_product_patient("path/to/product_data.parquet", "path/to/patient_data.parquet")
 #' }
 link_product_patient <- function(product_file, patient_file) {
-    ParallelLogger::logInfo("Trying to link product file ", product_file, " with patient file ", patient_file)
+    logInfo("Trying to link product file ", product_file, " with patient file ", patient_file)
 
     patient_data <- arrow::read_parquet(patient_file)
     product_data <- arrow::read_parquet(product_file)
@@ -44,7 +45,7 @@ link_product_patient <- function(product_file, patient_file) {
         tryCatch(
             {
                 if (nrow(summary_df) > 0) {
-                    ParallelLogger::logWarn(
+                    logWarn(
                         "The number of mismatched patient IDs between the product and patient data is ",
                         nrow(summary_df), ". ",
                         paste("File Name: ", summary_df$file_name,
@@ -56,18 +57,18 @@ link_product_patient <- function(product_file, patient_file) {
                 }
             },
             error = function(e) {
-                ParallelLogger::logError("Could not link csv files for product and patient data. Error: ", e$message)
+                logError("Could not link csv files for product and patient data. Error: ", e$message)
             },
             warning = function(w) {
-                ParallelLogger::logWarn("Could not link csv files for product and patient data. Warning: ", w$message)
+                logWarn("Could not link csv files for product and patient data. Warning: ", w$message)
             }
         )
     } else {
-        ParallelLogger::logInfo(
+        logInfo(
             "There are no mismatched patient IDs between the product data - ",
             product_file, " and patient data - ", patient_file
         )
     }
 
-    ParallelLogger::logInfo("Finished attempting to link product csv file with patient csv file.")
+    logInfo("Finished attempting to link product csv file with patient csv file.")
 }

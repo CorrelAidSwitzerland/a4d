@@ -4,14 +4,14 @@
 \alias{process_product_file}
 \title{Process and clean product raw data}
 \usage{
-process_product_file(product_file, paths, p)
+process_product_file(product_file, paths, synonyms_product)
 }
 \arguments{
 \item{product_file}{Path to product raw parquet file from first script.}
 
 \item{paths}{List with paths to patient_data_cleaned and product_data_cleaned folders.}
 
-\item{p}{progressor from progressr package.}
+\item{synonyms_product}{Synonyms for product data header names.}
 }
 \description{
 A short description...

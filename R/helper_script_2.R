@@ -11,12 +11,10 @@
 #'
 #' @param patient_file Path to patient raw parquet file from first script.
 #' @param paths List with paths to patient_data_cleaned and product_data_cleaned folders.
-#' @param p progressor from progressr package.
+#' @param allowed_provinces A named character vector with names of allowed provinces.
 #'
 #' @export
-process_patient_file <- function(patient_file, paths, p) {
-    p()
-
+process_patient_file <- function(patient_file, paths, allowed_provinces) {
     ERROR_VAL_NUMERIC <<- 999999
     ERROR_VAL_CHARACTER <<- "Undefined"
     ERROR_VAL_DATE <<- "9999-09-09"
@@ -26,8 +24,8 @@ process_patient_file <- function(patient_file, paths, p) {
         file.path(paths$tracker_root, patient_file)
     output_root <- paths$patient_data_cleaned
 
-    ParallelLogger::logDebug("Start process_patient_file.")
-    ParallelLogger::logInfo(
+    logDebug("Start process_patient_file.")
+    logInfo(
         "Current file: ",
         patient_file_name
     )
@@ -40,26 +38,25 @@ process_patient_file <- function(patient_file, paths, p) {
                 process_patient_file_worker(
                     patient_file_path = patient_file_path,
                     patient_file_name = patient_file_name,
-                    output_root = output_root
+                    output_root = output_root,
+                    allowed_provinces = allowed_provinces
                 ),
                 error = function(e) {
-                    ParallelLogger::logError("Could not process raw patient data. Error = ", e$message, ".")
+                    logError("Could not process raw patient data. Error = ", e$message, ".")
                 },
                 warning = function(w) {
-                    ParallelLogger::logWarn("Could not process raw patient data. Warning = ", w$message, ".")
+                    logWarn("Could not process raw patient data. Warning = ", w$message, ".")
                 }
             )
         },
         output_root = paths$output_root
     )
 
-    ParallelLogger::logInfo("Finish process_patient_file.")
+    logInfo("Finish process_patient_file.")
 }
 
 
-process_patient_file_worker <- function(patient_file_path, patient_file_name, output_root) {
-    allowed_provinces <- get_allowed_provinces()
-
+process_patient_file_worker <- function(patient_file_path, patient_file_name, output_root, allowed_provinces) {
     df_patient_raw <- arrow::read_parquet(patient_file_path)
 
     # filter all rows with no patient id or patient name
@@ -71,24 +68,24 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value
     if (!"hba1c_updated_date" %in% colnames(df_patient_raw) && "hba1c_updated" %in% colnames(df_patient_raw)) {
-        ParallelLogger::logInfo("Column updated_hba1c_date not found. Trying to parse from hba1c_updated.")
+        logInfo("Column updated_hba1c_date not found. Trying to parse from hba1c_updated.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "hba1c_updated")
-        ParallelLogger::logDebug("Finished parsing dates from hba1c_updated.")
+        logDebug("Finished parsing dates from hba1c_updated.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mg" %in% colnames(df_patient_raw)) {
-        ParallelLogger::logInfo("Column updated_fbg_date not found. Trying to parse from fbg_updated_mg.")
+        logInfo("Column updated_fbg_date not found. Trying to parse from fbg_updated_mg.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mg")
-        ParallelLogger::logDebug("Finished parsing dates from fbg_updated_mg.")
+        logDebug("Finished parsing dates from fbg_updated_mg.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mmol" %in% colnames(df_patient_raw)) {
-        ParallelLogger::logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
+        logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol")
-        ParallelLogger::logDebug("Finished parsing dates from fbg_updated_mmol.")
+        logDebug("Finished parsing dates from fbg_updated_mmol.")
     }
 
     # blood pressure is given as sys/dias value pair,
@@ -101,7 +98,7 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
     # depending on the equipment being used.
     # If the reading is above the maximum available value the > sign is used -
     # we would prefer to retain this character in the database as it is important for data analysis.
-    ParallelLogger::logInfo("Adding columns hba1c_baseline_exceeds and hba1c_updated_exceeds.")
+    logInfo("Adding columns hba1c_baseline_exceeds and hba1c_updated_exceeds.")
     df_patient_raw <- df_patient_raw %>%
         dplyr::mutate(
             hba1c_baseline_exceeds = ifelse(grepl(">|<", hba1c_baseline), TRUE, FALSE),
@@ -111,7 +108,7 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
     # --- META SCHEMA ---
     # meta schema has all final columns for the database
     # along with their corresponding data types
-    ParallelLogger::logInfo("Creating meta schema.")
+    logInfo("Creating meta schema.")
     # short type string for read_csv:
     # iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn
     schema <- tibble::tibble(
@@ -181,15 +178,15 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
     )
 
     cols_extra <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
-    ParallelLogger::logWarn("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
+    logWarn("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
 
     cols_missing <-
         colnames(schema)[!colnames(schema) %in% colnames(df_patient_raw)]
-    ParallelLogger::logWarn("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
+    logWarn("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
 
     # add all columns of schema to df_patient_raw
     # keep all rows, only append missing cols
-    ParallelLogger::logInfo("Merging df_patient with meta schema and selecting all columns of meta schema.")
+    logInfo("Merging df_patient with meta schema and selecting all columns of meta schema.")
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
@@ -290,7 +287,7 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
     df_patient <- df_patient %>%
         dplyr::arrange(tracker_date, id)
 
-    ParallelLogger::logDebug(
+    logDebug(
         "df_patient dim: ",
         dim(df_patient) %>% as.data.frame(),
         "."
@@ -313,19 +310,16 @@ process_patient_file_worker <- function(patient_file_path, patient_file_name, ou
 #'
 #' @param product_file Path to product raw parquet file from first script.
 #' @param paths List with paths to patient_data_cleaned and product_data_cleaned folders.
-#' @param p progressor from progressr package.
+#' @param synonyms_product Synonyms for product data header names.
 #'
 #' @export
-process_product_file <- function(product_file, paths, p) {
-    p()
-    synonyms <- get_synonyms()
-    synonyms_product <- synonyms$product
+process_product_file <- function(product_file, paths, synonyms_product) {
     product_file_name <- tools::file_path_sans_ext(basename(product_file))
     product_file_path <-
         file.path(paths$tracker_root, product_file)
 
-    ParallelLogger::logDebug("Start process_product_file.")
-    ParallelLogger::logInfo(
+    logDebug("Start process_product_file.")
+    logInfo(
         "Current file: ",
         product_file_name
     )
@@ -337,14 +331,14 @@ process_product_file <- function(product_file, paths, p) {
             tryCatch(
                 df_product_raw <- reading_product_data_step2(df_product_raw, synonyms_product),
                 error = function(e) {
-                    ParallelLogger::logError("Could not process raw product data. Error = ", e$message, ".")
+                    logError("Could not process raw product data. Error = ", e$message, ".")
                 },
                 warning = function(w) {
-                    ParallelLogger::logWarn("Could not process raw product data. Warning = ", w$message, ".")
+                    logWarn("Could not process raw product data. Warning = ", w$message, ".")
                 }
             )
 
-            ParallelLogger::logDebug(
+            logDebug(
                 "df_product_raw dim: ",
                 dim(df_product_raw) %>% as.data.frame(),
                 "."
@@ -360,5 +354,5 @@ process_product_file <- function(product_file, paths, p) {
         output_root = paths$output_root
     )
 
-    ParallelLogger::logInfo("Finish process_product_file.")
+    logInfo("Finish process_product_file.")
 }

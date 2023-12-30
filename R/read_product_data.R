@@ -4,7 +4,7 @@
 # function based on parts from run_a4d_product_data.R and helper functions
 reading_product_data_step1 <-
     function(tracker_data_file, columns_synonyms) {
-        ParallelLogger::logDebug("Start reading_product_data_step1.")
+        logDebug("Start reading_product_data_step1.")
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
 
@@ -13,13 +13,13 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- get_tracker_year(tracker_data_file, month_list)
 
-        ParallelLogger::logDebug("Found ", length(sheet_list), " sheets: ", paste(sheet_list, collapse = ", "), ".")
-        ParallelLogger::logDebug("Found ", length(month_list), " month sheets: ", paste(month_list, collapse = ", "), ".")
+        logDebug("Found ", length(sheet_list), " sheets: ", paste(sheet_list, collapse = ", "), ".")
+        logDebug("Found ", length(month_list), " month sheets: ", paste(month_list, collapse = ", "), ".")
 
 
         # loop through all months
         for (curr_sheet in month_list) {
-            ParallelLogger::logDebug("Start processing the following sheet: ", curr_sheet)
+            logDebug("Start processing the following sheet: ", curr_sheet)
 
             # open tracker data
             tracker_data <- data.frame(
@@ -37,7 +37,7 @@ reading_product_data_step1 <-
                     grepl("Description of Support", tracker_data[, ])))
             ) {
                 # go to next month
-                ParallelLogger::logInfo("Could not find product data in tracker data. Skipping ", curr_sheet, ".")
+                logInfo("Could not find product data in tracker data. Skipping ", curr_sheet, ".")
                 next
             }
 
@@ -46,7 +46,7 @@ reading_product_data_step1 <-
 
             # If after extraction, dataframe is empty, this iteration is also skipped.
             if (all(is.na(product_df))) {
-                ParallelLogger::logInfo("Product data is empty. Skipping ", curr_sheet, ".")
+                logInfo("Product data is empty. Skipping ", curr_sheet, ".")
                 next
             }
 
@@ -69,11 +69,11 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (num_na_rows > 0) {
-                        ParallelLogger::logInfo(curr_sheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
+                        logInfo(curr_sheet, " the number of rows where the patient's name is missing: ", col_released, " is not NA and ", col_released_to, " (patient's name) is NA = ", num_na_rows)
                     }
                 },
                 error = function(e) {
-                    ParallelLogger::logError(curr_sheet, " trying with num_na_rows for products. Error: ", e$message)
+                    logError(curr_sheet, " trying with num_na_rows for products. Error: ", e$message)
                 }
             )
 
@@ -83,7 +83,7 @@ reading_product_data_step1 <-
             tryCatch(
                 {
                     if (nrow(non_processed_dates) > 0) {
-                        ParallelLogger::logWarn(
+                        logWarn(
                             curr_sheet,
                             " the number of rows with non-processed dates in product_entry_date is ",
                             nrow(non_processed_dates), ": ",
@@ -92,7 +92,7 @@ reading_product_data_step1 <-
                     }
                 },
                 error = function(e) {
-                    ParallelLogger::logError(curr_sheet, " trying with non_processed_dates in product_entry_date. Error: ", e$message)
+                    logError(curr_sheet, " trying with non_processed_dates in product_entry_date. Error: ", e$message)
                 }
             )
 
@@ -107,7 +107,7 @@ reading_product_data_step1 <-
             # Check if the entry dates for the balance match the month/year on the sheet
             check_entry_dates(product_df, curr_sheet)
 
-            ParallelLogger::logDebug("Finish processing sheet: ", curr_sheet)
+            logDebug("Finish processing sheet: ", curr_sheet)
 
             # combine all months
             if (!exists("df_final")) {
@@ -121,7 +121,7 @@ reading_product_data_step1 <-
         } else {
             return(NULL)
         }
-        ParallelLogger::logDebug("Finish reading_product_data_step1.")
+        logDebug("Finish reading_product_data_step1.")
     }
 
 
@@ -151,7 +151,7 @@ count_na_rows <- function(df, units_released_col, released_to_col) {
 #'
 #' @return This function does not return a value. It logs a warning message if there are any dates in 'product_entry_date' that don't match the month/year on the sheet.
 check_entry_dates <- function(df, Sheet) {
-    ParallelLogger::logDebug("Start check_entry_dates.")
+    logDebug("Start check_entry_dates.")
     # Check if the entry dates for the balance match the month/year on the sheet
     entry_dates_df <- df %>% dplyr::filter(grepl("^[0-9]+$", product_entry_date))
 
@@ -167,14 +167,14 @@ check_entry_dates <- function(df, Sheet) {
     not_same <- entry_dates_df[entry_dates_df$ed_month != entry_dates_df$product_table_month |
         entry_dates_df$ed_year != entry_dates_df$product_table_year, ]
     if (nrow(not_same) > 0) {
-        ParallelLogger::logWarn(
+        logWarn(
             Sheet,
             " the number of dates in product_entry_date that don't match the month/year on the sheet is ",
             nrow(not_same), ": ",
             paste(not_same$ed_date, collapse = ", ")
         )
     }
-    ParallelLogger::logDebug("Finish check_entry_dates.")
+    logDebug("Finish check_entry_dates.")
 }
 
 #' @title Remove Rows with NA Values in Specified Columns.
@@ -192,7 +192,7 @@ remove_rows_with_na_columns <-
         na_rows <- apply(df[column_names], 1, function(x) all(is.na(x)))
 
         # log message
-        ParallelLogger::logInfo(paste(length(na_rows[na_rows == T]), " rows deleted out of ", nrow(df), " rows (reason: rows not containing additional info).", sep = ""))
+        logInfo(paste(length(na_rows[na_rows == T]), " rows deleted out of ", nrow(df), " rows (reason: rows not containing additional info).", sep = ""))
 
         # Return the data frame without the NA rows
         return(df[!na_rows, ])
@@ -215,7 +215,7 @@ check_negative_balance <- function(df, Sheet) {
     # Check if there are any rows in the new data frame
     if (nrow(negative_df) > 0) {
         # Log a warning message with the number of negative values and their corresponding product_balance values
-        ParallelLogger::logWarn(
+        logWarn(
             Sheet,
             " number of negative values in product_balance on the sheet is ",
             nrow(negative_df), ": ",
@@ -242,7 +242,7 @@ switch_columns_stock <-
                     "product_units_received" = "product_received_from",
                     "product_received_from" = "product_units_received"
                 )
-            ParallelLogger::logDebug("Columns product_units_received and product_received_from were switched")
+            logDebug("Columns product_units_received and product_received_from were switched")
             return(df)
         } else {
             return(df)
@@ -290,14 +290,14 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
     # Check if there are any unknown products names
     if (length(unmatched_products) > 0) {
         # Log a warning message with the number of unknown products names
-        ParallelLogger::logWarn(
+        logWarn(
             Sheet,
             " the number of unknown product names on the sheet is ",
             length(unmatched_products), ": ",
             paste(unmatched_products, collapse = ", ")
         )
     } else {
-        ParallelLogger::logInfo(Sheet, " no unknown product names on the sheet")
+        logInfo(Sheet, " no unknown product names on the sheet")
     }
 }
 
@@ -317,16 +317,16 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
 #' product_list <- load_product_reference_data("your_file.xlsx")
 #' }
 load_product_reference_data <- function(stock_summary_xlsx = "reference_data/master_tracker_variables.xlsx") {
-    ParallelLogger::logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
+    logDebug("Trying to load the product list from the Stock Summary, ", stock_summary_xlsx, "...")
     tryCatch(
         {
             product_names_df <- readxl::read_excel(stock_summary_xlsx, "Stock_Summary")
             colnames(product_names_df) <- tolower(colnames(product_names_df))
-            ParallelLogger::logDebug(nrow(product_names_df), " product names were loaded from the Stock Summary.")
+            logDebug(nrow(product_names_df), " product names were loaded from the Stock Summary.")
             return(product_names_df)
         },
         error = function(e) {
-            ParallelLogger::logError("Error in loading stock product list: ", e)
+            logError("Error in loading stock product list: ", e)
         }
     )
 }
@@ -371,7 +371,7 @@ add_product_categories <- function(inventory_data, product_category_mapping) {
 #' df <- extract_unit_capacity(df, "product")
 #' }
 extract_unit_capacity <- function(df, column_name) {
-    ParallelLogger::logDebug("Trying to extract Unit Capacity from ", column_name, " column")
+    logDebug("Trying to extract Unit Capacity from ", column_name, " column")
 
     # Extract all symbols between parentheses
     df$product_unit_capacity <- stringr::str_extract(df[[column_name]], "\\(([^)]+)\\)")
@@ -393,7 +393,7 @@ extract_unit_capacity <- function(df, column_name) {
     # Add 1 to NA values
     df$product_unit_capacity[is.na(df$product_unit_capacity)] <- 1
 
-    ParallelLogger::logDebug("Finished extracting Unit Capacity from ", column_name, " column")
+    logDebug("Finished extracting Unit Capacity from ", column_name, " column")
 
     return(df)
 }
@@ -410,7 +410,7 @@ extract_unit_capacity <- function(df, column_name) {
 #' @return Cleaned product data for one specified tracker.
 reading_product_data_step2 <-
     function(df, columns_synonyms) {
-        ParallelLogger::logDebug("Start reading_product_data_step2.")
+        logDebug("Start reading_product_data_step2.")
 
         # rename column names to match
         colnames(columns_synonyms) <- c("name_clean", "name_to_be_matched")
@@ -425,7 +425,7 @@ reading_product_data_step2 <-
 
         # loop through all months
         for (sheet_month in unique(df$product_sheet_name)) {
-            ParallelLogger::logDebug(paste("Start processing the following sheet:", sheet_month))
+            logDebug(paste("Start processing the following sheet:", sheet_month))
 
             # filter on month sheet
             product_df <- df %>%
@@ -453,7 +453,7 @@ reading_product_data_step2 <-
             product_df <- remove_rows_with_na_columns(product_df, column_names_check)
             # jump to next sheet if dataframe empty from here
             if (nrow(product_df) == 0) {
-                ParallelLogger::logDebug(paste(sheet_month, " sheet is empty after filtering and skipped", sep = ""))
+                logDebug(paste(sheet_month, " sheet is empty after filtering and skipped", sep = ""))
                 next
             }
 
@@ -527,12 +527,12 @@ reading_product_data_step2 <-
             df_final <- df_final %>%
                 rbind(product_df)
 
-            ParallelLogger::logDebug(paste("Finished processing the following sheet:", sheet_month))
+            logDebug(paste("Finished processing the following sheet:", sheet_month))
         }
 
         if (nrow(df_final) > 0) {
             return(df_final)
         } else {
-            ParallelLogger::logDebug(paste("No product data extracted for the following tracker:", df$file_name[1]))
+            logDebug(paste("No product data extracted for the following tracker:", df$file_name[1]))
         }
     }

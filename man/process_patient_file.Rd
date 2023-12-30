@@ -4,14 +4,14 @@
 \alias{process_patient_file}
 \title{Process and clean patient raw data}
 \usage{
-process_patient_file(patient_file, paths, p)
+process_patient_file(patient_file, paths, allowed_provinces)
 }
 \arguments{
 \item{patient_file}{Path to patient raw parquet file from first script.}
 
 \item{paths}{List with paths to patient_data_cleaned and product_data_cleaned folders.}
 
-\item{p}{progressor from progressr package.}
+\item{allowed_provinces}{A named character vector with names of allowed provinces.}
 }
 \description{
 Read in the output of the first script as parquet (all character).

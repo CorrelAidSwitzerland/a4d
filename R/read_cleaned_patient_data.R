@@ -7,7 +7,7 @@
 #' @export
 read_cleaned_patient_data <-
     function(input_root, patient_data_files) {
-        ParallelLogger::logInfo("Start read_cleaned_patient_data")
+        logInfo("Start read_cleaned_patient_data")
 
         patient_data <- patient_data_files %>%
             purrr::map(function(patient_file) {
@@ -17,6 +17,6 @@ read_cleaned_patient_data <-
 
 
 
-        ParallelLogger::logInfo("Finish read_cleaned_patient_data")
+        logInfo("Finish read_cleaned_patient_data")
         patient_data
     }
