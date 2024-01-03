@@ -87,6 +87,25 @@ with_file_logger(logfile,
     output_root = paths$output_root
 )
 
+    logfile <- "clinic_data_static"
+    with_file_logger(logfile,
+                     {
+                         tryCatch(
+                             {
+                                 a4d::export_data_as_parquet(data = read.csv("reference_data/clinic_data_static.csv"),filename = "clinic_data_static",output_root = paths$tables,suffix="")
+                             },
+                             error = function(e) {
+                                 logError("Could not create clinic data static table. Error: ", e$message)
+                             },
+                             warning = function(w) {
+                                 logWarn("Could not create clinic data static table. Warning: ", w$message)
+                             }
+                         )
+                     },
+                     output_root = paths$output_root
+    )
+
+
 logfile <- "table_product_data"
 with_file_logger(logfile,
     {
