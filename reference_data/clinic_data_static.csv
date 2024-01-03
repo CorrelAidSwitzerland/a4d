@@ -1,0 +1,26 @@
+clinic_code,country_name,province_name,clinic_name,clinic_start_date,clinic_quota_22
+LF,Laos,Luang Prabang,Lao Friend Hospital for Children,18.12.2018,2
+MH,Laos,Vientiane,Mahosot Hospital,01.02.2016,58
+MD,Myanmar,Mandalay,550 Bedded Mandalay Children Hospital,01.03.2016,70
+UM,Vietnam,Ho Chi Minh City,University Medical Centre,21.09.2021,12
+CH,Vietnam,Ho Chi Minh City,Children's Hospital 2,21.09.2021,18
+VC,Vietnam,Hanoi,Vietnam National Children's Hospital,01.07.2017,60
+KB,Cambodia,Phnom Penh,Kantha Bopha Hospital,18.07.2018,130
+PK,Cambodia,Phnom Penh,Preah Kossamak Hospital,18.04.2018,30
+CD,Cambodia,Siem Reap,Cambodian Diabetes Association Clinic,01.09.2017,20
+NP,Cambodia,Phnom Penh,National Paediatric Hospital,21.12.2021,20
+JV,Cambodia,Siem Reap,Jayavarman VII Hospital,20.01.2020,100
+PJ,Malaysia,Putrajaya,Putrajaya Hospital,21.06.2021,11
+LW,Malaysia,Sabah,Likas Women and Children Hospital,21.06.2021,10
+SB,Malaysia,Kedah,Sultanah Bahiyah Hospital,01.04.2019,7
+PN,Malaysia,Penang,Penang General Hospital,18.07.2018,14
+SW,Malaysia,Sarawak,Sarawak General Hospital,18.12.2018,18
+SJ,Thailand,Bangkok,Siriraj Hospital,16.05.2016,22
+CP,Thailand,Chiang Mai,Maharaj Nakorn Chiang Mai Hospital,16.03.2016,21
+MK,Thailand,Mukdahan,Mukdahan Hospital,01.05.2017,4
+CH,Thailand,Bangkok,King Chulalongkorn Memorial Hospital,22.04.2022,10
+KN,Thailand,Khon Kaen,Khon Kaen Hospital,01.10.2019,12
+PH,Thailand,Phattalung,Phattalung Hospital,01.07.2019,6
+ST,Thailand,Surat Thani,Surat Thani Hospital,01.05.2017,16
+SP,Thailand,Ubon Ratchathani,Sunprasitthiprasong Hospital,01.11.2016,22
+PP,Thailand,Kanchanaburi,Pahol Polpayuhasena Hospital,01.08.2016,14

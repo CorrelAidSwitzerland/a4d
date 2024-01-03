@@ -106,3 +106,11 @@ ingest_data(
     table = "product_data",
     source = file.path(table_dir, "product_data.parquet")
 )
+ingest_data(
+    project_id = PROJECT_ID,
+    cluster_fields = "clinic_code",
+    dataset = DATASET,
+    table = "clinic_data_static",
+    source = file.path(table_dir, "clinic_data_static.parquet")
+)
+
