@@ -39,6 +39,16 @@ insulin_regimen:
         - "Modified conventional TID"
       replace_invalid:
         FALSE
+insulin_regimen_subcategory:
+  steps:
+    - type: basic_function
+      function_name: extract_first_raw_regimen
+    - type: allowed_values
+      allowed_values:
+        - "Basal-bolus MDI (AN)"
+        - "Basal-bolus MDI (HI)"
+      replace_invalid:
+        TRUE
 t1d_diagnosis_with_dka:
   steps:
     - type: allowed_values

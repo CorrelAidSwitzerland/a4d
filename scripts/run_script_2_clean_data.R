@@ -226,7 +226,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # the cleaning, fixing and validating happens in three major steps:
     df_patient <-
         df_patient %>%
-        tidyr::separate(insulin_regimen, c("insulin_regimen", "insulin_regimen_subcategory"), sep = "[,]", fill = "right") %>%
+        mutate(insulin_regimen_subcategory = insulin_regimen) %>%
         dplyr::rowwise() %>%
         # 1. handle known problems before converting to target type
         dplyr::mutate(
