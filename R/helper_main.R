@@ -12,6 +12,7 @@
 #' @param delete If TRUE, delete all files under output.
 #'
 #' @return A list with tracker_root_path and output_root path
+#' @export
 init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
     paths <- list()
     tracker_root_path <- select_A4D_directory()
@@ -57,6 +58,7 @@ init_paths <- function(names, output_dir_name = "output", delete = FALSE) {
 #' @param pattern The search pattern to filter files.
 #'
 #' @return A vector with file names.
+#' @export
 get_files <- function(tracker_root, pattern = "\\.xlsx$") {
     tracker_files <- list.files(path = tracker_root, recursive = T, pattern = pattern)
     tracker_files <-
@@ -70,6 +72,7 @@ get_files <- function(tracker_root, pattern = "\\.xlsx$") {
 #' Read in all defined synonyms from the YAML files inside the synonyms folder.
 #'
 #' @return A list with both patient and product data synonyms as tibble.
+#' @export
 get_synonyms <- function() {
     ## Extract synonyms for products and patients
     ## If you encounter new columns, just add the synonyms to these YAML files
@@ -173,6 +176,7 @@ export_data <- function(data, filename, output_root, suffix) {
 #'     suffix = "_product_data"
 #' )
 #' }
+#' @export
 export_data_as_parquet <- function(data, filename, output_root, suffix) {
     logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
@@ -213,8 +217,9 @@ read_raw_csv <- function(file) {
 #' Read in all provinces from a YAML file inside the provinces folder.
 #'
 #' @return A named character vector with all allowed provinces.
+#' @export
 get_allowed_provinces <- function() {
     ## Should new countries and provinces be added, update the YAML file
-    provinces <- yaml::read_yaml("reference_data/provinces/allowed_provinces.yaml") %>% unlist()
+    provinces <- yaml::read_yaml("reference_data/provinces/allowed_provinces.yaml") |> unlist()
     return(provinces)
 }

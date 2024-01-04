@@ -10,6 +10,8 @@
 #' @param output_root root directory of the output folder.
 #' @param variable name of the column that should be exported.
 #' @param name name used to create the export file name.
+#'
+#' @export
 create_table_longitudinal_data <-
     function(patient_data_files,
              input_root,

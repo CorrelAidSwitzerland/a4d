@@ -8,6 +8,7 @@
 #' @param patient_file A string specifying the path to the patient file.
 #'
 #' @return This function does not return a value. It prints log messages about the linking process.
+#' @export
 #'
 #' @examples
 #' \dontrun{

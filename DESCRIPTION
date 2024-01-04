@@ -8,7 +8,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Depends: 
+Depends:
     ParallelLogger
 Imports: 
     data.table,
@@ -25,7 +25,11 @@ Imports:
     tidyr,
     yaml,
     zoo,
-    arrow
+    arrow,
+    furrr,
+    progressr,
+    tictoc,
+    magrittr
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -11,6 +11,7 @@
 #'
 #' @return This function does not return a value. It writes the merged data to a new CSV file
 #' (with reordered columns according to the list of fields) in the output_root directory.
+#' @export
 #'
 #' @examples
 #' \dontrun{

@@ -8,6 +8,8 @@
 #' @param patient_data_files list of CSV files with cleaned patient data from step 2.
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
+#'
+#' @export
 create_table_patient_data_static <- function(patient_data_files, input_root, output_root) {
     logInfo("Start creating single csv for table patient_data_static.")
 

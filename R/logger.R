@@ -9,17 +9,17 @@ setup_logger <- function(output_dir, log_name) {
         file.remove(logFileName)
     }
 
-    logger <- createLogger(
+    logger <- ParallelLogger::createLogger(
         name = "MAIN",
         threshold = "TRACE",
         appenders = list(
-            createFileAppender(
-                layout = layoutParallel,
+            ParallelLogger::createFileAppender(
+                layout = ParallelLogger::layoutParallel,
                 fileName = logFileName
             )
         )
     )
-    registerLogger(logger)
+    ParallelLogger::registerLogger(logger)
 
     log_dir <- file.path(output_dir, "logs")
 
@@ -33,14 +33,15 @@ setup_logger <- function(output_dir, log_name) {
 #' @param output_root Output root directory for the current process.
 #'
 #' @return returns the loggers that where previously set for usage with with_
+#' @export
 setup_file_logger <- function(logfile, output_root) {
-    loggers <- getLoggers()
-    clearLoggers()
+    loggers <- ParallelLogger::getLoggers()
+    ParallelLogger::clearLoggers()
     logFileName <- file.path(output_root, "logs", paste0(logfile, ".log"))
     if (file.exists(logFileName)) {
         file.remove(logFileName)
     }
-    addDefaultFileLogger(logFileName, name = logfile)
+    ParallelLogger::addDefaultFileLogger(logFileName, name = logfile)
     loggers
 }
 
@@ -58,9 +59,9 @@ setup_file_logger <- function(logfile, output_root) {
 with_file_logger <- withr::with_(
     setup_file_logger,
     function(loggers) {
-        clearLoggers()
+        ParallelLogger::clearLoggers()
         for (logger in loggers) {
-            registerLogger(logger)
+            ParallelLogger::registerLogger(logger)
         }
     }
 )
