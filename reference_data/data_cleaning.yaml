@@ -30,18 +30,25 @@ status:
 insulin_regimen:
   steps:
     - type: basic_function
-      function_name: stringr::str_to_lower
+      function_name: extract_regimen
     - type: allowed_values
       allowed_values:
-        - "Basal-bolus"
-        - "Basal-bolus MDI (AN)"
-        - "Basal-bolus MDI (HI)"
-        - "Premixed 30/70 BD"
+        - "Basal-bolus (MDI)"
+        - "Premixed 30/70 DB"
         - "Self-mixed BD"
         - "Modified conventional TID"
-        - "Other"
       replace_invalid:
         FALSE
+insulin_regimen_subcategory:
+  steps:
+    - type: basic_function
+      function_name: extract_first_raw_regimen
+    - type: allowed_values
+      allowed_values:
+        - "Basal-bolus MDI (AN)"
+        - "Basal-bolus MDI (HI)"
+      replace_invalid:
+        TRUE
 t1d_diagnosis_with_dka:
   steps:
     - type: allowed_values
