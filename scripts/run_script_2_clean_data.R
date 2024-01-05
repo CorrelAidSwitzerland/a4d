@@ -224,9 +224,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     df_patient <- df_patient[colnames(schema)]
 
     # the cleaning, fixing and validating happens in three major steps:
-    # 1. make sure we fix any known problems in the raw character columns
     df_patient <-
         df_patient %>%
+        mutate(insulin_regimen_subcategory = insulin_regimen) %>%
         dplyr::rowwise() %>%
         # 1. handle known problems before converting to target type
         dplyr::mutate(
@@ -276,7 +276,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             fbg_updated_mmol = cut_numeric_value(fbg_updated_mmol, min = 0, max = 136.5, "fbg_updated_mmol"),
             blood_pressure_sys_mmhg = cut_numeric_value(blood_pressure_sys_mmhg, min = 20, max = 250, "blood_pressure_sys_mmhg"),
             blood_pressure_dias_mmhg = cut_numeric_value(blood_pressure_dias_mmhg, min = 20, max = 220, "blood_pressure_dias_mmhg"),
-            tracker_date = lubridate::ym(paste(tracker_year, tracker_month, sep="-")),
+            tracker_date = lubridate::ym(paste(tracker_year, tracker_month, sep = "-")),
             !!!parse_character_cleaning_config(a4d:::config$cleaning),
             # should be fixed last as other fix functions use id to log invalid rows!
             id = fix_id(id)

@@ -564,6 +564,35 @@ fix_id <- function(id) {
 }
 
 
+#### insulin regimen ####
+
+#' @title Extract the part of a string before a comma
+#'
+#' @param string The input string
+#'
+#' @return The extracted part.
+extract_first_raw_regimen <- function(string) {
+    str_extract(strgin, "[^,]*")
+}
+
+#' @title Maps Insulin regiment with allowed values.
+#'
+#' @description
+#' The mapping is done using regular expressions.
+#'
+#'
+#' @param raw_input The string that needs to be mapped
+#'
+#' @return The mapping result
+extract_regimen <- function(raw_input) {
+    output <- sub("^.*basal.*$", "Basal-bolus (MDI)", raw_input, ignore.case = TRUE)
+    output <- sub("^.*premixed.*$", "Premixed 30/70 BD", output, ignore.case = TRUE)
+    output <- sub("^.*self-mixed.*$", "Self-mixed BD", output, ignore.case = TRUE)
+    output <- sub("^.*conventional.*$", "Modified conventional TID", output, ignore.case = TRUE)
+    output
+}
+
+
 # TEST --------------------------------------------------------------------
 
 # testing <- cleaning_a4d_tracker(data = dat)
