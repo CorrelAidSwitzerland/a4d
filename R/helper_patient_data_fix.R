@@ -572,7 +572,7 @@ fix_id <- function(id) {
 #'
 #' @return The extracted part.
 extract_first_raw_regimen <- function(string) {
-    str_extract(strgin, "[^,]*")
+    str_extract(string, "[^,]*")
 }
 
 #' @title Maps Insulin regiment with allowed values.
