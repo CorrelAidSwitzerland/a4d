@@ -54,7 +54,6 @@ ingest_data <- function(project_id, cluster_fields, dataset, table, source) {
         "--source_format=PARQUET",
         paste0("--project_id=", project_id),
         "--max_bad_records=0",
-        "--replace=true",
         paste0("--clustering_fields=", cluster_fields),
         paste0(dataset, ".", table),
         source

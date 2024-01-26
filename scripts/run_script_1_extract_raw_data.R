@@ -14,11 +14,10 @@ main <- function() {
 
     synonyms <- get_synonyms()
 
-    logInfo("Start processing tracker files.")
-
     for (i in seq_along(tracker_files)) {
         tracker_file <- tracker_files[i]
         tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
+        tictoc::tic(paste("Processing tracker file:", tracker_name))
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
             error = function(e) {
@@ -28,9 +27,9 @@ main <- function() {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
             }
         )
+        tictoc::toc()
         cat(paste("Processed ", i, " of ", length(tracker_files), " (", round(i / length(tracker_files) * 100, 0), "%) tracker files.\n"))
     }
-    logInfo("Finish processing all tracker files.")
 }
 
 
@@ -87,7 +86,6 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
         output_root = paths$output_root
     )
 
-    logInfo("Finish process_tracker_file.")
 }
 
 
@@ -96,7 +94,6 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-        logDebug("Start process_patient_data.")
 
         df_raw_patient <-
             reading_patient_data(
@@ -118,8 +115,6 @@ process_patient_data <-
             output_root = output_root,
             suffix = "_patient_raw"
         )
-
-        logInfo("Finish process_patient_data.")
     }
 
 
@@ -128,7 +123,6 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-        logDebug("Start process_product_data.")
 
         df_raw_product <-
             reading_product_data_step1(
@@ -159,7 +153,6 @@ process_product_data <-
         } else {
             logWarn("No product data in the file")
         }
-        logDebug("Finish process_product_data.")
     }
 
 # profvis(main())
