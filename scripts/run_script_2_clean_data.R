@@ -24,11 +24,11 @@ main <- function() {
         "."
     )
 
-    logInfo("Start processing patient csv files.")
-
     for (i in seq_along(patient_data_files)) {
         patient_file <- patient_data_files[i]
         patient_file_name <- tools::file_path_sans_ext(basename(patient_file))
+        tictoc::tic(paste("Processing patient data:", patient_file_name))
+
         logfile <- paste0(patient_file_name)
         with_file_logger(logfile,
             {
@@ -44,6 +44,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
+        tictoc::toc()
         cat(paste("Processed ", i, " of ", length(patient_data_files), " (", round(i / length(patient_data_files) * 100, 0), "%) patient files.\n"))
     }
 
@@ -56,8 +57,9 @@ main <- function() {
     for (i in seq_along(product_data_files)) {
         product_file <- product_data_files[i]
         product_file_name <- tools::file_path_sans_ext(basename(product_file))
-        logfile <- paste0(product_file_name)
+        tictoc::tic(paste("Processing product data:", product_file_name))
 
+        logfile <- paste0(product_file_name)
         with_file_logger(logfile,
             {
                 tryCatch(
@@ -72,6 +74,7 @@ main <- function() {
             },
             output_root = paths$output_root
         )
+        tictoc::toc()
         cat(paste("Processed ", i, " of ", length(product_data_files), " (", round(i / length(product_data_files) * 100, 0), "%) product files.\n"))
     }
 
