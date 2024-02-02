@@ -7,10 +7,10 @@
 
 # Define the shinyServer function to handle the server-side logic of the Shiny application.
 shinyServer(function(input, output, session) {
-  
+
   # Define a reactiveValues object to store the event log data and the current table data.
   values <- reactiveValues(eventLog = NULL ,currentTable = NULL)
-  
+
   # Render the UI for the "Load Last Saved Log-Data" button if the "temp.parquet" file exists.
   output$loadTempFileUI <- renderUI({
     if(file.exists("temp.parquet")) {
@@ -18,13 +18,13 @@ shinyServer(function(input, output, session) {
     } else
       NULL
   })
-  
+
   # Observer for the "Load Last Saved Log-Data" button click event.
   observeEvent(input$loadTempFile,{
     print("Load Old Data")
     values$eventLog <- read_parquet("temp.parquet")
   })
-  
+
   # Define a reactive expression to get the selected row from the log table.
   selectedRow <- reactive({
     idx <- input$logTable_rows_selected
@@ -35,7 +35,7 @@ shinyServer(function(input, output, session) {
       return(row)
     }
   })
-  
+
   # Observer for the file upload event.
   observeEvent(input$fileUpload, {
     req(input$fileUpload)
@@ -49,7 +49,7 @@ shinyServer(function(input, output, session) {
             fileConnection <- file(filePath, open = "r")
             lines <- readLines(fileConnection)
             close(fileConnection)
-            
+
             if(!is.null(lines)) {
               result <- parseLines(lines) %>%
                 mutate(fileName = basename(x)) %>%
@@ -82,14 +82,14 @@ shinyServer(function(input, output, session) {
     values$eventLog <- allLogs
     write_parquet(allLogs,"temp.parquet")
   })
-  
+
   # Render the log table using the DataTable library.
   output$logTable <- renderDT({
     req(values$eventLog)
-    
+
     visibleLevels <- levelsValues[which(levelsValues == input$level):length(levelsValues)]
     idx <- values$eventLog$Level %in% visibleLevels
-    
+
     options <- list(
       searching = TRUE,
       autoWidth = TRUE,
@@ -123,7 +123,7 @@ shinyServer(function(input, output, session) {
     )
     return(table)
   })
-  
+
   # Render the status table to display the count of log entries by file name and level.
   output$status <- renderDT({
     req(values$eventLog)
@@ -132,24 +132,26 @@ shinyServer(function(input, output, session) {
   filter = list(
     position = "top", clear = FALSE
   ))
-  
+
   output$logOverviewPlot <- renderPlotly({
-    
+
     req(values$eventLog)
     aggregatedData <- values$currentTable[input$logTable_rows_all,] %>% dplyr::count(fileName, Level) %>% filter(grepl(input$regexFilter,fileName))
-    
+
     p<- ggplot(data= aggregatedData, aes(x=Level, y=fileName,fill=n)) + geom_tile() +  scale_y_discrete(label=abbreviate) +theme(axis.text=element_text(size=6))
 
-    
+
     plotly::ggplotly(p,height = 800, width = 600)
   })
-  
+
   # Render the details panel to display the selected log entry details.
-  output$detailsUi <- renderUI({
+  observeEvent(input$logTable_cell_clicked,{
     row <- selectedRow()
     if (is.null(row)) {
-      return(HTML("<p>Upload the log-files</p>"))
+      return(NULL)
     } else {
+
+
       lines <- list(
         "<table>",
         sprintf("<tr><td><strong>Timestamp</strong></td><td>&nbsp;&nbsp;</td><td>%s</td></tr>", row$Timestamp),
@@ -161,7 +163,33 @@ shinyServer(function(input, output, session) {
         "<h2>Message</h2>",
         sprintf("<p>%s</p>", row$Message)
       )
-      return(HTML(paste(lines, collapse = "\n")))
+
+      showModal(modalDialog(
+          tags$div(id = session$ns("constraintPlaceholder")),
+          fade = F,
+          easyClose = TRUE,
+          footer = NULL
+      ))
+      insertUI(
+          selector = paste0("#", session$ns("constraintPlaceholder")),
+          where = "afterEnd",
+          ui = HTML(  paste(lines, collapse = "\n"))
+      )
     }
   })
+
+
+  output$trackerSummary <- renderDT({
+        req(values$eventLog)
+      datatable(values$eventLog %>% group_by(fileName,Level) %>% count() %>%
+                    pivot_wider(names_from = Level, values_from = n),
+                filter = list(
+                    position = "top", clear = FALSE
+                ),
+                rownames = FALSE,
+                escape = FALSE
+      )
+
+  })
+
 })

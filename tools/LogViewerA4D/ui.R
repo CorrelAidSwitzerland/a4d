@@ -19,8 +19,8 @@ shinyUI(
                multiple = TRUE, accept = ".log"),
              selectInput("level", label = "Level", choices = levelsValues, selected = "TRACE"),
     ),
-    
-    
+
+
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
       menuItem("Overview", tabName = "overview", icon = icon("th"))
@@ -28,16 +28,17 @@ shinyUI(
     dashboardBody(
       tabItems(
       tabItem(tabName = "dashboard",
-              
+
       fluidRow(
-        box(
+        box(width = 6,
           title = "Main Table",
         DTOutput("logTable")),
-        box(
-          title = "Details",
-               uiOutput("detailsUi")),
-        )
-      ),
+        box(width = 6,
+            title = "Tracker Overview",
+            DTOutput("trackerSummary"))
+
+
+      )),
       tabItem(tabName = "overview",
               fluidRow(box(
                 title = "Overview",
@@ -47,7 +48,7 @@ shinyUI(
                            textInput("regexFilter",label = "RegexFilter Trackerfiles"),
                   plotlyOutput( "logOverviewPlot")))
       ))
-              
+
       )
     )
   )
