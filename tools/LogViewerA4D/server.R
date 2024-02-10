@@ -80,6 +80,27 @@ shinyServer(function(input, output, session) {
       }
     })
     values$eventLog <- allLogs
+    
+    logs <- read_parquet("tools/LogViewerA4D/temp.parquet")
+    
+    logs <- read_parquet("temp.parquet")
+    
+    trackerNamesWithClinicCodeMessage <- logs %>%
+      filter(str_detect(Message,"clinic_code =")) %>% 
+      mutate(
+        clinic_code = gsub("clinic_code = ([^.]*).*", "\\1", trackerNamesWithClinicCodeMessage$Message),
+        # hier reichen meine regex-Kenntnisse nicht aus. Kann bestimmt noch vereinfacht werden:
+        a4d_tracker = gsub("logs_\\d{4}_", "", trackerNamesWithClinicCodeMessage$fileName),
+        a4d_tracker = gsub(" A4D Tracker.*", "", a4d_tracker)
+        ) %>% 
+      select(a4d_tracker, clinic_code) %>% 
+      distinct(a4d_tracker, keep_all = TRUE) 
+    
+    logs <- logs %>% 
+      mutate(a4d_tracker = )
+      left_join(trackerNamesWithClinicCodeMessage, by = "a4d_tracker")
+      
+
     write_parquet(allLogs,"temp.parquet")
   })
 
