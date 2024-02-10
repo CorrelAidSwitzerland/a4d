@@ -108,12 +108,18 @@ shinyServer(function(input, output, session) {
             }
         })
 
-
         clinic_info_df <- allLogs %>% filter(str_detect(Message,"clinic_code =")) %>%
-            mutate(clinic_code=gsub("clinic_code = ([^.]*).*", "\\1",   Message)) %>% select(fileName , clinic_code) %>%
+            mutate(clinic_code=gsub("clinic_code = ([^.]*).*", "\\1",   Message),
+                   tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
+            select(tracker_in_fileName, clinic_code) %>%
+            distinct(tracker_in_fileName, .keep_all = TRUE) %>%
+            arrange(clinic_code) %>%
             left_join(read_csv(here::here("reference_data/clinic_data_static.csv")), by = "clinic_code",relationship = "many-to-many")
 
-        values$eventLog <- allLogs %>% left_join(clinic_info_df, by = "fileName",relationship = "many-to-many")
+        values$eventLog <- allLogs %>%
+            mutate(tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
+            left_join(clinic_info_df, by = "tracker_in_fileName",relationship = "many-to-many") %>%
+            select(-"tracker_in_fileName")
 
         values$proccessedFilesInfo <- allLogs %>%
             filter(str_detect(pattern = "Found",Message)) %>%
