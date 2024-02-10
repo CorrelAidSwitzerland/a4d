@@ -16,9 +16,7 @@ shinyUI(
              fileInput(
                "fileUpload",
                "Upload Log Files",
-               multiple = TRUE, accept = ".log"),
-             selectInput("level", label = "Level", choices = levelsValues, selected = "TRACE"),
-    ),
+               multiple = TRUE, accept = ".log")),
 
 
     sidebarMenu(
@@ -35,7 +33,9 @@ shinyUI(
         DTOutput("logTable")),
         box(width = 6,
             title = "Tracker Overview",
-            DTOutput("trackerSummary"))
+            DTOutput("trackerSummary"),
+            plotlyOutput("sankey")),
+
 
 
       )),
