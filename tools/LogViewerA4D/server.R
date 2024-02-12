@@ -9,16 +9,6 @@ shinyServer(function(input, output, session) {
     # Define a reactiveValues object to store the event log data and the current table data.
     values <- reactiveValues(eventLog = NULL ,currentTable = NULL, proccessedFilesInfo = NULL)
 
-    # Define a reactive expression to get the selected row from the log table.
-    selectedRow <- reactive({
-        idx <- input$logTable_rows_selected
-        if (is.null(idx)) {
-            return(NULL)
-        } else {
-            row <- values$currentTable[idx, ]
-            return(row)
-        }
-    })
 
     # Observer for the "Load Last Saved Log-Data" button click event.
     observeEvent(input$loadTempFile,{
@@ -29,7 +19,7 @@ shinyServer(function(input, output, session) {
 
     # Render the details panel to display the selected log entry details.
     observeEvent(input$logTable_cell_clicked,{
-        row <- selectedRow()
+        row <- values$currentTable[input$logTable_rows_selected,]
         if (is.null(row)) {
             return(NULL)
         } else {
@@ -115,10 +105,31 @@ shinyServer(function(input, output, session) {
 
         values$eventLog <- allLogs %>% left_join(clinic_info_df, by = "fileName",relationship = "many-to-many")
 
-        values$proccessedFilesInfo <- allLogs %>%
+        logsLoaded <- tibble(fileName =  input$fileUpload$datapath)
+        mainScript1proccessed <- allLogs %>% filter(str_detect(Message,"Current file:")) %>%
+             mutate(fileName=gsub("Current file: ([^.]*).*", "\\1",   Message)) %>% distinct(fileName)
+
+        processedTrackersMainScript <- allLogs %>%
             filter(str_detect(pattern = "Found",Message)) %>%
             extract(Message, into = c("number", "type"), regex = "Found (\\d+) (\\w+)") %>% select(fileName,type, number) %>%
             distinct(fileName,type,number)
+
+        allLogs <- read_parquet("tools/LogViewerA4D/temp.parquet")
+
+
+        testProduct <- allLogs %>%
+            filter(str_detect(pattern = "Finished processing the following sheet: ",Message)) %>% group_by(fileName) %>% count()
+        test <- allLogs %>%
+            filter(str_detect(pattern = "patient_raw",fileName),Function == "export_data_as_parquet") %>% group_by(fileName) %>% count()
+        test <- allLogs %>%
+            filter(str_detect(pattern = "patient_raw",fileName),str_detect(pattern = "Could not convert value",Message) ) %>% group_by(fileName) %>% count()
+        test <- allLogs %>%
+            filter(str_detect(pattern = "patient_raw",fileName),str_detect(pattern = "Patient",Message) ) %>% group_by(fileName) %>% count()
+
+        test <- allLogs %>%
+            filter(Level == "ERROR") %>% group_by(substring(Message,1,30)) %>% count()
+
+
         write_parquet(allLogs,"temp.parquet")
     })
 
