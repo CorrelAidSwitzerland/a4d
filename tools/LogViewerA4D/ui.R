@@ -21,7 +21,8 @@ shinyUI(
 
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-      menuItem("Overview", tabName = "overview", icon = icon("th"))
+      menuItem("Overview", tabName = "overview", icon = icon("th")),
+      menuItem("Reference_Data", tabName = "ref_data", icon = icon("clipboard"))
     )),
     dashboardBody(
       tabItems(
@@ -47,9 +48,29 @@ shinyUI(
               fluidRow(box(title= "Overview-Plot", height=1000, weight=1000,
                            textInput("regexFilter",label = "RegexFilter Trackerfiles"),
                   plotlyOutput( "logOverviewPlot")))
+      ),
+
+      tabItem(tabName = "ref_data",
+              fluidPage(
+                  sidebarLayout(
+                      sidebarPanel(
+                          h3("Checking reference_data"),
+                          br(),
+                          p("We use reference_data to match clinic information
+                          to clinic_code used in messages.")
+                      ),
+                      mainPanel(
+                          h3("Missing entries in reference_data"),
+                          br(),
+                          h3("Multiple use of clinic code")
+
+                      )
+              ))
+
+              )
       ))
 
       )
     )
-  )
+
 
