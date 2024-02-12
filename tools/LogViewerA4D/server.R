@@ -128,6 +128,7 @@ shinyServer(function(input, output, session) {
         write_parquet(allLogs,"temp.parquet")
     })
 
+
     # Render the UI for the "Load Last Saved Log-Data" button if the "temp.parquet" file exists.
     output$loadTempFileUI <- renderUI({
         if(file.exists("temp.parquet")) {
@@ -239,5 +240,21 @@ shinyServer(function(input, output, session) {
                   rownames = FALSE,
                   escape = FALSE
         )
+    })
+
+    # Display reference_data df in tabItem Reference_Data
+    output$ref_data_df <- renderTable({
+
+        missing_entries_df <- clinic_info_df %>%
+            filter(is.na(country_name))
+        multiple_entries_df <- clinic_info_df
+
+        col_filter <- switch(input$choose_tab,
+                       "all" = clinic_info_df,
+                       "missing entries" = missing_entries_df,
+                       "multiple entries" = multiple_entries_df
+        )
+        col_filter
+
     })
 })

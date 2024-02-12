@@ -57,12 +57,15 @@ shinyUI(
                           h3("Checking reference_data"),
                           br(),
                           p("We use reference_data to match clinic information
-                          to clinic_code used in messages.")
+                          to clinic_code used in messages."),
+                          radioButtons("choose_tab",
+                                             label = "Choose Output",
+                                             choices = c("all", "missing entries", "multiple entries"),
+                                             selected = "all"
+                                             )
                       ),
                       mainPanel(
-                          h3("Missing entries in reference_data"),
-                          br(),
-                          h3("Multiple use of clinic code")
+                          tableOutput("ref_data_df")
 
                       )
               ))
