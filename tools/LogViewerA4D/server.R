@@ -247,7 +247,9 @@ shinyServer(function(input, output, session) {
 
         missing_entries_df <- clinic_info_df %>%
             filter(is.na(country_name))
-        multiple_entries_df <- clinic_info_df
+        multiple_entries_df <- clinic_info_df %>%
+            group_by(clinic_code) %>%
+            filter(n()>1)
 
         col_filter <- switch(input$choose_tab,
                        "all" = clinic_info_df,
