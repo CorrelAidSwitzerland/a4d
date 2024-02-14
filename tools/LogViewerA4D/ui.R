@@ -65,7 +65,7 @@ shinyUI(
                                              )
                       ),
                       mainPanel(
-                          tableOutput("ref_data_df")
+                          DTOutput("ref_data_df")
 
                       )
               ))

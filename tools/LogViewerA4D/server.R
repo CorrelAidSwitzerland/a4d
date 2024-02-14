@@ -7,7 +7,7 @@
 shinyServer(function(input, output, session) {
 
     # Define a reactiveValues object to store the event log data and the current table data.
-    values <- reactiveValues(eventLog = NULL ,currentTable = NULL, proccessedFilesInfo = NULL)
+    values <- reactiveValues(eventLog = NULL ,currentTable = NULL, proccessedFilesInfo = NULL,clinic_info_df=NULL)
 
     # Define a reactive expression to get the selected row from the log table.
     selectedRow <- reactive({
@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
             }
         })
 
-        clinic_info_df <- allLogs %>% filter(str_detect(Message,"clinic_code =")) %>%
+        values$clinic_info_df <- allLogs %>% filter(str_detect(Message,"clinic_code =")) %>%
             mutate(clinic_code=gsub("clinic_code = ([^.]*).*", "\\1",   Message),
                    tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
             select(tracker_in_fileName, clinic_code) %>%
@@ -118,7 +118,7 @@ shinyServer(function(input, output, session) {
 
         values$eventLog <- allLogs %>%
             mutate(tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
-            left_join(clinic_info_df, by = "tracker_in_fileName",relationship = "many-to-many") %>%
+            left_join(values$clinic_info_df, by = "tracker_in_fileName",relationship = "many-to-many") %>%
             select(-"tracker_in_fileName")
 
         values$proccessedFilesInfo <- allLogs %>%
@@ -175,12 +175,15 @@ shinyServer(function(input, output, session) {
     # Render the log table using the DataTable library.
     output$logTable <- renderDT({
         req(values$eventLog)
+
         options <- list(
             searching = TRUE,
             autoWidth = TRUE,
             paging = TRUE,
             pageLength = 20,
             lengthChange = T,
+           dom = '<"top" p>tB',
+            buttons = c('copy', 'csv', 'excel'),
             scrollX = T,
             ordering = T,
             info = T,
@@ -191,6 +194,8 @@ shinyServer(function(input, output, session) {
         )
         selection <- list(mode = "single", target = "row")
         table <- datatable(values$eventLog,
+                           extensions = 'Buttons',
+
                            options = options,
                            filter = list(
                                position = "top", clear = FALSE
@@ -237,13 +242,26 @@ shinyServer(function(input, output, session) {
                   filter = list(
                       position = "top", clear = FALSE
                   ),
+                  extensions = 'Buttons',
+
+                  options = list(
+                      paging = TRUE,
+                      searching = TRUE,
+                      fixedColumns = TRUE,
+                      autoWidth = TRUE,
+                      ordering = TRUE,
+                      dom = 'tB',
+                      buttons = c('copy', 'csv', 'excel')
+                  ),
                   rownames = FALSE,
                   escape = FALSE
         )
     })
 
     # Display reference_data df in tabItem Reference_Data
-    output$ref_data_df <- renderTable({
+    output$ref_data_df <- renderDT({
+        req(values$clinic_info_df)
+        clinic_info_df <- values$clinic_info_df %>% select(-clinic_start_date,-clinic_quota_22)
 
         missing_entries_df <- clinic_info_df %>%
             filter(is.na(country_name))
@@ -256,7 +274,22 @@ shinyServer(function(input, output, session) {
                        "missing entries" = missing_entries_df,
                        "multiple entries" = multiple_entries_df
         )
-        col_filter
+        DT::datatable(
+            { col_filter },
+
+            extensions = 'Buttons',
+
+            options = list(
+                paging = TRUE,
+                searching = TRUE,
+                fixedColumns = TRUE,
+                autoWidth = TRUE,
+                ordering = TRUE,
+                dom = 'tB',
+                buttons = c('copy', 'csv', 'excel')
+            ),
+
+            class = "display")
 
     })
 })
