@@ -85,7 +85,6 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
         },
         output_root = paths$output_root
     )
-
 }
 
 
@@ -94,7 +93,6 @@ process_patient_data <-
              tracker_data_file,
              output_root,
              synonyms_patient) {
-
         df_raw_patient <-
             reading_patient_data(
                 tracker_data_file = tracker_data_file,
@@ -123,7 +121,6 @@ process_product_data <-
              tracker_data_file,
              output_root,
              synonyms_product) {
-
         df_raw_product <-
             reading_product_data_step1(
                 tracker_data_file = tracker_data_file,

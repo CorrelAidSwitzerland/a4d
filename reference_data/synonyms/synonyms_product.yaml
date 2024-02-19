@@ -26,10 +26,14 @@ product_units_received:
   - Units Received  (bottle/box)
   - Units Received
   - Units Received \r\n(bottle/box)
+  - Received
 product_units_released:
   - Units Released (box)
   - Units Released
   - Units Released\r\n(box)
+  - Released
 product_units_returned:
   - Units Returned
   - Extra Unis Kept in Clinic
+product_remarks:
+  - REMARKS
