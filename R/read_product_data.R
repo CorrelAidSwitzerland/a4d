@@ -44,6 +44,10 @@ reading_product_data_step1 <-
             # Extract relevant data and renamn columns
             product_df <- extract_product_data(tracker_data)
 
+            if (check_wide_format_columns(product_df)) {
+                logError(curr_sheet, " Wide-format 2017-2020 columns detected. The wide-format area should be changed to long-format!")
+            }
+
             # If after extraction, dataframe is empty, this iteration is also skipped.
             if (all(is.na(product_df))) {
                 logInfo("Product data is empty. Skipping ", curr_sheet, ".")
@@ -124,6 +128,22 @@ reading_product_data_step1 <-
         logDebug("Finish reading_product_data_step1.")
     }
 
+
+#' @title Check if dataframe contains required columns
+#'
+#' @description
+#' This function checks if a dataframe contains the columns 'Total Units Released' and 'Units Released per person'.
+#' It returns TRUE if both columns are present, and FALSE otherwise.
+#'
+#' @param df A dataframe to check for the presence of required columns.
+#' @return A logical value indicating whether the dataframe contains the required columns.
+#' @examples
+#' df <- data.frame("Total Units Released" = c(1, 2, 3), "Units Released per person" = c(4, 5, 6), "Other Column" = c(7, 8, 9))
+#' check_wide_format_columns(df) # Returns: TRUE
+check_wide_format_columns <- function(df) {
+    required_columns <- c("Total Units Released", "Units Released per person")
+    all(required_columns %in% names(df))
+}
 
 #' @title Count rows with missing patient's name next to the released units
 #'
