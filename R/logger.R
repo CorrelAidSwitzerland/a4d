@@ -74,13 +74,14 @@ with_file_logger <- withr::with_(
 #' @param line Current Line of the LogMessage (May Change over time but should stay close to the real value)
 #' @param errorCode A Combination of UID Letters for Easy location of the Message Origin
 #' @return Stringified JSON to Log with logX-Functions
-log_to_json <- function(message, values = NA, file = NA, line = NA, errorCode = NA) {
+log_to_json <- function(message, values = NA, file = NA, line = NA, errorCode = NA, functionName = NA) {
     logObject <- list(
         message = glue::glue(message),
         values = values,
         file = file,
         line = line,
-        errorCode = errorCode
+        errorCode = errorCode,
+        functionName = functionName
     )
     return(jsonlite::toJSON(logObject))
 }

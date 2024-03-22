@@ -21,7 +21,7 @@ main <- function() {
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
             error = function(e) {
-                logError(log_to_json("Could not process {values['tracker_name']}. Error = {values['e']}.", values = list(tracker_name = tracker_name, e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 24, errorCode = "XDTWDGA"))
+                logError(log_to_json("Could not process {values['tracker_name']}. Error = {values['e']}.", values = list(tracker_name = tracker_name, e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 24, errorCode = "XDTWDGA", functionName = "main"))
             },
             warning = function(w) {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
