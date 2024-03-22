@@ -5,6 +5,7 @@ library(tidyverse)
 library(arrow)
 library(plotly)
 library(ggplot2)
+library(stringdist)
 
 
 levelsValues <- c("TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL")
@@ -14,6 +15,9 @@ truncScript <- "function(data, type, row, meta) {\n
       return type === 'display' && data != null && data.length > 100 ?\n
         '<span title=\"' + data.substr(0, 1000) + '\">' + data.substr(0, 100) + '...</span>' : data;\n
      }"
+
+
+
 
 
 parseLines <- function(lines) {

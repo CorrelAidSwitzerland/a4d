@@ -22,7 +22,21 @@ shinyServer(function(input, output, session) {
   # Observer for the "Load Last Saved Log-Data" button click event.
   observeEvent(input$loadTempFile, {
     print("Load Old Data")
-    values$eventLog <- read_parquet("temp.parquet")
+      if (file.exists("eventLog.parquet")) {
+
+    values$eventLog  <- read_parquet(values$eventLog,"eventLog.parquet") }
+
+      if (file.exists("clinic_info_df.parquet")) {
+
+    values$clinic_info_df <- read_parquet(values$clinic_info_df,"clinic_info_df.parquet")
+      }
+
+      if (file.exists("proccessedFilesInfo.parquet")) {
+
+    values$proccessedFilesInfo <- read_parquet(values$proccessedFilesInfo,"proccessedFilesInfo.parquet")
+      }
+
+
   })
 
 
@@ -65,6 +79,55 @@ shinyServer(function(input, output, session) {
   observeEvent(input$fileUpload, {
     req(input$fileUpload)
     allLogs <- tibble()
+    errorClassificationData <- read_csv2(here::here("tools/LogViewerA4D/errorClassification.csv")) %>%
+      select(-...1)
+
+    extract_values <- function(message,pattern) {
+        # Extract matches
+        matches <- regmatches(message, gregexpr(pattern, message))
+
+        # If matches were found, extract the captured groups
+        if(length(matches[[1]]) > 0) {
+            # Extracting the groups
+
+            val1 <- NA
+            val2 <- NA
+            val3 <- NA
+            val4 <- NA
+            val5 <- NA
+
+            val1 <- gsub(pattern, "\\1", matches[[1]])
+            val2 <- gsub(pattern, "\\2", matches[[1]])
+            val3 <- gsub(pattern, "\\3", matches[[1]])
+            val4 <- gsub(pattern, "\\4", matches[[1]])
+            val5 <- gsub(pattern, "\\5", matches[[1]])
+
+            return(data.frame(   val1=val1, val2=val2,val3=val3,val4=val4,val5=val5))
+        } else {
+            return(data.frame(   val1=NA, val2=NA,val3=NA,val4=NA,val5=NA))
+        }
+    }
+
+
+
+    matchErrors <- function(logDataRow) {
+        for(errorClassificationData_row in 1:nrow(errorClassificationData))
+        {
+            row <- errorClassificationData[errorClassificationData_row,]
+            logDataRow[names(row)] <- row
+            data_list <- extract_values(message = logDataRow$Message,pattern = row$logRegex)
+            if(!is.na(data_list$val1))
+            {
+                logDataRow[names(data_list)] <- data_list
+                return( logDataRow)
+                break
+            }
+        }
+        return(logDataRow)
+    }
+
+
+
     withProgress(message = "Creating Log DF", value = 0, {
       for (x in 1:length(input$fileUpload$datapath)) {
         tryCatch(
@@ -81,6 +144,21 @@ shinyServer(function(input, output, session) {
                 mutate(fileNameParts = list(str_split(basename(x), "_") %>%
                   first())) %>%
                 unnest_wider(fileNameParts, names_sep = "_")
+              # Reading the log data
+
+
+              result <- result %>%
+                  mutate(logCode = NA, logString = NA, RFile = NA, Line = NA, logRegex = NA,
+                         val1 = NA, val2 = NA, val3 = NA, val4 = NA, val5 = NA,rowIndex = row_number())
+
+
+              for (i in 1:nrow(result)) {
+                  logDataRow <- result[i,]
+                  newRow <- matchErrors( logDataRow )
+                  if(!is.na(newRow$val1)) result[i,] <- newRow
+              }
+
+
               allLogs <- allLogs %>%
                 dplyr::bind_rows(result) %>%
                 mutate(across(where(is.character), as.factor)) %>%
@@ -105,34 +183,53 @@ shinyServer(function(input, output, session) {
       }
     })
 
+    print("Test1")
+    print(allLogs)
     values$clinic_info_df <- allLogs %>%
-      filter(str_detect(Message, "clinic_code =")) %>%
-      mutate(
-        clinic_code = gsub("clinic_code = ([^.]*).*", "\\1", Message),
-        tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)
-      ) %>%
-      select(tracker_in_fileName, clinic_code) %>%
-      distinct(tracker_in_fileName, .keep_all = TRUE) %>%
-      arrange(clinic_code) %>%
-      left_join(read_csv(here::here("reference_data/clinic_data_static.csv")), by = "clinic_code", relationship = "many-to-many")
+        filter(str_detect(Message, "clinic_code =")) %>%
+        mutate(
+          clinic_code = gsub("clinic_code = ([^.]*).*", "\\1", Message),
+          tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)
+        ) %>%
+        select(tracker_in_fileName, clinic_code) %>%
+        distinct(tracker_in_fileName, .keep_all = TRUE) %>%
+        arrange(clinic_code) %>%
+        left_join(read_csv(here::here("reference_data/clinic_data_static.csv")), by = "clinic_code", relationship = "many-to-many")
+
+
+    print("Test2")
 
     values$eventLog <- allLogs %>%
       mutate(tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
-      left_join(values$clinic_info_df, by = "tracker_in_fileName", relationship = "many-to-many") %>%
-      select(-"tracker_in_fileName")
+      left_join(values$clinic_info_df, by = "tracker_in_fileName", relationship = "many-to-many")
 
-    values$proccessedFilesInfo <- allLogs %>%
-      filter(str_detect(pattern = "Found", Message)) %>%
-      extract(Message, into = c("number", "type"), regex = "Found (\\d+) (\\w+)") %>%
-      select(fileName, type, number) %>%
-      distinct(fileName, type, number)
-    write_parquet(allLogs, "temp.parquet")
+    print("Test3")
+    print(allLogs %>%
+        filter(str_detect(Message, pattern = "Found")) %>% nrow(.) )
+    if (allLogs %>%
+        filter(str_detect(Message, pattern = "Found")) %>% nrow(.) >= 1) {
+      values$proccessedFilesInfo <- allLogs %>%
+        filter(str_detect(Message, pattern = "Found")) %>% {tryCatch(
+        extract(Message, into = c("number", "type"), regex = "Found (\\d+) (\\w+)") %>%
+        select(fileName, type, number) %>%
+        distinct(fileName, type, number),
+        error=function(e) .)}
+    }
+
+    print("Test4")
+
+
+    if(!is.null(values$eventLog)) write_parquet(values$eventLog,"eventLog.parquet")
+    if(!is.null(values$clinic_info_df)) write_parquet(values$clinic_info_df,"clinic_info_df.parquet")
+    if(!is.null(values$proccessedFilesInfo)) write_parquet(values$proccessedFilesInfo,"proccessedFilesInfo.parquet")
+
+
   })
 
 
   # Render the UI for the "Load Last Saved Log-Data" button if the "temp.parquet" file exists.
   output$loadTempFileUI <- renderUI({
-    if (file.exists("temp.parquet")) {
+    if (file.exists("eventLog.parquet")) {
       actionButton("loadTempFile", "Load Last Saved Log-Data")
     } else {
       NULL
