@@ -4,7 +4,14 @@
 \alias{log_to_json}
 \title{Log-To-Json Formatter}
 \usage{
-log_to_json(message, values = NA, file = NA, line = NA, errorCode = NA)
+log_to_json(
+  message,
+  values = NA,
+  file = NA,
+  line = NA,
+  errorCode = NA,
+  functionName = NA
+)
 }
 \arguments{
 \item{message}{Log Message with Glue Syntax {values\link{'X'}}}
