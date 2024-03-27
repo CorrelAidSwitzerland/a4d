@@ -112,4 +112,3 @@ ingest_data(
     table = "clinic_data_static",
     source = file.path(table_dir, "clinic_data_static.parquet")
 )
-
