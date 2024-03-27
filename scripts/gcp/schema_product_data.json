@@ -21,4 +21,5 @@
     {"name": "unit_capacity", "type": "INTEGER"},
     {"name": "table_country", "type": "STRING"},
     {"name": "table_hospital", "type": "STRING"}
+    {"name": "product_remarks", "type": "STRING"}
 ]
