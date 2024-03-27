@@ -23,6 +23,11 @@ helper_is_msd_start_row <- function(df, i) {
         # any(grepl("Product", df[i + 1, ])) &
         # any(grepl("Entry Date", df[i + 1, ])) ~ TRUE,
 
+        # 2024
+        any(grepl("Product", df[i, ])) &
+            any(grepl("Date", df[i, ])) &
+            any(grepl("Received", df[i, ])) ~ TRUE,
+
         # 2019 & 2020 & 2021
         any(grepl("Product", df[i, ])) &
             any(grepl("Date", df[i, ])) &
@@ -98,6 +103,15 @@ extract_product_data <- function(monthly_tracker_df) {
             end_df_msd <- end
         }
     }
+
+    if (is.null(start_df_msd)) {
+        logWarn("Cannot find the initial row for the product data.")
+    }
+
+    if (is.null(end_df_msd)) {
+        logWarn("Cannot find the final row for the product data.")
+    }
+
     product_data_df <- monthly_tracker_df[start_df_msd:end_df_msd, ]
 
     # Clean empty remaining first row
