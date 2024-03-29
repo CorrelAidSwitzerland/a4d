@@ -20,3 +20,13 @@ The script will do the following:
     6. Create a log file under `output/logs/main_replace_patient_names.log`.
     
 The script works in a way that it does (hopefully) not change the structure or format of the workbook. It only replaces the patient names with the patient ids by manipulating the value of single cells without changing their attributes.
+
+## How to build
+
+Run
+
+```bash
+pyinstaller main.py -F -n "a4d_replacer_tool"
+```
+
+to generate the executable. 
