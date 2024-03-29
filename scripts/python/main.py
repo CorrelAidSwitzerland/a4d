@@ -1,22 +1,46 @@
+""" Small cli helper tool to replace patient names with patient ids in excel files.
+
+This script is used to replace patient names with patient ids in excel files.
+The script will look for excel files in the source directory and replace the names
+with the ids. The script will create a new directory called 'output' next to the source directory 
+and save the changed files there.
+The source directory is specified by the user via prompt. 
+The output directory is specified by the user via option --output, and defaults to "output".
+The script is logging to a file called 'main_replace_patient_names.log' 
+in a subdirectory called 'logs' inside the output directory.
+
+Example call:
+    $ python main.py --src /path/to/excel_files --output output
+"""
 import logging
 import shutil
 from pathlib import Path
+from zipfile import BadZipFile
 
 import click
 import openpyxl
 import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("replace patient names")
+logger = logging.getLogger("a4d-replacer-tool")
 
 PATIENT_DATA_RANGE = ("B1", "C200")
 
 
-@click.command("replace")
-@click.argument("src", type=click.Path(exists=True))
+@click.command("a4d-replacer-tool")
+@click.option("--src", "-s", prompt="Source directory", default=lambda: Path("."), help="Source directory")
 @click.option("--output", "-o", default="output", help="Output directory")
 @click.version_option("0.1.0", prog_name="replace patient names")
-def replace_name_with_id(src: str, output: str):
+def replace_name_with_id(src: Path, output: str):
+    """Replaces patient name with patient id in all excel files found in src.
+
+    Args:
+        src (Path): Source diretory holding excel files as xlsx.
+        output (str): Output directory holding excel files with replaced names.
+
+    Raises:
+        ValueError: If no excel files are found in src.
+    """
     excel_files = list(Path(src).rglob("*.xlsx"))
 
     if not excel_files:
@@ -27,28 +51,28 @@ def replace_name_with_id(src: str, output: str):
 
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
-        logger.info(f"Created output directory {output_dir} under {src}.")
+        logger.info("Created output directory %s under %s.", output_dir, src)
 
     if not log_dir.exists():
         log_dir.mkdir(parents=True)
-        logger.info(f"Created log directory {log_dir} under {src}.")
+        logger.info("Created log directory %s under %s.", log_dir, src)
 
     logger.addHandler(logging.FileHandler(log_dir / "main_replace_patient_names.log"))
 
-    logger.info(f"Start processing {len(excel_files)} excel files.")
+    logger.info("Start processing %s excel files.", len(excel_files))
     for i, excel_file in enumerate(excel_files):
-        logger.info(f"Start processing {excel_file.name} ({i+1}/{len(excel_files)}).")
+        logger.info("Start processing %s (%s/%s).", excel_file.name, i+1, len(excel_files))
 
         try:
             wb = openpyxl.load_workbook(str(excel_file))
-        except openpyxl.BadZipFile:
-            logger.warning(f"Failed to open {excel_file.name}. Skipping.")
+        except BadZipFile:
+            logger.warning("Failed to open %s. Skipping.", excel_file.name)
             continue
 
         sheets = wb.sheetnames
 
         if "Patient List" not in sheets:
-            logger.warning(f"Sheet 'Patient List' not found. Skipping.")
+            logger.warning("Sheet 'Patient List' not found. Skipping.")
             # shutil.copy(excel_file, output_dir / excel_file.name)
             continue
 
@@ -81,8 +105,8 @@ def replace_name_with_id(src: str, output: str):
                             cell.value = row.id
 
         wb.save(output_dir / excel_file.name)
-        logger.info(f"Saved changed file to {output_dir}.")
-        logger.info(f"Finished processing {excel_file.name}.")
+        logger.info("Saved changed file to %s.", output_dir)
+        logger.info(f"Finished processing %s.", excel_file.name)
 
 
 if __name__ == "__main__":
