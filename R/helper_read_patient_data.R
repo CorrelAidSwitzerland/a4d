@@ -42,7 +42,6 @@ extract_country_clinic_code <- function(patient_data) {
 extract_patient_data <- function(tracker_data_file, sheet, year) {
     logDebug("Start extract_patient_data for sheet = ", sheet, ".")
 
-    logDebug("Start openxlsx::read.xlsx to get tracker_data.")
     tracker_data <- openxlsx::read.xlsx(
         xlsxFile = tracker_data_file,
         sheet = sheet,
@@ -59,7 +58,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     # col_names = F,
     # .name_repair = "unique_quiet"
     # )
-    logDebug("Finish openxlsx::read.xlsx.")
 
     # Assumption: first column is always empty until patient data begins
     patient_data_range <- which(!is.na(tracker_data[, 1]))
@@ -81,7 +79,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     }
 
     logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
-    logDebug("Start readxl::read_excel to get patient data.")
     df_patient <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
@@ -91,7 +88,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         col_types = c("text"),
         .name_repair = "unique_quiet"
     )
-    logDebug("Finish readxl::read_excel.")
 
     if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)

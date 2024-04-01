@@ -12,6 +12,7 @@ in a subdirectory called 'logs' inside the output directory.
 Example call:
     $ python main.py --src /path/to/excel_files --output output
 """
+
 import logging
 import shutil
 from pathlib import Path
@@ -28,7 +29,13 @@ PATIENT_DATA_RANGE = ("B1", "C200")
 
 
 @click.command("a4d-replacer-tool")
-@click.option("--src", "-s", prompt="Source directory", default=lambda: Path("."), help="Source directory")
+@click.option(
+    "--src",
+    "-s",
+    prompt="Source directory",
+    default=lambda: Path("."),
+    help="Source directory",
+)
 @click.option("--output", "-o", default="output", help="Output directory")
 @click.version_option("0.1.0", prog_name="replace patient names")
 def replace_name_with_id(src: Path, output: str):
@@ -61,10 +68,12 @@ def replace_name_with_id(src: Path, output: str):
 
     logger.info("Start processing %s excel files.", len(excel_files))
     for i, excel_file in enumerate(excel_files):
-        logger.info("Start processing %s (%s/%s).", excel_file.name, i+1, len(excel_files))
+        logger.info(
+            "Start processing %s (%s/%s).", excel_file.name, i + 1, len(excel_files)
+        )
 
         try:
-            wb = openpyxl.load_workbook(str(excel_file))
+            wb = openpyxl.load_workbook(str(excel_file), data_only=True)
         except BadZipFile:
             logger.warning("Failed to open %s. Skipping.", excel_file.name)
             continue
