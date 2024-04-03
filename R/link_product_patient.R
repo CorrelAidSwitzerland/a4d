@@ -36,10 +36,8 @@ link_product_patient <- function(product_file, patient_file) {
         # Convert the table to a data frame
         summary_df <- as.data.frame(summary_table)
 
-        # Rename the columns
-        names(summary_df) <- c("file_name", "product_released_to", "count")
 
-        summary_df <- dplyr::filter(summary_df, count > 0)
+        summary_df <- dplyr::filter(summary_df, Freq > 0)
 
         tryCatch(
             {
@@ -47,11 +45,16 @@ link_product_patient <- function(product_file, patient_file) {
                     logWarn(
                         "The number of mismatched patient IDs between the product and patient data is ",
                         nrow(summary_df), ". ",
-                        paste("File Name: ", summary_df$file_name,
-                            " Patient ID in product: ", summary_df$product_released_to,
-                            " Count in product: ", summary_df$count,
+                        paste("File Name: ", summary_df$Var1,
+                            " Patient ID in product: ", summary_df$Var2,
+                            " Count in product: ", summary_df$Freq,
                             sep = "", collapse = ", "
                         )
+                    )
+                } else {
+                    logInfo(
+                        "There are no mismatched patient IDs between the product data - ",
+                        product_file, " and patient data - ", patient_file
                     )
                 }
             },
