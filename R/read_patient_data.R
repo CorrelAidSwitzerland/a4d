@@ -69,9 +69,7 @@ reading_patient_data <-
             logDebug("Finish processing sheet ", curr_sheet, ".")
         }
 
-        logDebug("Start combining sheet data into single data frame.")
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
-        logDebug("Finish combining sheet data into single data frame.")
 
         if ("Patient List" %in% sheet_list) {
             logDebug("Start extracting patient list.")
