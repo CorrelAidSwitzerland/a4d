@@ -64,3 +64,23 @@ with_file_logger <- withr::with_(
         }
     }
 )
+
+
+#' @title Log-To-Json Formatter
+#'
+#' @param message Log Message with Glue Syntax {values['X']}
+#' @param values A named list with the Glue Referenced Values as single Strings
+#' @param currentFile String of current File with Path the Log is evoked
+#' @param line Current Line of the LogMessage (May Change over time but should stay close to the real value)
+#' @param errorCode A Combination of UID Letters for Easy location of the Message Origin
+#' @return Stringified JSON to Log with logX-Functions
+log_to_json <- function(message, values = NA, file = NA, line = NA, errorCode = NA) {
+    logObject <- list(
+        message = glue::glue(message),
+        values = values,
+        file = file,
+        line = line,
+        errorCode = errorCode
+    )
+    return(jsonlite::toJSON(logObject))
+}

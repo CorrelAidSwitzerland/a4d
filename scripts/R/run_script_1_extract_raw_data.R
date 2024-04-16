@@ -21,7 +21,7 @@ main <- function() {
         tryCatch(
             process_tracker_file(paths, tracker_file, tracker_name, synonyms),
             error = function(e) {
-                logError("Could not process ", tracker_name, ". Error = ", e$message, ".")
+                logError(log_to_json("Could not process {values['tracker_name']}. Error = {values['e']}.", values = list(tracker_name = tracker_name, e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 24, errorCode = "XDTWDGA"))
             },
             warning = function(w) {
                 logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
@@ -36,12 +36,11 @@ main <- function() {
 process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
-    logDebug("Start process_tracker_file.")
-    logInfo(
-        "Current file: ",
-        tracker_name
-    )
-
+    logDebug(log_to_json("Start process_tracker_file."))
+    logInfo(log_to_json(
+        "Current file: {values['tracker_name]}",
+        values = list(tracker_name = tracker_name), file = "scripts/run_script_1_extract_raw_data.R", line = 42, errorCode = "TEST"
+    ))
 
     logfile <- paste0(tracker_name, "_", "patient")
     with_file_logger(logfile,
@@ -54,7 +53,7 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                     synonyms_patient = synonyms$patient
                 ),
                 error = function(e) {
-                    logError("Could not process patient data. Error = ", e$message, ".")
+                    logError(log_to_json("Could not process patient data. Error = {values['e']}.", values = list(e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 57, errorCode = "ABCPilot"))
                 },
                 warning = function(w) {
                     logWarn("Could not process patient data. Warning = ", w$message, ".")
