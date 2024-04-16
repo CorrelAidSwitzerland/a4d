@@ -14,18 +14,20 @@ log_to_json(
 )
 }
 \arguments{
-\item{message}{Log Message with Glue Syntax {values\link{'X'}}}
+\item{message}{log message with glue syntax {values\link{'X'}}.}
 
-\item{values}{A named list with the Glue Referenced Values as single Strings}
+\item{values}{A named list with the glue referenced values as single strings.}
 
-\item{errorCode}{A Combination of UID Letters for Easy location of the Message Origin}
+\item{file}{file name where the log message was created.}
 
-\item{warningCode}{A Combination of UID Letters for Easy location of the Message Origin}
+\item{errorCode}{A unique error code for easy aggregation of error messages.}
 
-\item{currentFile}{String of current File with Path the Log is evoked}
+\item{warningCode}{A unique warning code for easy aggregation of warning messages.}
+
+\item{functionName}{The name of the function where the log message was created.}
 }
 \value{
-Stringified JSON to Log with logX-Functions
+stringified JSON to log with logX functions
 }
 \description{
 Log-To-Json Formatter
