@@ -10,18 +10,20 @@ main <- function() {
     patient_data_files <- get_files(paths$tracker_root, pattern = "patient_raw.parquet$")
     product_data_files <- get_files(paths$tracker_root, pattern = "product_raw.parquet$")
     logInfo(
-        "Found ",
-        length(patient_data_files),
-        " patient csv files under ",
-        paths$tracker_root,
-        "."
+        log_to_json(
+            "Found {values['len']} patient csv files under {values['root']}. ",
+            values = list(len = length(patient_data_files), root = paths$tracker_root),
+            file = "run_script2_clean_data.R",
+            functionName = "main"
+        )
     )
     logInfo(
-        "Found ",
-        length(product_data_files),
-        " product csv files under ",
-        paths$tracker_root,
-        "."
+        log_to_json(
+            "Found {values['len']} product csv files under {values['root']}. ",
+            values = list(len = length(product_data_files), root = paths$tracker_root),
+            file = "run_script2_clean_data.R",
+            functionName = "main"
+        )
     )
 
     for (i in seq_along(patient_data_files)) {
@@ -35,10 +37,26 @@ main <- function() {
                 tryCatch(
                     process_patient_file(paths, patient_file, patient_file_name, paths$patient_data_cleaned),
                     error = function(e) {
-                        logError("Could not process raw patient data. Error = ", e$message, ".")
+                        logError(
+                            log_to_json(
+                                "Could not process raw patient data. Error = {values['e']}.",
+                                values = list(e = e$message),
+                                file = "run_script_2_clean_data.R",
+                                errorCode = "script2_error_tryCatch",
+                                functionName = "process_patient_file"
+                            )
+                        )
                     },
                     warning = function(w) {
-                        logWarn("Could not process raw patient data. Warning = ", w$message, ".")
+                        logWarn(
+                            log_to_json(
+                                "Could not process raw patient data. Warning = {value['w']}.",
+                                values = list(w = w$message),
+                                file = "run_script_2_clean_data.R",
+                                warningCode = "script2_warning_tryCatch",
+                                functionName = "process_patient_file"
+                            )
+                        )
                     }
                 )
             },
@@ -48,9 +66,6 @@ main <- function() {
         cat(paste("Processed ", i, " of ", length(patient_data_files), " (", round(i / length(patient_data_files) * 100, 0), "%) patient files.\n"))
     }
 
-    logInfo("Finish processing all patient csv files.")
-
-    logDebug("Start processing product csv files.")
     synonyms <- get_synonyms()
     synonyms_product <- synonyms$product
 
@@ -65,10 +80,26 @@ main <- function() {
                 tryCatch(
                     process_product_file(paths, product_file, product_file_name, synonyms_product, paths$product_data_cleaned),
                     error = function(e) {
-                        logError("Could not process raw product data. Error = ", e$message, ".")
+                        logError(
+                            log_to_json(
+                                "Could not process raw product data. Error = {values['e']}.",
+                                values = list(e = e$message),
+                                file = "run_script_2_clean_data.R",
+                                errorCode = "script2_error_tryCatch",
+                                functionName = "process_product_file"
+                            )
+                        )
                     },
                     warning = function(w) {
-                        logWarn("Could not process raw product data. Warning = ", w$message, ".")
+                        logWarn(
+                            log_to_json(
+                                "Could not process raw product data. Warning = {value['w']}.",
+                                values = list(w = w$message),
+                                file = "run_script_2_clean_data.R",
+                                warningCode = "script2_warning_tryCatch",
+                                functionName = "process_product_file"
+                            )
+                        )
                     }
                 )
             },
@@ -77,19 +108,12 @@ main <- function() {
         tictoc::toc()
         cat(paste("Processed ", i, " of ", length(product_data_files), " (", round(i / length(product_data_files) * 100, 0), "%) product files.\n"))
     }
-
-    logInfo("Finish processing all csv files.")
 }
 
 
 process_patient_file <- function(paths, patient_file, patient_file_name, output_root) {
     patient_file_path <-
         file.path(paths$tracker_root, patient_file)
-    logDebug("Start process_patient_file.")
-    logInfo(
-        "Current file: ",
-        patient_file_name
-    )
 
     allowed_provinces <- get_allowed_provinces()
 
@@ -104,24 +128,45 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value
     if (!"hba1c_updated_date" %in% colnames(df_patient_raw) && "hba1c_updated" %in% colnames(df_patient_raw)) {
-        logInfo("Column updated_hba1c_date not found. Trying to parse from hba1c_updated.")
+        logWarn(
+            log_to_json(
+                message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
+                values = list(src = "hba1c_updated", target = "updated_hba1c_date"),
+                file = "run_script_2_clean_data.R",
+                functionName = "process_patient_file",
+                warningCode = "script2_warning_hba1c_updated_date_missing"
+            )
+        )
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "hba1c_updated")
-        logDebug("Finished parsing dates from hba1c_updated.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mg" %in% colnames(df_patient_raw)) {
-        logInfo("Column updated_fbg_date not found. Trying to parse from fbg_updated_mg.")
+        logWarn(
+            log_to_json(
+                message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
+                values = list(src = "fbg_updated_mg.", target = "updated_fbg_date"),
+                file = "run_script_2_clean_data.R",
+                functionName = "process_patient_file",
+                warningCode = "script2_warning_fbg_updated_date_missing"
+            )
+        )
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mg")
-        logDebug("Finished parsing dates from fbg_updated_mg.")
     }
 
     if (!"fbg_updated_date" %in% colnames(df_patient_raw) && "fbg_updated_mmol" %in% colnames(df_patient_raw)) {
-        logInfo("Column fbg_updated_date not found. Trying to parse from fbg_updated_mmol.")
+        logWarn(
+            log_to_json(
+                message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
+                values = list(src = "fbg_updated_mmol.", target = "updated_fbg_date"),
+                file = "run_script_2_clean_data.R",
+                functionName = "process_patient_file",
+                warningCode = "script2_warning_fbg_updated_date_missing"
+            )
+        )
         df_patient_raw <-
             extract_date_from_measurement(df_patient_raw, "fbg_updated_mmol")
-        logDebug("Finished parsing dates from fbg_updated_mmol.")
     }
 
     # blood pressure is given as sys/dias value pair,
@@ -134,7 +179,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # depending on the equipment being used.
     # If the reading is above the maximum available value the > sign is used -
     # we would prefer to retain this character in the database as it is important for data analysis.
-    logInfo("Adding columns hba1c_baseline_exceeds and hba1c_updated_exceeds.")
     df_patient_raw <- df_patient_raw %>%
         dplyr::mutate(
             hba1c_baseline_exceeds = ifelse(grepl(">|<", hba1c_baseline), TRUE, FALSE),
@@ -144,7 +188,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # --- META SCHEMA ---
     # meta schema has all final columns for the database
     # along with their corresponding data types
-    logInfo("Creating meta schema.")
     # short type string for read_csv:
     # iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn
     schema <- tibble::tibble(
@@ -213,16 +256,31 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         weight = numeric()
     )
 
-    cols_extra <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
-    logWarn("Extra columns in patient data: ", paste(cols_extra, collapse = ", "))
+    extra_cols <- colnames(df_patient_raw)[!colnames(df_patient_raw) %in% colnames(schema)]
+    logWarn(
+        log_to_json(
+            message = "Extra columns in patient data: {values['extra_cols']}.",
+            values = list(extra_col = extra_cols),
+            file = "run_script_2_clean_data.R",
+            warningCode = "script2_warning_extra_cols",
+            functionName = "process_patient_file"
+        )
+    )
 
-    cols_missing <-
+    missing_cols <-
         colnames(schema)[!colnames(schema) %in% colnames(df_patient_raw)]
-    logWarn("Missing columns in patient data: ", paste(cols_missing, collapse = ", "))
+    logWarn(
+        log_to_json(
+            message = "Missing columns in patient data: {values['missing_cols']}.",
+            values = list(missing_cols = missing_cols),
+            file = "run_script_2_clean_data.R",
+            warningCode = "script2_warning_extra_cols",
+            functionName = "process_patient_file"
+        )
+    )
 
     # add all columns of schema to df_patient_raw
     # keep all rows, only append missing cols
-    logInfo("Merging df_patient with meta schema and selecting all columns of meta schema.")
     df_patient <- merge.default(df_patient_raw, schema, all.x = T)
     df_patient <- df_patient[colnames(schema)]
 
@@ -240,7 +298,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             fbg_baseline_mmol = fix_fbg(fbg_baseline_mmol),
             fbg_updated_mg = fix_fbg(fbg_updated_mg),
             fbg_updated_mmol = fix_fbg(fbg_updated_mmol),
-            testing_frequency = fix_testing_frequency(testing_frequency)
+            testing_frequency = fix_testing_frequency(testing_frequency, id)
         ) %>%
         # 2. convert the refined character columns into the target data type
         dplyr::mutate(
@@ -335,19 +393,12 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         output_root = output_root,
         suffix = "_patient_cleaned"
     )
-
-    logInfo("Finish process_patient_file.")
 }
 
 
 process_product_file <- function(paths, product_file, product_file_name, synonyms_product, output_root) {
     product_file_path <-
         file.path(paths$tracker_root, product_file)
-    logDebug("Start process_product_file.")
-    logInfo(
-        "Current file: ",
-        product_file_name
-    )
 
     df_product_raw <- arrow::read_parquet(product_file_path)
 
@@ -365,8 +416,6 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         output_root = output_root,
         suffix = "_product_cleaned"
     )
-
-    logInfo("Finish process_product_file.")
 }
 
 main()

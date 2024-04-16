@@ -16,8 +16,6 @@ create_table_longitudinal_data <-
              output_root,
              variable,
              name) {
-        logInfo("Start creating single csv for table create_table_longitudinal_data and variable ", variable)
-
         dynamic_patient_columns <-
             c(
                 "blood_pressure_dias_mmhg",
@@ -78,6 +76,4 @@ create_table_longitudinal_data <-
             output_root = output_root,
             suffix = ""
         )
-
-        logInfo("Finish creating single csv for table create_table_longitudinal_data and variable ", variable)
     }

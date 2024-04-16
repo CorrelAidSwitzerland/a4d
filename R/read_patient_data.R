@@ -1,8 +1,8 @@
 reading_patient_data <-
     function(tracker_data_file, columns_synonyms) {
-        logDebug("Start reading_patient_data.")
         sheet_list <- readxl::excel_sheets(tracker_data_file)
         testit::assert(length(sheet_list) > 0)
+
         logInfo(
             "Found ",
             length(sheet_list),
@@ -13,6 +13,8 @@ reading_patient_data <-
 
         month_list <-
             sheet_list[na.omit(pmatch(month.abb, sheet_list))]
+        testit::assert(length(month_list) > 0)
+
         logInfo(
             "Found ",
             length(month_list),
@@ -20,26 +22,22 @@ reading_patient_data <-
             paste(month_list, collapse = ","),
             "."
         )
-        testit::assert(length(month_list) > 0)
 
         # Extract year
         year <- get_tracker_year(tracker_data_file, month_list)
         logInfo("Tracker year = ", year, ".")
-        testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022))
+        testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022, 2023))
 
         tidy_tracker_list <- NULL
 
-        logDebug("Start processing sheets.")
         for (curr_sheet in month_list) {
-            logDebug("Start processing sheet ", curr_sheet, ".")
-
             df_patient <- extract_patient_data(tracker_data_file, curr_sheet, year)
             testit::assert(nrow(df_patient) > 0)
-            logDebug("df_patient dim: ", dim(df_patient) %>% as.data.frame(), ".")
 
             df_patient <-
                 harmonize_patient_data_columns(df_patient, columns_synonyms)
             testit::assert("id" %in% colnames(df_patient))
+
             # -- if we have duplicate columns, merge them
             if (anyDuplicated(colnames(df_patient)) > 0) {
                 duplicated_cols <- colnames(df_patient) %>%
@@ -58,6 +56,7 @@ reading_patient_data <-
                 }
             }
 
+            # add the current sheet name, month name and year to the patient data frame
             df_patient <- df_patient %>%
                 dplyr::mutate(
                     sheet_name = curr_sheet,
@@ -66,13 +65,11 @@ reading_patient_data <-
                 )
 
             tidy_tracker_list[[curr_sheet]] <- df_patient
-            logDebug("Finish processing sheet ", curr_sheet, ".")
         }
 
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
 
         if ("Patient List" %in% sheet_list) {
-            logDebug("Start extracting patient list.")
             patient_list <- extract_patient_data(
                 tracker_data_file,
                 "Patient List",
@@ -96,9 +93,7 @@ reading_patient_data <-
                 by = "id",
                 relationship = "many-to-one"
             )
-            logDebug("Finish extracting patient list.")
         }
 
-        logInfo("Finish reading_patient_data.")
         return(df_raw)
     }

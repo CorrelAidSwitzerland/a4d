@@ -9,8 +9,6 @@
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
 create_table_patient_data_monthly <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data_monthly.")
-
     # THERE MIGHT BE MONTHLY COLUMNS MISSING - PLEASE ADD THEM
     dynamic_patient_columns <-
         c(
@@ -57,6 +55,4 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         output_root = output_root,
         suffix = ""
     )
-
-    logInfo("Finish creating single csv for table patient_data_monthly.")
 }

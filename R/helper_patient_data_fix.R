@@ -24,16 +24,32 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
     x <- tryCatch(
         cast_fnc(x),
         error = function(e) {
-            logError("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
+            logError(
+                log_to_json(
+                    message = "Error while trying to convert value {values['x']} in column {values['col_name']} for patient: {values['id']}. Replacing with error val {values['err_val']}.",
+                    values = list(x = x, col_name = col_name, id = id, err_val = error_val),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "convert_to",
+                    errorCode = "script2_error_invalid_value"
+                )
+            )
             x <- error_val
         },
         warning = function(w) {
-            logWarn("Could not convert value ", x, " in column ", col_name, " for patient: ", id)
+            logWarn(
+                log_to_json(
+                    message = "Warning while trying to convert value {values['x']} in column {values['col_name']} for patient: {values['id']}. Replacing with error val {values['err_val']}.",
+                    values = list(x = x, col_name = col_name, id = id, err_val = error_val),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "convert_to",
+                    errorCode = "script2_warning_invalid_value"
+                )
+            )
             x <- error_val
         }
     )
 
-    x
+    return(x)
 }
 
 
@@ -56,13 +72,18 @@ cut_numeric_value <- function(x,
 
     if (x < min || x > max) {
         logWarn(
-            "Found invalid value ", x, " for column ", col_name, " outside [", min, ", ", max, "]. ",
-            "Value was replaced with ", ERROR_VAL_NUMERIC, "."
+            log_to_json(
+                message = "Found invalid value {values['x']} for column {values['col_name']} outside [{values['min']}, {values['max']}]. Value was replaced with {values['error_val']}.",
+                values = list(x = x, col_name = col_name, min = min, max = max, error_val = ERROR_VAL_NUMERIC),
+                file = "helper_patient_data_fix.R",
+                functionName = "cut_numeric_value",
+                warningCode = "script2_warning_invalid_value"
+            )
         )
         x <- ERROR_VAL_NUMERIC
     }
 
-    x
+    return(x)
 }
 
 
@@ -107,7 +128,7 @@ extract_date_from_measurement <-
                 dplyr::rename_with(~ stringr::str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
-        df
+        return(df)
     }
 
 
@@ -133,7 +154,8 @@ fix_digit_date <-
         if (stringr::str_detect(string = date, pattern = "^[:digit:]{5}$")) {
             date <- as.character(openxlsx::convertToDate(date))
         }
-        date
+
+        return(date)
     }
 
 
@@ -154,19 +176,25 @@ parse_dates <- function(date) {
     parsed_date <- suppressWarnings(lubridate::as_date(date))
 
     if (is.na(parsed_date)) {
+        orders <- c("dmy", "dmY", "dbY", "by", "bY", "mY", "my", "y")
         logWarn(
-            "Could not parse date value ", date, ". ",
-            "Trying to parse with lubridate::parse_date_time and orders = c('dmy', 'dmY', 'by', 'bY')."
+            log_to_json(
+                message = "Could not parse date value {values['date']}. Trying to parse with lubridate::parse_date_time and orders = {values['orders']}.",
+                values = list(date = date, orders = orders),
+                file = "helper_patient_data_fix.R",
+                functionName = "lubridate::as_date",
+                warningCode = "script2_warning_invalid_value"
+            )
         )
+
         if (grepl("[[:alpha:]]{4}", date)) {
             date <- sub("([[:alpha:]]{3})[[:alpha:]]", "\\1", date)
         }
-        orders <- c("dmy", "dmY", "dbY", "by", "bY", "mY", "my", "y")
         parsed_date <- lubridate::parse_date_time(date, orders)
         parsed_date <- as.Date(parsed_date)
     }
 
-    parsed_date
+    return(parsed_date)
 }
 
 
@@ -195,13 +223,31 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
     valid_value_mapping <- setNames(as.list(valid_values), sanitize_str(valid_values))
 
     if (!sanitize_str(x) %in% names(valid_value_mapping)) {
-        logWarn("Patient ", id, ": Value ", x, " for column ", col, " is not in the list of allowed values. ")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: Value {values['x']} for column {values['col']} is not in the list of allowed values. ",
+                values = list(id = id, x = x, col = col),
+                file = "helper_patient_data_fix.R",
+                functionName = "check_allowed_values",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
+
         if (replace_invalid) {
-            logInfo("Replacing ", x, " with ", error_val, ".")
-            return(error_val)
-        } else {
-            return(x)
+            logWarn(
+                log_to_json(
+                    message = "Replacing {values['x']} with {values['error_val']}.",
+                    values = list(x = x, error_val = error_val),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "check_allowed_values",
+                    warningCode = "script2_warning_invalid_value"
+                )
+            )
+
+            x <- error_val
         }
+
+        return(x)
     }
 
     valid_value_mapping[[sanitize_str(x)]]
@@ -214,7 +260,8 @@ parse_character_cleaning_pipeline <- function(column_name, column_config) {
     for (step in column_config$steps) {
         pipeline <- rlang::expr(!!pipeline %>% !!parse_step(column_name, step))
     }
-    pipeline
+
+    return(pipeline)
 }
 
 parse_step <- function(column_name, step) {
@@ -242,7 +289,8 @@ parse_character_cleaning_config <- function(config) {
     for (column in names(config)) {
         allowed_value_expr[[column]] <- parse_character_cleaning_pipeline(column, config[[column]])
     }
-    allowed_value_expr
+
+    return(allowed_value_expr)
 }
 
 
@@ -276,25 +324,44 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
 
         if (is.na(age)) {
             logWarn(
-                "Patient ", id, ": age is missing. Using calculated age ", calc_age,
-                " instead of original age."
+                log_to_json(
+                    message = "Patient {values['id']}: age is missing. Using calculated age {values['calc_age']} instead of original age.",
+                    values = list(id = id, calc_age = calc_age),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "fix_age",
+                    warningCode = "script2_warning_missing_value"
+                )
             )
         } else {
             if (calc_age != age) {
                 logWarn(
-                    "Patient ", id, ": age ", age, " is different from calculated age ", calc_age,
-                    ". Using calculated age instead of original age."
+                    log_to_json(
+                        message = "Patient {values['id']}: age {values['age']} is different from calculated age {values['calc_age']}. Using calculated age instead of original age.",
+                        values = list(id = id, age = age, calc_age = calc_age),
+                        file = "helper_patient_data_fix.R",
+                        functionName = "fix_age",
+                        warningCode = "script2_warning_invalid_value"
+                    )
                 )
             }
         }
 
         if (calc_age < 0) {
-            logWarn("Patient ", id, ": calculated age is negative. Something went wrong.")
+            logWarn(
+                log_to_json(
+                    message = "Patient {values['id']}: calculated age is negative. Please check this manually. Using error value instead.",
+                    values = list(id = id),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "fix_age",
+                    warningCode = "script2_warning_invalid_value"
+                )
+            )
+
             calc_age <- ERROR_VAL_NUMERIC
         }
     }
 
-    calc_age
+    return(calc_age)
 }
 
 
@@ -322,13 +389,30 @@ fix_bmi <- function(weight, height, id) {
 
 
     if (!is.na(weight) && weight == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": the weight is out of bounds.")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: the weight is out of bounds.",
+                values = list(id = id),
+                file = "helper_patient_data_fix.R",
+                functionName = "fix_bmi",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
     }
 
     if (!is.na(height) && height == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": the height is out of bounds.")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: the height is out of bounds.",
+                values = list(id = id),
+                file = "helper_patient_data_fix.R",
+                functionName = "fix_bmi",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
     }
-    bmi
+
+    return(bmi)
 }
 
 
@@ -353,9 +437,18 @@ fix_sex <- function(sex, id) {
     )
 
     if (!is.na(fixed_sex) && fixed_sex == ERROR_VAL_CHARACTER) {
-        logWarn("Patient ", id, ": sex ", sex, " is not in the list of synonyms. Replacing it with ", fixed_sex, ".")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: sex {values['sex']} is not in the list of synonyms. Replacing it with {values['fixed_sex']}.",
+                values = list(id = id, sex = sex, fixed_sex = fixed_sex),
+                file = "helper_patient_data_fix.R",
+                functionName = "fix_sex",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
     }
-    fixed_sex
+
+    return(fixed_sex)
 }
 
 
@@ -376,7 +469,7 @@ fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, id) {
         .default = t1d_diagnosis_age
     )
 
-    age_corrected
+    return(age_corrected)
 }
 
 
@@ -393,6 +486,7 @@ extract_year_from_age <- function(age) {
     if (is.na(age)) {
         return(age)
     }
+
     unlist(strsplit(age, "y", fixed = T))[1]
 }
 
@@ -445,7 +539,7 @@ fix_fbg <- function(fbg) {
         gsub(pattern = "(DKA)", replacement = "", fixed = T) %>%
         trimws()
 
-    fbg
+    return(fbg)
 }
 
 
@@ -454,20 +548,30 @@ fix_fbg <- function(fbg) {
 #' @title Fix problems with ranges and decimal numbers in testing_frequency.
 #'
 #' @param test_frq character value for testing frequency
+#' @param id patient id
 #'
 #' @return validated test_frq value
 #' @export
-fix_testing_frequency <- function(test_frq) {
+fix_testing_frequency <- function(test_frq, id) {
     if (is.na(test_frq) || test_frq == "") {
         return(NA_character_)
     }
 
     if (grepl("-", test_frq, fixed = TRUE)) {
-        logInfo("Found a range for testing_frequency. Replacing it with the mean.")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: Found a range for testing_frequency. Replacing it with the mean.",
+                values = list(id = id),
+                file = "helper_patient_data_fix.R",
+                functionName = "fix_testing_frequency",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
+
         test_frq <- try(as.character(replace_range_with_mean(test_frq), silent = TRUE))
     }
 
-    test_frq
+    return(test_frq)
 }
 
 
@@ -492,7 +596,6 @@ replace_range_with_mean <- function(x) {
 #'
 #' @return data frame with two new columns: blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.
 split_bp_in_sys_and_dias <- function(df) {
-    logInfo("Splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
     df <- df %>%
         dplyr::mutate(
             blood_pressure_mmhg = dplyr::case_when(
@@ -503,8 +606,13 @@ split_bp_in_sys_and_dias <- function(df) {
 
     if (paste(ERROR_VAL_NUMERIC, ERROR_VAL_NUMERIC, sep = "/") %in% df$blood_pressure_mmhg) {
         logWarn(
-            "Found invalid values for column blood_pressure_mmhg that do not follow the format X/Y. ",
-            "Values were replaced with ", ERROR_VAL_NUMERIC, "."
+            log_to_json(
+                message = "Found invalid values for column blood_pressure_mmhg that do not follow the format X/Y. Values were replaced with {values['err_val']}.",
+                values = list(error_val = ERROR_VAL_NUMERIC),
+                file = "helper_patient_data_fix.R",
+                functionName = "split_bp_in_sys_and_dias",
+                warningCode = "script2_warning_invalid_value"
+            )
         )
     }
 
@@ -514,8 +622,9 @@ split_bp_in_sys_and_dias <- function(df) {
             delim = "/",
             names = c("blood_pressure_sys_mmhg", "blood_pressure_dias_mmhg"),
         )
-    logDebug("Finished splitting blood_pressure_mmhg into blood_pressure_sys_mmhg and blood_pressure_dias_mmhg.")
-    df
+
+
+    return(df)
 }
 
 
@@ -531,7 +640,8 @@ transform_cm_to_m <- function(height) {
         height / 100,
         height
     )
-    height
+
+    return(height)
 }
 
 
@@ -550,17 +660,44 @@ fix_id <- function(id) {
     id <- stringr::str_replace(id, "-", "_")
 
     if (!grepl("^[[:upper:]]{2}_[[:upper:]]{2}[[:digit:]]{3}$", id)) {
-        logWarn("Patient ", id, ": id cannot be matched to a 7 letter alpha numeric code like XX_YY001. ")
+        logWarn(
+            log_to_json(
+                message = "Patient {values['id']}: id cannot be matched to a 8 letter alpha numeric code like XX_YY001.",
+                values = list(id = id),
+                file = "helper_patient_data_fix.R",
+                functionName = "fix_id",
+                warningCode = "script2_warning_invalid_value"
+            )
+        )
+
         if (stringr::str_length(id) > 8) {
-            logWarn("Patient ", id, ": id was truncated because it is longer than 8 characters.")
+            logWarn(
+                log_to_json(
+                    message = "Patient {values['id']}: id was truncated because it is longer than 8 characters.",
+                    values = list(id = id),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "fix_id",
+                    warningCode = "script2_warning_invalid_value"
+                )
+            )
+
             id <- stringr::str_sub(id, 1, 8)
         } else {
-            logError("Patient ", id, ": id is not valid.")
+            logError(
+                log_to_json(
+                    message = "Patient {values['id']}: id is not valid. Replacing with error value {values['err_val']}.",
+                    values = list(id = id, err_val = ERROR_VAL_CHARACTER),
+                    file = "helper_patient_data_fix.R",
+                    functionName = "fix_id",
+                    errorCode = "script2_error_invalid_value"
+                )
+            )
+
             id <- ERROR_VAL_CHARACTER
         }
     }
 
-    id
+    return(id)
 }
 
 
@@ -589,35 +726,6 @@ extract_regimen <- function(raw_input) {
     output <- sub("^.*premixed.*$", "Premixed 30/70 BD", output, ignore.case = TRUE)
     output <- sub("^.*self-mixed.*$", "Self-mixed BD", output, ignore.case = TRUE)
     output <- sub("^.*conventional.*$", "Modified conventional TID", output, ignore.case = TRUE)
-    output
+
+    return(output)
 }
-
-
-# TEST --------------------------------------------------------------------
-
-# testing <- cleaning_a4d_tracker(data = dat)
-
-# create a summary of the variables (helpful to do sanity checks!)
-# library(summarytools)
-# summarytools::view(dfSummary(testing), file = "a4doverview_test28022022.html")
-
-
-# TODOs:
-## 1. Variables until [16] testing_fqr are part of the final wrapper. EVerything afterwards
-# (and buggy ones lige age_diagnosis) need to be finalized and added to the wrapper
-# 2. Dates are transformed as dates but only show raw date number (e.g. "123123")
-# instead of actual date ("2020-02-02")
-# 3. Edu_Occ can't be matched by thai vocabulary. Functions should work but it seems
-# that some R language encryption issues arise when saving thai strings.
-# 4. Columns that are not correctly extracted yet, input needed:
-# latest_complication_screening_type, latest_complication_screening_date,
-# remarks, est_strips_pmonth
-## 4. Final check if all variables have been transformed correctly
-
-# testing on correct data:
-# 1. Currently the fbg ranges will be excluded due to values out of realistic range.
-# This is on purpose since we only know the units for specific hospitals/countries.
-# In the fake data the hospital and country codes are fake. We need to test the
-# function on the original data to ensure that the functions correctly transform
-# the unit of the fbg values (and hence include them) in the data.
-# See [12, 13] fbg and make adjustments if needed

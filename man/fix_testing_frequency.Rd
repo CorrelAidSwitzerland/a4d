@@ -8,6 +8,8 @@ fix_testing_frequency(test_frq)
 }
 \arguments{
 \item{test_frq}{character value for testing frequency}
+
+\item{id}{patient id}
 }
 \value{
 validated test_frq value

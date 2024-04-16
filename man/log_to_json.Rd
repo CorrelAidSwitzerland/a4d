@@ -8,8 +8,8 @@ log_to_json(
   message,
   values = NA,
   file = NA,
-  line = NA,
   errorCode = NA,
+  warningCode = NA,
   functionName = NA
 )
 }
@@ -17,8 +17,6 @@ log_to_json(
 \item{message}{Log Message with Glue Syntax {values\link{'X'}}}
 
 \item{values}{A named list with the Glue Referenced Values as single Strings}
-
-\item{line}{Current Line of the LogMessage (May Change over time but should stay close to the real value)}
 
 \item{errorCode}{A Combination of UID Letters for Easy location of the Message Origin}
 

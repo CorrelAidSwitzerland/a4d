@@ -5,11 +5,12 @@ main <- function() {
     setup_logger(paths$output_root, "script1")
     tracker_files <- get_files(paths$tracker_root)
     logInfo(
-        "Found ",
-        length(tracker_files),
-        " xlsx files under ",
-        paths$tracker_root,
-        "."
+        log_to_json(
+            "Found {values['len']} xlsx files under {values['root']}.",
+            values = list(len = length(tracker_files), root = paths$tracker_root),
+            file = "run_script_1_extract_raw_data.R",
+            functionName = "main"
+        )
     )
 
     synonyms <- get_synonyms()
@@ -18,15 +19,7 @@ main <- function() {
         tracker_file <- tracker_files[i]
         tracker_name <- tools::file_path_sans_ext(basename(tracker_file))
         tictoc::tic(paste("Processing tracker file:", tracker_name))
-        tryCatch(
-            process_tracker_file(paths, tracker_file, tracker_name, synonyms),
-            error = function(e) {
-                logError(log_to_json("Could not process {values['tracker_name']}. Error = {values['e']}.", values = list(tracker_name = tracker_name, e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 24, errorCode = "XDTWDGA", functionName = "main"))
-            },
-            warning = function(w) {
-                logWarn("Could not process ", tracker_name, ". Warning = ", w$message, ".")
-            }
-        )
+        process_tracker_file(paths, tracker_file, tracker_name, synonyms)
         tictoc::toc()
         cat(paste("Processed ", i, " of ", length(tracker_files), " (", round(i / length(tracker_files) * 100, 0), "%) tracker files.\n"))
     }
@@ -36,11 +29,15 @@ main <- function() {
 process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
     tracker_data_file <-
         file.path(paths$tracker_root, tracker_file)
-    logDebug(log_to_json("Start process_tracker_file."))
-    logInfo(log_to_json(
-        "Current file: {values['tracker_name]}",
-        values = list(tracker_name = tracker_name), file = "scripts/run_script_1_extract_raw_data.R", line = 42, errorCode = "TEST"
-    ))
+
+    logInfo(
+        log_to_json(
+            "Current file: {values['file]}.",
+            values = list(file = tracker_name),
+            file = "run_script_1_extract_raw_data.R",
+            functionName = "process_tracker_file"
+        )
+    )
 
     logfile <- paste0(tracker_name, "_", "patient")
     with_file_logger(logfile,
@@ -53,10 +50,26 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                     synonyms_patient = synonyms$patient
                 ),
                 error = function(e) {
-                    logError(log_to_json("Could not process patient data. Error = {values['e']}.", values = list(e = e$message), file = "scripts/run_script_1_extract_raw_data.R", line = 57, errorCode = "ABCPilot"))
+                    logError(
+                        log_to_json(
+                            "Could not process patient data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_1_extract_raw_data.R",
+                            errorCode = "script1_error_tryCatch",
+                            functionName = "process_patient_data"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not process patient data. Warning = ", w$message, ".")
+                    logWarn(
+                        log_to_json(
+                            "Could not process patient data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_1_extract_raw_data.R",
+                            warningCode = "script1_warning_tryCatch",
+                            functionName = "process_patient_data"
+                        )
+                    )
                 }
             )
         },
@@ -75,10 +88,26 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                     synonyms_product = synonyms$product
                 ),
                 error = function(e) {
-                    logError("Could not process product data. Error = ", e$message, ".")
+                    logError(
+                        log_to_json(
+                            "Could not process product data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_1_extract_raw_data.R",
+                            errorCode = "script1_error_tryCatch",
+                            functionName = "process_product_data"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not process product data. Warning = ", w$message, ".")
+                    logWarn(
+                        log_to_json(
+                            "Could not process product data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_1_extract_raw_data.R",
+                            warningCode = "script1_warning_tryCatch",
+                            functionName = "process_product_data"
+                        )
+                    )
                 }
             )
         },
@@ -128,18 +157,14 @@ process_product_data <-
 
         if (!is.null(df_raw_product)) {
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
-        } else {
-            logDebug("Empty product data")
-        }
 
-        logDebug(
-            "df_raw_product dim: ",
-            dim(df_raw_product) %>% as.data.frame(),
-            "."
-        )
+            logDebug(
+                "df_raw_product dim: ",
+                dim(df_raw_product) %>% as.data.frame(),
+                "."
+            )
 
-        # product set sensitive column to NA and add tracker file name as a column
-        if (!is.null(df_raw_product)) {
+            # product set sensitive column to NA and add tracker file name as a column
             export_data_as_parquet(
                 data = df_raw_product,
                 filename = tracker_name,
@@ -147,7 +172,14 @@ process_product_data <-
                 suffix = "_product_raw"
             )
         } else {
-            logWarn("No product data in the file")
+            logWarn(
+                log_to_json(
+                    message = "Empty product data!",
+                    file = "run_script_1_extract_raw_data.R",
+                    functionName = "process_product_data",
+                    warningCode = "script1_warning_empty_product_data"
+                )
+            )
         }
     }
 

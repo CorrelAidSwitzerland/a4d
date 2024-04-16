@@ -9,8 +9,6 @@
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
 create_table_patient_data_static <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data_static.")
-
     # THERE MIGHT BE STATIC COLUMNS MISSING - PLEASE ADD THEM
     static_patient_columns <-
         c(
@@ -58,6 +56,4 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
         output_root = output_root,
         suffix = "_static"
     )
-
-    logInfo("Finish creating single csv for table patient_data_static.")
 }

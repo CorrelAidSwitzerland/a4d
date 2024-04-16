@@ -1,7 +1,6 @@
 # extracting country and clinic code from patient ID
 # expects that patient ID has a certain format
 extract_country_clinic_code <- function(patient_data) {
-    logDebug("Start extract_country_clinic_code.")
     patient_ids <- patient_data["id"] %>%
         dplyr::filter(id != "0") %>%
         tidyr::drop_na() %>%
@@ -19,9 +18,15 @@ extract_country_clinic_code <- function(patient_data) {
     clinic_code <-
         names(sort(table(patient_ids$clinic), decreasing = T))[1]
 
-    logDebug("country_code = ", country_code, ".")
-    logDebug("clinic_code = ", clinic_code, ".")
-    logDebug("Finish extract_country_clinic_code.")
+    logInfo(
+        log_to_json(
+            message = "Extracted country {values['country']} and clinic {values['clinic']} codes from patient IDs.",
+            values = list(country = country_code, clinic = clinic_code),
+            file = "helper_read_patient_data.R",
+            functionName = "extract_country_clinic_code"
+        )
+    )
+
     return(list("country_code" = country_code, "clinic_code" = clinic_code))
 }
 
@@ -40,8 +45,6 @@ extract_country_clinic_code <- function(patient_data) {
 #' @return data.frame with the patient data
 #' @export
 extract_patient_data <- function(tracker_data_file, sheet, year) {
-    logDebug("Start extract_patient_data for sheet = ", sheet, ".")
-
     tracker_data <- openxlsx::read.xlsx(
         xlsxFile = tracker_data_file,
         sheet = sheet,
@@ -91,7 +94,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        logInfo("Read in multiline header.")
+        logInfo("Multiline header found.")
 
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-
@@ -102,7 +105,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     }
 
     colnames(df_patient) <- header_cols
-    logDebug("Found patient column names = ", paste(header_cols, collapse = ","), ".")
 
     # delete columns without a header (=NA)
     df_patient <- df_patient[, !is.na(colnames(df_patient))]
@@ -112,8 +114,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     # remove empty rows with only NA
     df_patient <-
         df_patient[rowSums(is.na(df_patient)) != ncol(df_patient), ]
-
-    logDebug("Finish extract_patient_data.")
 
     df_patient
 }
@@ -133,8 +133,6 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 #' @export
 harmonize_patient_data_columns <-
     function(patient_df, columns_synonyms) {
-        logDebug("Start harmonize_patient_data_columns.")
-
         patient_df <- patient_df[!is.na(names(patient_df))]
 
         colnames(patient_df) <- sanitize_str(colnames(patient_df))
@@ -148,10 +146,17 @@ harmonize_patient_data_columns <-
         mismatching_column_ids <- which(colnames_found == 0)
         if (length(mismatching_column_ids) > 0) {
             logWarn(
-                "Non-matching column names found: ", paste(colnames(patient_df)[mismatching_column_ids], collapse = ","), "."
+                log_to_json(
+                    message = "Non-matching column names found: {values['col_names']}.",
+                    values = list(
+                        col_names = colnames(patient_df)[mismatching_column_ids]
+                    ),
+                    file = "helper_read_patient_data.R",
+                    functionName = "harmonize_patient_data_columns",
+                    warningCode = "script1_warning_read_patient_data"
+                )
             )
         }
 
-        logDebug("Finish harmonize_patient_data_columns.")
         patient_df
     }

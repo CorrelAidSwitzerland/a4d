@@ -10,21 +10,21 @@ main <- function() {
     patient_data_files <- get_files(file.path(paths$output_root, "patient_data_cleaned"), pattern = "\\.parquet$")
     product_data_files <- get_files(file.path(paths$output_root, "product_data_cleaned"), pattern = "\\.parquet$")
     logInfo(
-        "Found ",
-        length(patient_data_files),
-        " patient csv files under ",
-        paths$tracker_root,
-        "."
+        log_to_json(
+            "Found {values['len']} patient csv files under {values['root']}. ",
+            values = list(len = length(patient_data_files), root = paths$tracker_root),
+            file = "run_script3_create_tables.R",
+            functionName = "main"
+        )
     )
     logInfo(
-        "Found ",
-        length(product_data_files),
-        " product csv files under ",
-        paths$tracker_root,
-        "."
+        log_to_json(
+            "Found {values['len']} product csv files under {values['root']}. ",
+            values = list(len = length(product_data_files), root = paths$tracker_root),
+            file = "run_script3_create_tables.R",
+            functionName = "main"
+        )
     )
-
-    logInfo("Start creating table csv files.")
 
     logfile <- "table_patient_data_static"
     with_file_logger(logfile,
@@ -34,10 +34,26 @@ main <- function() {
                     create_table_patient_data_static(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for static patient data. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not create table for static patient data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "create_table_patient_data_static"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for static patient data. Error: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not create table for static patient data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "create_table_patient_data_static"
+                        )
+                    )
                 }
             )
         },
@@ -52,10 +68,26 @@ main <- function() {
                     create_table_patient_data_monthly(patient_data_files, file.path(paths$output_root, "patient_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table csv for monthly patient data. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not create table for monthly patient data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "create_table_patient_data_monthly"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for monthly patient data. Error: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not create table for monthly patient data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "create_table_patient_data_monthly"
+                        )
+                    )
                 }
             )
         },
@@ -76,10 +108,26 @@ main <- function() {
                     )
                 },
                 error = function(e) {
-                    logError("Could not create table csv for longitudinal patient data. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not create table for longitudinal patient data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "create_table_longitudinal_data"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not create table csv for longitudinal patient data. Error: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not create table for longitudinal patient data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "create_table_longitudinal_data"
+                        )
+                    )
                 }
             )
         },
@@ -94,10 +142,26 @@ main <- function() {
                     create_table_product_data(file.path(paths$output_root, "product_data_cleaned"), paths$tables)
                 },
                 error = function(e) {
-                    logError("Could not create table for product data. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not create table for product data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "create_table_product_data"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not create table for product data. Warning: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not create table for product data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "create_table_product_data"
+                        )
+                    )
                 }
             )
         },
@@ -112,20 +176,31 @@ main <- function() {
                     export_data_as_parquet(data = read.csv("reference_data/clinic_data_static.csv"), filename = "clinic_data_static", output_root = paths$tables, suffix = "")
                 },
                 error = function(e) {
-                    logError("Could not create clinic data static table. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not create table for clinic static data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "export_data_as_parquet"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not create clinic data static table. Warning: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not create table for clinic static data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "export_data_as_parquet"
+                        )
+                    )
                 }
             )
         },
         output_root = paths$output_root
     )
-
-
-    logInfo("Finish creating table files.")
-
-    logInfo("Trying to link files for product and patient data.")
 
     logfile <- "link_product_patient_data"
 
@@ -139,17 +214,31 @@ main <- function() {
                     )
                 },
                 error = function(e) {
-                    logError("Could not link files for product and patient data. Error: ", e$message)
+                    logError(
+                        log_to_json(
+                            "Could not link files for product and patient data. Error = {values['e']}.",
+                            values = list(e = e$message),
+                            file = "run_script_3_create_tables.R",
+                            errorCode = "script3_error_tryCatch",
+                            functionName = "link_product_patient"
+                        )
+                    )
                 },
                 warning = function(w) {
-                    logWarn("Could not link files for product and patient data. Warning: ", w$message)
+                    logWarn(
+                        log_to_json(
+                            "Could not link files for product and patient data. Warning = {value['w']}.",
+                            values = list(w = w$message),
+                            file = "run_script_3_create_tables.R",
+                            warningCode = "script3_warning_tryCatch",
+                            functionName = "link_product_patient"
+                        )
+                    )
                 }
             )
         },
         output_root = paths$output_root
     )
-
-    logInfo("Finished linking files for product and patient data.")
 }
 
 main()
