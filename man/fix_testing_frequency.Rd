@@ -4,7 +4,7 @@
 \alias{fix_testing_frequency}
 \title{Fix problems with ranges and decimal numbers in testing_frequency.}
 \usage{
-fix_testing_frequency(test_frq)
+fix_testing_frequency(test_frq, id)
 }
 \arguments{
 \item{test_frq}{character value for testing frequency}

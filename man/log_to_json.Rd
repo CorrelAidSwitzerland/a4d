@@ -20,6 +20,8 @@ log_to_json(
 
 \item{errorCode}{A Combination of UID Letters for Easy location of the Message Origin}
 
+\item{warningCode}{A Combination of UID Letters for Easy location of the Message Origin}
+
 \item{currentFile}{String of current File with Path the Log is evoked}
 }
 \value{

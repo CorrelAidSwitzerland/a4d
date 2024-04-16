@@ -332,7 +332,13 @@ update_receivedfrom <- function(product_df) {
             )) %>%
             dplyr::mutate(product_units_released = ifelse(!is.na(product_received_from), NA, product_units_released))
 
-        logInfo("The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance")
+        logInfo(
+            log_to_json(
+                message = "The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance",
+                file = "helper_product_data.R",
+                functionName = "update_receivedfrom"
+            )
+        )
     }
 
     return(product_df)

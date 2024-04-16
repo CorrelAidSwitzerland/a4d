@@ -32,7 +32,7 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
 
     logInfo(
         log_to_json(
-            "Current file: {values['file]}.",
+            "Current file: {values['file']}.",
             values = list(file = tracker_name),
             file = "run_script_1_extract_raw_data.R",
             functionName = "process_tracker_file"
@@ -130,9 +130,12 @@ process_patient_data <-
         df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
         logDebug(
-            "df_raw_patient dim: ",
-            dim(df_raw_patient) %>% as.data.frame(),
-            "."
+            log_to_json(
+                message = "df_raw_patient dim: {values['dim']}.",
+                values = list(dim = dim(df_raw_patient) %>% as.data.frame()),
+                file = "run_script_1_extract_raw_data.R",
+                functionName = "process_patient_data"
+            )
         )
 
         export_data_as_parquet(
@@ -159,9 +162,12 @@ process_product_data <-
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
 
             logDebug(
-                "df_raw_product dim: ",
-                dim(df_raw_product) %>% as.data.frame(),
-                "."
+                log_to_json(
+                    message = "df_raw_product dim: {values['dim']}.",
+                    values = list(dim = dim(df_raw_product) %>% as.data.frame()),
+                    file = "run_script_1_extract_raw_data.R",
+                    functionName = "process_product_data"
+                )
             )
 
             # product set sensitive column to NA and add tracker file name as a column

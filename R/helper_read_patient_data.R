@@ -81,7 +81,15 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         row_max <- row_max + 1
     }
 
-    logInfo("Patient data found in rows ", row_min, " to ", row_max, ".")
+    logInfo(
+        log_to_json(
+            message = "Sheet {values['sheet']}: Patient data found in rows {values['row_min']} to {values['row_max']}.",
+            values = list(sheet = sheet, row_min = row_min, row_max = row_max),
+            file = "helper_read_patient_data.R",
+            functionName = "extract_patient_data"
+        )
+    )
+
     df_patient <- readxl::read_excel(
         path = tracker_data_file,
         sheet = sheet,
@@ -94,7 +102,13 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     if (header_cols[2] == header_cols_2[2]) {
         # take into account that date info gets separated from the updated values (not in the same row, usually in the bottom row)
-        logInfo("Multiline header found.")
+        logInfo(
+            log_to_json(
+                message = "Multiline header found. Merging header rows.",
+                file = "helper_read_patient_data.R",
+                functionName = "extract_patient_data"
+            )
+        )
 
         diff_colnames <- which((header_cols != header_cols_2))
         header_cols[diff_colnames] <-

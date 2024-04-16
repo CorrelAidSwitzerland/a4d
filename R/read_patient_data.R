@@ -4,11 +4,12 @@ reading_patient_data <-
         testit::assert(length(sheet_list) > 0)
 
         logInfo(
-            "Found ",
-            length(sheet_list),
-            " sheets inside the current file = ",
-            paste(sheet_list, collapse = ","),
-            "."
+            log_to_json(
+                message = "Found {values['len']} sheets: {values['sheets']}.",
+                values = list(len = length(sheet_list), sheets = sheet_list),
+                file = "read_patient_data.R",
+                functionName = "reading_patient_data"
+            )
         )
 
         month_list <-
@@ -16,16 +17,25 @@ reading_patient_data <-
         testit::assert(length(month_list) > 0)
 
         logInfo(
-            "Found ",
-            length(month_list),
-            " month sheets inside the current file = ",
-            paste(month_list, collapse = ","),
-            "."
+            log_to_json(
+                message = "Found {values['len']} month sheets: {values['months']}.",
+                values = list(len = length(month_list), months = month_list),
+                file = "read_patient_data.R",
+                functionName = "reading_patient_data"
+            )
         )
 
         # Extract year
         year <- get_tracker_year(tracker_data_file, month_list)
-        logInfo("Tracker year = ", year, ".")
+        logInfo(
+            log_to_json(
+                message = "Tracker year = {values['year']}.",
+                values = list(year = year),
+                file = "read_patient_data.R",
+                functionName = "reading_patient_data"
+            )
+        )
+
         testit::assert(year %in% c(2017, 2018, 2019, 2020, 2021, 2022, 2023))
 
         tidy_tracker_list <- NULL

@@ -12,9 +12,22 @@ reading_product_data_step1 <-
         month_list <- sheet_list[na.omit(pmatch(month.abb, sheet_list))]
         year <- get_tracker_year(tracker_data_file, month_list)
 
-        logInfo("Found ", length(sheet_list), " sheets: ", paste(sheet_list, collapse = ", "), ".")
-        logInfo("Found ", length(month_list), " month sheets: ", paste(month_list, collapse = ", "), ".")
-
+        logInfo(
+            log_to_json(
+                message = "Found {values['len']} sheets: {values['sheets']}.",
+                values = list(len = length(sheet_list), sheets = sheet_list),
+                file = "read_product_data.R",
+                functionName = "reading_product_data_step1"
+            )
+        )
+        logInfo(
+            log_to_json(
+                message = "Found {values['len']} month sheets: {values['months']}.",
+                values = list(len = length(month_list), months = month_list),
+                file = "read_product_data.R",
+                functionName = "reading_product_data_step1"
+            )
+        )
 
         # loop through all months
         for (curr_sheet in month_list) {
@@ -257,7 +270,12 @@ remove_rows_with_na_columns <-
         na_rows <- apply(df[column_names], 1, function(x) all(is.na(x)))
 
         # log message
-        logInfo(paste(length(na_rows[na_rows == T]), " rows deleted out of ", nrow(df), " rows (reason: rows not containing additional info).", sep = ""))
+        logInfo(
+            log_to_json(
+                message = "{values['na_rows']} out of {values['nrows']} rows with NA values in specified columns were removed.",
+                values = list(na_rows = length(na_rows[na_rows == T]), nrows = nrow(df))
+            )
+        )
 
         # Return the data frame without the NA rows
         return(df[!na_rows, ])
@@ -307,7 +325,13 @@ switch_columns_stock <-
                     "product_units_received" = "product_received_from",
                     "product_received_from" = "product_units_received"
                 )
-            logDebug("Columns product_units_received and product_received_from were switched")
+            logDebug(
+                log_to_json(
+                    message = "Columns product_units_received and product_received_from were switched",
+                    file = "read_product_data.R",
+                    functionName = "switch_columns_stock"
+                )
+            )
             return(df)
         } else {
             return(df)
@@ -387,7 +411,15 @@ load_product_reference_data <- function(stock_summary_xlsx = "reference_data/mas
         {
             product_names_df <- readxl::read_excel(stock_summary_xlsx, "Stock_Summary")
             colnames(product_names_df) <- tolower(colnames(product_names_df))
-            logDebug(nrow(product_names_df), " product names were loaded from the Stock Summary.")
+            logDebug(
+                log_to_json(
+                    message = "{values['nrow']} product names were loaded from the Stock Summary.",
+                    values = list(nrow = nrow(product_names_df)),
+                    file = "read_product_data.R",
+                    functionName = "load_product_reference_data"
+                )
+            )
+
             return(product_names_df)
         },
         error = function(e) {
@@ -604,6 +636,14 @@ reading_product_data_step2 <-
         if (nrow(df_final) > 0) {
             return(df_final)
         } else {
-            logDebug(paste("No product data extracted for the following tracker:", df$file_name[1]))
+            logWarning(
+                log_to_json(
+                    message = "No product data extracted for the following tracker: {values['name']}.",
+                    values = list(name = df$file_name[1]),
+                    file = "read_product_data.R",
+                    functionName = "reading_product_data_step2",
+                    warningCode = "script2_warning_empty_product_data"
+                )
+            )
         }
     }

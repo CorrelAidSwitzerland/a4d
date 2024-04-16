@@ -382,9 +382,12 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         dplyr::arrange(tracker_date, id)
 
     logDebug(
-        "df_patient dim: ",
-        dim(df_patient) %>% as.data.frame(),
-        "."
+        log_to_json(
+            message = "df_patient dim: {values['dim']}.",
+            values = list(dim = dim(df_patient) %>% as.data.frame()),
+            file = "run_script_2_clean_data.R",
+            functionName = "process_patient_file"
+        )
     )
 
     export_data_as_parquet(
@@ -405,9 +408,12 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
     df_product_raw <- reading_product_data_step2(df_product_raw, synonyms_product)
 
     logDebug(
-        "df_product_raw dim: ",
-        dim(df_product_raw) %>% as.data.frame(),
-        "."
+        log_to_json(
+            message = "df_product_raw dim: {values['dim']}.",
+            values = list(dim = dim(df_product_raw) %>% as.data.frame()),
+            file = "run_script_2_clean_data.R",
+            functionName = "process_product_file"
+        )
     )
 
     export_data_as_parquet(
