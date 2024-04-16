@@ -63,7 +63,7 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not process patient data. Warning = {value['w']}.",
+                            "Could not process patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_1_extract_raw_data.R",
                             warningCode = "script1_warning_tryCatch",
@@ -101,7 +101,7 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not process product data. Warning = {value['w']}.",
+                            "Could not process product data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_1_extract_raw_data.R",
                             warningCode = "script1_warning_tryCatch",
@@ -129,10 +129,10 @@ process_patient_data <-
 
         df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
-        logDebug(
+        logInfo(
             log_to_json(
                 message = "df_raw_patient dim: {values['dim']}.",
-                values = list(dim = dim(df_raw_patient) %>% as.data.frame()),
+                values = list(dim = dim(df_raw_patient)),
                 file = "run_script_1_extract_raw_data.R",
                 functionName = "process_patient_data"
             )
@@ -161,10 +161,10 @@ process_product_data <-
         if (!is.null(df_raw_product)) {
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
 
-            logDebug(
+            logInfo(
                 log_to_json(
                     message = "df_raw_product dim: {values['dim']}.",
-                    values = list(dim = dim(df_raw_product) %>% as.data.frame()),
+                    values = list(dim = dim(df_raw_product)),
                     file = "run_script_1_extract_raw_data.R",
                     functionName = "process_product_data"
                 )

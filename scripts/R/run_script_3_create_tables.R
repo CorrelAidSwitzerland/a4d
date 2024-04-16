@@ -47,7 +47,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not create table for static patient data. Warning = {value['w']}.",
+                            "Could not create table for static patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",
@@ -81,7 +81,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not create table for monthly patient data. Warning = {value['w']}.",
+                            "Could not create table for monthly patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",
@@ -121,7 +121,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not create table for longitudinal patient data. Warning = {value['w']}.",
+                            "Could not create table for longitudinal patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",
@@ -155,7 +155,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not create table for product data. Warning = {value['w']}.",
+                            "Could not create table for product data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",
@@ -189,7 +189,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not create table for clinic static data. Warning = {value['w']}.",
+                            "Could not create table for clinic static data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",
@@ -227,7 +227,7 @@ main <- function() {
                 warning = function(w) {
                     logWarn(
                         log_to_json(
-                            "Could not link files for product and patient data. Warning = {value['w']}.",
+                            "Could not link files for product and patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
                             file = "run_script_3_create_tables.R",
                             warningCode = "script3_warning_tryCatch",

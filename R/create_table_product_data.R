@@ -83,6 +83,15 @@ create_table_product_data <- function(input_root, output_root) {
 
     report_empty_intersections(merged_data, "file_name", "table_country")
 
+    logInfo(
+        log_to_json(
+            message = "merged_data dim: {values['dim']}.",
+            values = list(dim = dim(merged_data)),
+            file = "create_table_product_data.R",
+            functionName = "create_table_product_data"
+        )
+    )
+
     # Write the merged and processed data to a file in the output_root directory
     export_data_as_parquet(
         data = merged_data,

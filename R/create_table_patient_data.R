@@ -49,6 +49,15 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         dplyr::select(tidyselect::all_of(dynamic_patient_columns)) %>%
         dplyr::arrange(tracker_year, tracker_month, id)
 
+    logInfo(
+        log_to_json(
+            message = "patient_data dim: {values['dim']}.",
+            values = list(dim = dim(patient_data)),
+            file = "create_table_patient_data.R",
+            functionName = "create_table_patient_data_monthly"
+        )
+    )
+
     export_data_as_parquet(
         data = patient_data,
         filename = "patient_data_monthly",

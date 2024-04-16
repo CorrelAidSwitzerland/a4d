@@ -50,7 +50,7 @@ main <- function() {
                     warning = function(w) {
                         logWarn(
                             log_to_json(
-                                "Could not process raw patient data. Warning = {value['w']}.",
+                                "Could not process raw patient data. Warning = {values['w']}.",
                                 values = list(w = w$message),
                                 file = "run_script_2_clean_data.R",
                                 warningCode = "script2_warning_tryCatch",
@@ -93,7 +93,7 @@ main <- function() {
                     warning = function(w) {
                         logWarn(
                             log_to_json(
-                                "Could not process raw product data. Warning = {value['w']}.",
+                                "Could not process raw product data. Warning = {values['w']}.",
                                 values = list(w = w$message),
                                 file = "run_script_2_clean_data.R",
                                 warningCode = "script2_warning_tryCatch",
@@ -381,10 +381,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     df_patient <- df_patient %>%
         dplyr::arrange(tracker_date, id)
 
-    logDebug(
+    logInfo(
         log_to_json(
             message = "df_patient dim: {values['dim']}.",
-            values = list(dim = dim(df_patient) %>% as.data.frame()),
+            values = list(dim = dim(df_patient)),
             file = "run_script_2_clean_data.R",
             functionName = "process_patient_file"
         )
@@ -410,7 +410,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
     logDebug(
         log_to_json(
             message = "df_product_raw dim: {values['dim']}.",
-            values = list(dim = dim(df_product_raw) %>% as.data.frame()),
+            values = list(dim = dim(df_product_raw)),
             file = "run_script_2_clean_data.R",
             functionName = "process_product_file"
         )
