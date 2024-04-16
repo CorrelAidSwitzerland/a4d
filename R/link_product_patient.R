@@ -43,7 +43,10 @@ link_product_patient <- function(product_file, patient_file) {
                     logWarn(
                         log_to_json(
                             message = "The number of mismatched patient IDs between the product and patient data is {values['len']}. File Name: {values['file_name']}, Patient ID in product: {values['id']}, Count in product: {values['count']}",
-                            values = list(len = nrow(summary_df), file_name = summary_df$Var1, id = summary_df$Var2, count = summary_df$Freq)
+                            values = list(len = nrow(summary_df), file_name = summary_df$Var1, id = summary_df$Var2, count = summary_df$Freq),
+                            file = "link_product_patient.R",
+                            functionName = "link_product_patient",
+                            warningCode = "script3_warning_invalid_value"
                         )
                     )
                 }
@@ -55,18 +58,18 @@ link_product_patient <- function(product_file, patient_file) {
                         values = list(e = e$message),
                         file = "link_product_patient.R",
                         functionName = "link_product_patient",
-                        errorCode = "script3_error_link_product_patient"
+                        errorCode = "script3_error_tryCatch"
                     )
                 )
             },
             warning = function(w) {
-                logError(
+                logWarn(
                     log_to_json(
                         message = "Could not link csv files for product and patient data. Warning: {values['w']}",
                         values = list(w = w$message),
                         file = "link_product_patient.R",
                         functionName = "link_product_patient",
-                        errorCode = "script3_warning_link_product_patient"
+                        errorCode = "script3_warning_tryCatch"
                     )
                 )
             }

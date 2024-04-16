@@ -196,7 +196,7 @@ preparing_product_fields <- function(merged_data) {
                                 values = list(field = field, error_val = ERROR_VAL_DATE, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_tryCatch"
+                                warningCode = "script3_warning_invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_DATE
@@ -212,7 +212,7 @@ preparing_product_fields <- function(merged_data) {
                                 values = list(field = field, error_val = ERROR_VAL_NUMERIC, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_tryCatch"
+                                warningCode = "script3_warning_invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
@@ -228,7 +228,7 @@ preparing_product_fields <- function(merged_data) {
                                 values = list(field = field, error_val = ERROR_VAL_NUMERIC, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_tryCatch"
+                                warningCode = "script3_warning_invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
@@ -244,7 +244,7 @@ preparing_product_fields <- function(merged_data) {
                                 values = list(field = field, error_val = ERROR_VAL_CHARACTER, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_tryCatch"
+                                warningCode = "script3_warning_invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_CHARACTER

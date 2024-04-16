@@ -30,7 +30,7 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
                     values = list(x = x, col_name = col_name, id = id, err_val = error_val),
                     file = "helper_patient_data_fix.R",
                     functionName = "convert_to",
-                    errorCode = "script2_error_invalid_value"
+                    errorCode = "script2_error_tryCatch"
                 )
             )
             x <- error_val
@@ -42,7 +42,7 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
                     values = list(x = x, col_name = col_name, id = id, err_val = error_val),
                     file = "helper_patient_data_fix.R",
                     functionName = "convert_to",
-                    errorCode = "script2_warning_invalid_value"
+                    errorCode = "script2_warning_tryCatch"
                 )
             )
             x <- error_val

@@ -134,7 +134,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 values = list(src = "hba1c_updated", target = "updated_hba1c_date"),
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_hba1c_updated_date_missing"
+                warningCode = "script2_warning_add_column"
             )
         )
         df_patient_raw <-
@@ -148,7 +148,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 values = list(src = "fbg_updated_mg.", target = "updated_fbg_date"),
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_fbg_updated_date_missing"
+                warningCode = "script2_warning_add_column"
             )
         )
         df_patient_raw <-
@@ -162,7 +162,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
                 values = list(src = "fbg_updated_mmol.", target = "updated_fbg_date"),
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_fbg_updated_date_missing"
+                warningCode = "script2_warning_add_column"
             )
         )
         df_patient_raw <-
@@ -262,7 +262,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             message = "Extra columns in patient data: {values['extra_cols']}.",
             values = list(extra_col = extra_cols),
             file = "run_script_2_clean_data.R",
-            warningCode = "script2_warning_extra_cols",
+            warningCode = "script2_warning_patient_data",
             functionName = "process_patient_file"
         )
     )
@@ -274,7 +274,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             message = "Missing columns in patient data: {values['missing_cols']}.",
             values = list(missing_cols = missing_cols),
             file = "run_script_2_clean_data.R",
-            warningCode = "script2_warning_extra_cols",
+            warningCode = "script2_warning_patient_data",
             functionName = "process_patient_file"
         )
     )

@@ -115,7 +115,7 @@ reading_product_data_step1 <-
                                 values = list(sheet = curr_sheet, num_na_rows = num_na_rows),
                                 file = "read_product_data.R",
                                 functionName = "read_product_data_step1",
-                                warningCode = "script1_warning_read_product_data"
+                                warningCode = "script1_warning_missing_value"
                             )
                         )
                     }
@@ -127,7 +127,7 @@ reading_product_data_step1 <-
                             values = list(sheet = curr_sheet, e = e$message),
                             file = "read_product_data.R",
                             functionName = "read_product_data_step1",
-                            errorCode = "script1_error_read_product_data"
+                            errorCode = "script1_error_tryCatch"
                         )
                     )
                 }
@@ -145,7 +145,7 @@ reading_product_data_step1 <-
                                 values = list(sheet = curr_sheet, num_rows = nrow(non_processed_dates), dates = non_processed_dates$product_entry_date),
                                 file = "read_product_data.R",
                                 functionName = "read_product_data_step1",
-                                warningCode = "script1_warning_read_product_data"
+                                warningCode = "script1_warning_invalid_value"
                             )
                         )
                     }
@@ -157,7 +157,7 @@ reading_product_data_step1 <-
                             values = list(sheet = curr_sheet, e = e$message),
                             file = "read_product_data.R",
                             functionName = "read_product_data_step1",
-                            errorCode = "script1_error_read_product_data"
+                            errorCode = "script1_error_tryCatch"
                         )
                     )
                 }
@@ -247,10 +247,13 @@ check_entry_dates <- function(df, Sheet) {
         entry_dates_df$ed_year != entry_dates_df$product_table_year, ]
     if (nrow(not_same) > 0) {
         logWarn(
-            Sheet,
-            " the number of dates in product_entry_date that don't match the month/year on the sheet is ",
-            nrow(not_same), ": ",
-            paste(not_same$ed_date, collapse = ", ")
+            log_to_json(
+                message = "Sheet {values['sheet']}: There are {values['nrow']} dates in product_entry_date that don't match extracted month and year.",
+                values = list(sheet = Sheet, nrow = nrow(not_same), dates = not_same$ed_date),
+                file = "read_product_data.R",
+                functionName = "check_entry_dates",
+                warningCode = "script1_warning_invalid_value"
+            )
         )
     }
 }
@@ -299,10 +302,13 @@ check_negative_balance <- function(df, Sheet) {
     if (nrow(negative_df) > 0) {
         # Log a warning message with the number of negative values and their corresponding product_balance values
         logWarn(
-            Sheet,
-            " number of negative values in product_balance on the sheet is ",
-            nrow(negative_df), ": ",
-            paste(negative_df$product_balance, collapse = ", ")
+            log_to_json(
+                message = "Sheet {values['sheet']}: There are {values['nrow']} negative values in product_balance: {values['values']}.",
+                values = list(sheet = Sheet, nrow = nrow(negative_df), values = negative_df$product_balance),
+                file = "read_product_data.R",
+                functionName = "check_negative_balance",
+                warningCode = "script1_warning_invalid_value"
+            )
         )
     }
 }
@@ -332,10 +338,9 @@ switch_columns_stock <-
                     functionName = "switch_columns_stock"
                 )
             )
-            return(df)
-        } else {
-            return(df)
         }
+
+        return(df)
     }
 
 #' @title Compare two lists and return unmatched strings
@@ -350,6 +355,7 @@ switch_columns_stock <-
 compare_lists <- function(list1, list2) {
     # Use the setdiff function to find strings in list1 that are not in list2
     unmatched_strings <- setdiff(list1, list2)
+
     return(unmatched_strings)
 }
 
@@ -385,7 +391,7 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
                 values = list(sheet = Sheet, len_products = length(unmatched_products), unknown_products = unmatched_products),
                 file = "read_product_data.R",
                 functionName = "report_unknown_products",
-                warningCode = "script2_warning_unknown_products"
+                warningCode = "script2_warning_invalid_value"
             )
         )
     }
@@ -556,9 +562,10 @@ reading_product_data_step2 <-
                         values = list(sheet = sheet_month),
                         file = "read_product_data.R",
                         functionName = "reading_product_data_step2",
-                        warningCode = "script2_warning_empty_product_data"
+                        warningCode = "script2_warning_product_data"
                     )
                 )
+
                 next
             }
 
@@ -642,7 +649,7 @@ reading_product_data_step2 <-
                     values = list(name = df$file_name[1]),
                     file = "read_product_data.R",
                     functionName = "reading_product_data_step2",
-                    warningCode = "script2_warning_empty_product_data"
+                    warningCode = "script2_warning_product_data"
                 )
             )
         }
