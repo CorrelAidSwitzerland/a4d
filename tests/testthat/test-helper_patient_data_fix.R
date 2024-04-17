@@ -206,12 +206,13 @@ test_that("check_allowed_values works", {
 
 
 test_that("fix_testing_frequency works", {
-    expect_equal(fix_testing_frequency("2"), "2")
-    expect_equal(fix_testing_frequency("1.5"), "1.5")
-    expect_equal(fix_testing_frequency("0-2"), "1")
-    expect_equal(fix_testing_frequency("2-3"), "2.5")
-    expect_true(is.na(fix_testing_frequency("")))
-    expect_true(is.na(fix_testing_frequency(NA)))
+    patient_id <- "XX_YY001"
+    expect_equal(fix_testing_frequency("2", patient_id), "2")
+    expect_equal(fix_testing_frequency("1.5", patient_id), "1.5")
+    expect_equal(fix_testing_frequency("0-2", patient_id), "1")
+    expect_equal(fix_testing_frequency("2-3", patient_id), "2.5")
+    expect_true(is.na(fix_testing_frequency("", patient_id)))
+    expect_true(is.na(fix_testing_frequency(NA, patient_id)))
 })
 
 

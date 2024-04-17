@@ -119,44 +119,6 @@ read_column_synonyms <- function(synonym_file, path_prefixes = c("reference_data
 }
 
 
-#' @title Export data as CSV to a given destination.
-#'
-#' @param data Data frame to export as CSV.
-#' @param filename Output file name.
-#' @param output_root Root output directory.
-#' @param suffix Suffix will be appended to the original file name (e.g. "patient_data").
-#'
-#' @examples
-#' \dontrun{
-#' export_data(
-#'     data = df_raw_product,
-#'     filename = tracker_name,
-#'     output_root = output_root,
-#'     suffix = "_product_data"
-#' )
-#' }
-export_data <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
-    data %>%
-        write.csv(
-            file =
-                file.path(
-                    output_root,
-                    paste0(
-                        filename,
-                        suffix,
-                        ".csv"
-                    )
-                ),
-            row.names = F,
-            na = "",
-            fileEncoding = "UTF-16LE",
-            quote = T
-        )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
-}
-
-
 #' @title Export data as parquet to a given destination.
 #'
 #' @param data Data frame to export as parquet file.
@@ -174,37 +136,12 @@ export_data <- function(data, filename, output_root, suffix) {
 #' )
 #' }
 export_data_as_parquet <- function(data, filename, output_root, suffix) {
-    logDebug("Start export_data. Suffix = ", suffix, ".")
     data %>%
         arrow::write_parquet(
             sink = file.path(output_root, paste0(filename, suffix, ".parquet")),
         )
-    logInfo("Finish export_data. Suffix = ", suffix, ".")
 }
 
-
-
-#' @title Read in patient data from CSV.
-#'
-#' @param patient_file_path Path to the CSV file.
-#'
-#' @return tibble with patient data
-read_raw_csv <- function(file) {
-    logDebug("Start reading data with read_csv.")
-    df_patient_raw <- readr::read_csv(
-        file,
-        name_repair = "check_unique",
-        progress = FALSE,
-        show_col_types = FALSE,
-        col_types = readr::cols(.default = "c"),
-        locale = readr::locale(encoding = "UTF-16LE")
-    )
-    logDebug("Finished loading data with read_csv.")
-    logInfo("Dim: ", dim(df_patient_raw))
-    logInfo("Columns: ", spec(df_patient_raw))
-
-    df_patient_raw
-}
 
 
 #' @title Read allowed provinces from a YAML file.

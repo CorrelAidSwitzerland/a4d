@@ -9,8 +9,6 @@
 #' @param input_root root directory of the input CSV files.
 #' @param output_root root directory of the output folder.
 create_table_patient_data_static <- function(patient_data_files, input_root, output_root) {
-    logInfo("Start creating single csv for table patient_data_static.")
-
     # THERE MIGHT BE STATIC COLUMNS MISSING - PLEASE ADD THEM
     static_patient_columns <-
         c(
@@ -52,12 +50,19 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
 
     testit::assert(sum(duplicated(static_patient_data$id)) == 0)
 
+    logInfo(
+        log_to_json(
+            message = "static_patient_data dim: {values['dim']}.",
+            values = list(dim = dim(static_patient_data)),
+            file = "create_table_patient_data_static.R",
+            functionName = "create_table_patient_data_static"
+        )
+    )
+
     export_data_as_parquet(
         data = static_patient_data,
         filename = "patient_data",
         output_root = output_root,
         suffix = "_static"
     )
-
-    logInfo("Finish creating single csv for table patient_data_static.")
 }

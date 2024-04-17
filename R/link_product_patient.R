@@ -14,8 +14,6 @@
 #' link_product_patient("path/to/product_data.parquet", "path/to/patient_data.parquet")
 #' }
 link_product_patient <- function(product_file, patient_file) {
-    logInfo("Trying to link product file ", product_file, " with patient file ", patient_file)
-
     patient_data <- arrow::read_parquet(patient_file)
     product_data <- arrow::read_parquet(product_file)
 
@@ -43,34 +41,38 @@ link_product_patient <- function(product_file, patient_file) {
             {
                 if (nrow(summary_df) > 0) {
                     logWarn(
-                        "The number of mismatched patient IDs between the product and patient data is ",
-                        nrow(summary_df), ". ",
-                        paste("File Name: ", summary_df$Var1,
-                            " Patient ID in product: ", summary_df$Var2,
-                            " Count in product: ", summary_df$Freq,
-                            sep = "", collapse = ", "
+                        log_to_json(
+                            message = "The number of mismatched patient IDs between the product and patient data is {values['len']}. File Name: {values['file_name']}, Patient ID in product: {values['id']}, Count in product: {values['count']}",
+                            values = list(len = nrow(summary_df), file_name = summary_df$Var1, id = summary_df$Var2, count = summary_df$Freq),
+                            file = "link_product_patient.R",
+                            functionName = "link_product_patient",
+                            warningCode = "script3_warning_invalid_value"
                         )
-                    )
-                } else {
-                    logInfo(
-                        "There are no mismatched patient IDs between the product data - ",
-                        product_file, " and patient data - ", patient_file
                     )
                 }
             },
             error = function(e) {
-                logError("Could not link csv files for product and patient data. Error: ", e$message)
+                logError(
+                    log_to_json(
+                        message = "Could not link csv files for product and patient data. Error: {values['e']}",
+                        values = list(e = e$message),
+                        file = "link_product_patient.R",
+                        functionName = "link_product_patient",
+                        errorCode = "script3_error_tryCatch"
+                    )
+                )
             },
             warning = function(w) {
-                logWarn("Could not link csv files for product and patient data. Warning: ", w$message)
+                logWarn(
+                    log_to_json(
+                        message = "Could not link csv files for product and patient data. Warning: {values['w']}",
+                        values = list(w = w$message),
+                        file = "link_product_patient.R",
+                        functionName = "link_product_patient",
+                        errorCode = "script3_warning_tryCatch"
+                    )
+                )
             }
         )
-    } else {
-        logInfo(
-            "There are no mismatched patient IDs between the product data - ",
-            product_file, " and patient data - ", patient_file
-        )
     }
-
-    logInfo("Finished attempting to link product csv file with patient csv file.")
 }

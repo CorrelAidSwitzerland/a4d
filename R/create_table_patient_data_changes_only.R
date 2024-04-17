@@ -16,8 +16,6 @@ create_table_longitudinal_data <-
              output_root,
              variable,
              name) {
-        logInfo("Start creating single csv for table create_table_longitudinal_data and variable ", variable)
-
         dynamic_patient_columns <-
             c(
                 "blood_pressure_dias_mmhg",
@@ -72,12 +70,19 @@ create_table_longitudinal_data <-
             dplyr::ungroup() %>%
             dplyr::arrange(id, tracker_year, tracker_month)
 
+        logInfo(
+            log_to_json(
+                message = "longitudinal_data dim: {values['dim']}.",
+                values = list(dim = dim(longitudinal_data)),
+                file = "create_table_patient_data_changes_only.log",
+                functionName = "create_table_longitudinal_data"
+            )
+        )
+
         export_data_as_parquet(
             data = longitudinal_data,
             filename = paste0("longitudinal_data_", name),
             output_root = output_root,
             suffix = ""
         )
-
-        logInfo("Finish creating single csv for table create_table_longitudinal_data and variable ", variable)
     }

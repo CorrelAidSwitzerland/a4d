@@ -64,3 +64,25 @@ with_file_logger <- withr::with_(
         }
     }
 )
+
+
+#' @title Log-To-Json Formatter
+#'
+#' @param message log message with glue syntax {values['X']}.
+#' @param values A named list with the glue referenced values as single strings.
+#' @param file file name where the log message was created.
+#' @param errorCode A unique error code for easy aggregation of error messages.
+#' @param warningCode A unique warning code for easy aggregation of warning messages.
+#' @param functionName The name of the function where the log message was created.
+#' @return stringified JSON to log with logX functions
+log_to_json <- function(message, values = NA, file = NA, errorCode = NA, warningCode = NA, functionName = NA) {
+    logObject <- list(
+        message = glue::glue(message),
+        values = values,
+        file = file,
+        errorCode = errorCode,
+        warningCode = warningCode,
+        functionName = functionName
+    )
+    return(jsonlite::toJSON(logObject, flatten = TRUE, auto_unbox = TRUE, pretty = TRUE))
+}
