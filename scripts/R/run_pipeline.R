@@ -69,7 +69,8 @@ ingest_data <- function(project_id, cluster_fields, dataset, table, source) {
 
 data_dir <- select_A4D_directory()
 output_dir <- file.path(data_dir, "output")
-unlink(output_dir, recursive = T, force = T)
+unlink(file.path(data_dir, "*"), recursive = T, force = T)
+#unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
 
 download_data(bucket = BUCKET_DOWLOAD, data_dir = data_dir)
