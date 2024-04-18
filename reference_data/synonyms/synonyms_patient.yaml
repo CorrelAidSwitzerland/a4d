@@ -31,10 +31,15 @@ complication_screening:
   - complication screening select
   - complication screening select for dropdown
   - Complication Screening Completed (MONTH) B.P.
+  - Complication Screening Completed B.P.
   - Complication Screening Completed (MONTH) Kidney
+  - Complication Screening Completed Kidney
   - Complication Screening Completed (MONTH) Eye
+  - Complication Screening Completed Eye
   - Complication Screening Completed (MONTH) Foot
+  - Complication Screening Completed Foot
   - Complication Screening Completed (MONTH) Lipids
+  - Complication Screening Completed Lipids
   - Complication Screening Completed (MONTH) TSH
   - Complication Screening Completed (MONTH) tTG-IgA
 complication_screening_date:
