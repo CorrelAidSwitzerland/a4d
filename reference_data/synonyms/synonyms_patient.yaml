@@ -30,13 +30,13 @@ complication_screening:
   - Complication Screening (Current Month Testing) Select for Drop Down
   - complication screening select
   - complication screening select for dropdown
-  - Complication Screening Completed B.P.
-  - Complication Screening Completed Kidney
-  - Complication Screening Completed Eye
-  - Complication Screening Completed Foot
-  - Complication Screening Completed Lipids
-  - Complication Screening Completed TSH
-  - Complication Screening Completed tTG-IgA
+  - Complication Screening Completed (MONTH) B.P.
+  - Complication Screening Completed (MONTH) Kidney
+  - Complication Screening Completed (MONTH) Eye
+  - Complication Screening Completed (MONTH) Foot
+  - Complication Screening Completed (MONTH) Lipids
+  - Complication Screening Completed (MONTH) TSH
+  - Complication Screening Completed (MONTH) tTG-IgA
 complication_screening_date:
   - current month complication screening kidney eye foot date
   - complication screening current month testing date mmmyy
@@ -53,6 +53,7 @@ complication_screening_results:
   - current month complication screening results
   - Complication Screening (Current Month Testing) Results
   - Complication Screening Completed Results
+  - Complication Screening Completed (MONTH) Results
 country_code: []
 dm_complications:
   - DM Complications Drop Down

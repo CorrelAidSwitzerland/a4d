@@ -125,11 +125,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     df_patient_raw <- arrow::read_parquet(patient_file_path)
 
-    # filter all rows with no patient id or patient name
-    df_patient_raw <- df_patient_raw %>%
-        dplyr::filter(!(is.na(id) & is.na(name))) %>%
-        dplyr::filter(!(id == "0" & name == "0"))
-
     # --- TRANSFORMATIONS ---
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value

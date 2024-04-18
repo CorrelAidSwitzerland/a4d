@@ -82,6 +82,13 @@ reading_patient_data <-
 
         df_raw <- dplyr::bind_rows(tidy_tracker_list)
 
+
+        # filter all rows with no patient id or patient name
+        df_raw <- df_raw %>%
+            dplyr::filter(!(is.na(id) & is.na(name))) %>%
+            dplyr::filter(!(id == "0" & name == "0"))
+
+
         if ("Patient List" %in% sheet_list) {
             patient_list <- extract_patient_data(
                 tracker_data_file,
