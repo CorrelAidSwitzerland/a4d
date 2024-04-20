@@ -2,7 +2,7 @@
 # It loads log data from a Parquet file, allows uploading of log files, and displays the log data in a DataTable.
 # The server code defines various reactive expressions and event observers to handle user interactions and data updates.
 # It also renders the UI elements and defines the behavior of the log table and details panel.
-
+options(shiny.maxRequestSize=30*1024^2)
 # Define the shinyServer function to handle the server-side logic of the Shiny application.
 shinyServer(function(input, output, session) {
   # Define a reactiveValues object to store the event log data and the current table data.
@@ -120,6 +120,12 @@ shinyServer(function(input, output, session) {
       mutate(tracker_in_fileName = gsub("logs_\\d{4}_(.*?)\\ A4D.*", "\\1", fileName)) %>%
       left_join(values$clinic_info_df, by = "tracker_in_fileName", relationship = "many-to-many") %>%
       select(-"tracker_in_fileName")
+
+    values$eventLog <-   values$eventLog  %>%
+        mutate(Message = map(Message, ~ jsonlite::fromJSON(.) %>% lapply(.,function(x) if(is.null(x)) NA else x ) %>% as_tibble())) %>%
+        unnest(Message) %>% rename(Message=message) %>%
+        mutate(across(c("file","errorCode","warningCode","functionName"),factor))
+
 
     values$proccessedFilesInfo <- allLogs %>%
       filter(str_detect(pattern = "Found", Message)) %>%

@@ -26,7 +26,7 @@ parseLines <- function(lines) {
     Level = sapply(rows, function(x) x[3]),
     Package = sapply(rows, function(x) x[4]),
     Function = sapply(rows, function(x) x[5]),
-    Message = sapply(rows, function(x) gsub("\"", "&quot;", x[6]))
+    Message = sapply(rows, function(x) x[6])
   )
   return(result)
 }
