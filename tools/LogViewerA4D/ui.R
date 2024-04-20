@@ -11,44 +11,73 @@
 shinyUI(
   dashboardPage(
     dashboardHeader(title = "Log File Viewer - A4D"),
-    dashboardSidebar( fluidRow(
-      uiOutput( "loadTempFileUI"),
-             fileInput(
-               "fileUpload",
-               "Upload Log Files",
-               multiple = TRUE, accept = ".log"),
-             selectInput("level", label = "Level", choices = levelsValues, selected = "TRACE"),
-    ),
-    
-    
-    sidebarMenu(
-      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
-      menuItem("Overview", tabName = "overview", icon = icon("th"))
-    )),
-    dashboardBody(
-      tabItems(
-      tabItem(tabName = "dashboard",
-              
+    dashboardSidebar(
       fluidRow(
-        box(
-          title = "Main Table",
-        DTOutput("logTable")),
-        box(
-          title = "Details",
-               uiOutput("detailsUi")),
+        uiOutput("loadTempFileUI"),
+        fileInput(
+          "fileUpload",
+          "Upload Log Files",
+          multiple = TRUE, accept = ".log"
         )
       ),
-      tabItem(tabName = "overview",
-              fluidRow(box(
-                title = "Overview",
-              DTOutput("status")
-              )),
-              fluidRow(box(title= "Overview-Plot", height=1000, weight=1000,
-                           textInput("regexFilter",label = "RegexFilter Trackerfiles"),
-                  plotlyOutput( "logOverviewPlot")))
-      ))
-              
+      sidebarMenu(
+        menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+        menuItem("Overview", tabName = "overview", icon = icon("th")),
+        menuItem("Reference_Data", tabName = "ref_data", icon = icon("clipboard"))
+      )
+    ),
+    dashboardBody(
+      tabItems(
+        tabItem(
+          tabName = "dashboard",
+          fluidRow(
+            box(
+              width = 6,
+              title = "Main Table",
+              DTOutput("logTable")
+            ),
+            box(
+              width = 6,
+              title = "Tracker Overview",
+              DTOutput("trackerSummary"),
+              plotlyOutput("sankey")
+            ),
+          )
+        ),
+        tabItem(
+          tabName = "overview",
+          fluidRow(box(
+            title = "Overview",
+            DTOutput("status")
+          )),
+          fluidRow(box(
+            title = "Overview-Plot", height = 1000, weight = 1000,
+            textInput("regexFilter", label = "RegexFilter Trackerfiles"),
+            plotlyOutput("logOverviewPlot")
+          ))
+        ),
+        tabItem(
+          tabName = "ref_data",
+          fluidPage(
+            sidebarLayout(
+              sidebarPanel(
+                h3("Checking reference_data"),
+                br(),
+                p("We use reference_data to match clinic information
+                          to clinic_code used in messages."),
+                radioButtons("choose_tab",
+                  label = "Choose Output",
+                  choices = c("all", "missing entries", "multiple entries"),
+                  selected = "all"
+                )
+              ),
+              mainPanel(
+                DTOutput("ref_data_df")
+              )
+            )
+          )
+        )
       )
     )
   )
-
+)
