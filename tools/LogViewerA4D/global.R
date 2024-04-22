@@ -17,17 +17,16 @@ truncScript <- "function(data, type, row, meta) {\n
 
 
 parseLines <- function(lines) {
-  rows <- strsplit(lines, "\t")
-  malformed <- sapply(rows, function(x) length(x) != 6)
-  rows <- rows[!malformed]
-  result <- data.frame(
-    Timestamp = as.POSIXct(sapply(rows, function(x) x[1])),
-    Thread = sapply(rows, function(x) x[2]),
-    Level = sapply(rows, function(x) x[3]),
-    Package = sapply(rows, function(x) x[4]),
-    Function = sapply(rows, function(x) x[5]),
-    Message = sapply(rows, function(x) x[6])
-  )
-  return(result)
+    rows <- strsplit(lines, "\t")
+    malformed <- sapply(rows, function(x) length(x) != 6)
+    rows <- rows[!malformed]
+    result <- data.frame(
+        Timestamp = as.POSIXct(sapply(rows, function(x) x[1])),
+        Thread = sapply(rows, function(x) x[2]),
+        Level = sapply(rows, function(x) x[3]),
+        Package = sapply(rows, function(x) x[4]),
+        Function = sapply(rows, function(x) x[5]),
+        Message = sapply(rows, function(x) x[6])
+    )
+    return(result)
 }
-
