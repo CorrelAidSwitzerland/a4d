@@ -66,7 +66,7 @@ reading_product_data_step1 <-
             if (check_wide_format_columns(product_df)) {
                 logWarn(
                     log_to_json(
-                        message = "Sheet {values['sheet']} has Mandalay Children's Hospital 2020-2021 wide-format columns. The wide-format area should be changed to long-format!",
+                        message = "Sheet {values['sheet']} has Mandalay Children's Hospital 2019-2021 wide-format columns. The wide-format area should be changed to long-format!",
                         values = list(sheet = curr_sheet),
                         file = "read_product_data.R",
                         functionName = "read_product_data_step1",

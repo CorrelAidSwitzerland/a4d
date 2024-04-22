@@ -47,7 +47,7 @@ create_new_rows <- function(df) {
                 # Add the current row to the new dataframe
                 new_df <- rbind(new_df, df[i, ])
                 # Check if 'Total Units Released' and 'Units Released per person' are not empty and not equal
-                if (!is.na(df$"Total Units Released"[i]) & !is.na(df$"Units Released per person"[i]) & df$"Total Units Released"[i] > df$"Units Released per person"[i]) {
+                if (!is.na(df$"Total Units Released"[i]) & !is.na(df$"Units Released per person"[i]) & df$"Total Units Released"[i] != df$"Units Released per person"[i]) {
                     # Loop over all columns between 'Released To' and 'Units Released per person'
                     start_col <- which(names(df) == "Released To (select from drop down list)") + 1
                     end_col <- which(names(df) == "Units Released per person") - 1
@@ -79,7 +79,6 @@ create_new_rows <- function(df) {
                     functionName = "create_new_rows"
                 )
             )
-
             # Return original df
             return(df)
         },
