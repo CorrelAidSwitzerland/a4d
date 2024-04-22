@@ -122,10 +122,12 @@ shinyServer(function(input, output, session) {
       select(-"tracker_in_fileName")
 
     values$eventLog <-   values$eventLog  %>%
-        mutate(Message = map(Message, ~ jsonlite::fromJSON(.) %>% lapply(.,function(x) if(is.null(x)) NA else x ) %>% as_tibble())) %>%
-        unnest(Message) %>% rename(Message=message) %>%
+        dplyr::filter(substr(Message, 1, 1) == "{") %>%
+        mutate(Message = map(Message, ~ jsonlite::fromJSON(.) %>% lapply(.,function(x) if(is.null(x)) NA else if (is.list(x)) toString(x) else x ) %>% as_tibble())) %>%
+        unnest(Message) %>%
+        rename(Message=message) %>%
+        ungroup() %>%
         mutate(across(c("file","errorCode","warningCode","functionName"),factor))
-
 
     values$proccessedFilesInfo <- allLogs %>%
       filter(str_detect(pattern = "Found", Message)) %>%

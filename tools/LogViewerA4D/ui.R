@@ -32,12 +32,12 @@ shinyUI(
           tabName = "dashboard",
           fluidRow(
             box(
-              width = 6,
+              width = 8,
               title = "Main Table",
               DTOutput("logTable")
             ),
             box(
-              width = 6,
+              width = 4,
               title = "Tracker Overview",
               DTOutput("trackerSummary"),
               plotlyOutput("sankey")
