@@ -16,6 +16,7 @@ reading_product_data_step1 <-
             log_to_json(
                 message = "Found {values['len']} sheets: {values['sheets']}.",
                 values = list(len = length(sheet_list), sheets = sheet_list),
+                script = "script1",
                 file = "read_product_data.R",
                 functionName = "reading_product_data_step1"
             )
@@ -24,6 +25,7 @@ reading_product_data_step1 <-
             log_to_json(
                 message = "Found {values['len']} month sheets: {values['months']}.",
                 values = list(len = length(month_list), months = month_list),
+                script = "script1",
                 file = "read_product_data.R",
                 functionName = "reading_product_data_step1"
             )
@@ -51,9 +53,10 @@ reading_product_data_step1 <-
                     log_to_json(
                         message = "Sheet {values['sheet']}: Could not find product data in tracker data. Skipping.",
                         values = list(sheet = curr_sheet),
+                        script = "script1",
                         file = "read_product_data.R",
                         functionName = "read_product_data_step1",
-                        warningCode = "script1_warning_read_product_data"
+                        warningCode = "invalid_tracker"
                     )
                 )
 
@@ -68,9 +71,10 @@ reading_product_data_step1 <-
                     log_to_json(
                         message = "Sheet {values['sheet']} has Mandalay Children's Hospital 2019-2021 wide-format columns. The wide-format area should be changed to long-format!",
                         values = list(sheet = curr_sheet),
+                        script = "script1",
                         file = "read_product_data.R",
                         functionName = "read_product_data_step1",
-                        warningCode = "script1_warning_read_product_data"
+                        warningCode = "invalid_tracker"
                     )
                 )
                 product_df <- create_new_rows(product_df)
@@ -82,9 +86,10 @@ reading_product_data_step1 <-
                     log_to_json(
                         message = "Sheet {values['sheet']}: Product data is empty. Skipping.",
                         values = list(sheet = curr_sheet),
+                        script = "script1",
                         file = "read_product_data.R",
                         functionName = "read_product_data_step1",
-                        warningCode = "script1_warning_read_product_data"
+                        warningCode = "invalid_tracker"
                     )
                 )
 
@@ -114,9 +119,10 @@ reading_product_data_step1 <-
                             log_to_json(
                                 message = "Sheet {values['sheet']} has {values['num_na_rows']} rows where the patient's name is missing next to the released units.",
                                 values = list(sheet = curr_sheet, num_na_rows = num_na_rows),
+                                script = "script1",
                                 file = "read_product_data.R",
                                 functionName = "read_product_data_step1",
-                                warningCode = "script1_warning_missing_value"
+                                warningCode = "invalid_tracker"
                             )
                         )
                     }
@@ -126,9 +132,10 @@ reading_product_data_step1 <-
                         log_to_json(
                             message = "Sheet {values['sheet']}: Error when testing num_na_rows > 0: {values['e']}",
                             values = list(sheet = curr_sheet, e = e$message),
+                            script = "script1",
                             file = "read_product_data.R",
                             functionName = "read_product_data_step1",
-                            errorCode = "script1_error_tryCatch"
+                            errorCode = "tryCatch"
                         )
                     )
                 }
@@ -144,9 +151,10 @@ reading_product_data_step1 <-
                             log_to_json(
                                 message = "Sheet {values['sheet']}: The number of rows with non-processed dates in product_entry_date is {values['num_rows']}: {values['dates']}.",
                                 values = list(sheet = curr_sheet, num_rows = nrow(non_processed_dates), dates = non_processed_dates$product_entry_date),
+                                script = "script1",
                                 file = "read_product_data.R",
                                 functionName = "read_product_data_step1",
-                                warningCode = "script1_warning_invalid_value"
+                                warningCode = "invalid_value"
                             )
                         )
                     }
@@ -156,9 +164,10 @@ reading_product_data_step1 <-
                         log_to_json(
                             message = "Sheet {values['sheet']}: Error when testing nrow(non_processed_dates) > 0: {values['e']}",
                             values = list(sheet = curr_sheet, e = e$message),
+                            script = "script1",
                             file = "read_product_data.R",
                             functionName = "read_product_data_step1",
-                            errorCode = "script1_error_tryCatch"
+                            errorCode = "tryCatch"
                         )
                     )
                 }
@@ -234,9 +243,10 @@ check_entry_dates <- function(df, Sheet) {
             log_to_json(
                 message = "Sheet {values['sheet']}: There are {values['nrow']} dates in product_entry_date that don't match extracted month and year.",
                 values = list(sheet = Sheet, nrow = nrow(not_same), dates = not_same$ed_date),
+                script = "script1",
                 file = "read_product_data.R",
                 functionName = "check_entry_dates",
-                warningCode = "script1_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -260,7 +270,8 @@ remove_rows_with_na_columns <-
         logInfo(
             log_to_json(
                 message = "{values['na_rows']} out of {values['nrows']} rows with NA values in specified columns were removed.",
-                values = list(na_rows = length(na_rows[na_rows == T]), nrows = nrow(df))
+                values = list(na_rows = length(na_rows[na_rows == T]), nrows = nrow(df)),
+                script = "script1"
             )
         )
 
@@ -289,9 +300,10 @@ check_negative_balance <- function(df, Sheet) {
             log_to_json(
                 message = "Sheet {values['sheet']}: There are {values['nrow']} negative values in product_balance: {values['values']}.",
                 values = list(sheet = Sheet, nrow = nrow(negative_df), values = negative_df$product_balance),
+                script = "script1",
                 file = "read_product_data.R",
                 functionName = "check_negative_balance",
-                warningCode = "script1_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -318,6 +330,7 @@ switch_columns_stock <-
             logDebug(
                 log_to_json(
                     message = "Columns product_units_received and product_received_from were switched",
+                    script = "script1",
                     file = "read_product_data.R",
                     functionName = "switch_columns_stock"
                 )
@@ -373,9 +386,10 @@ report_unknown_products <- function(df, Sheet, stock_list_df) {
             log_to_json(
                 message = "Sheet {values['sheet']} has {values['len_products']} unknown product names: {values['unknown_products']}.",
                 values = list(sheet = Sheet, len_products = length(unmatched_products), unknown_products = unmatched_products),
+                script = "script1",
                 file = "read_product_data.R",
                 functionName = "report_unknown_products",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -405,6 +419,7 @@ load_product_reference_data <- function(stock_summary_xlsx = "reference_data/mas
                 log_to_json(
                     message = "{values['nrow']} product names were loaded from the Stock Summary.",
                     values = list(nrow = nrow(product_names_df)),
+                    script = "script2",
                     file = "read_product_data.R",
                     functionName = "load_product_reference_data"
                 )
@@ -417,8 +432,9 @@ load_product_reference_data <- function(stock_summary_xlsx = "reference_data/mas
                 log_to_json(
                     "Could not load stock product list. Error = {values['e']}.",
                     values = list(e = e$message),
+                    script = "script2",
                     file = "read_product_data.R",
-                    errorCode = "script2_error_tryCatch",
+                    errorCode = "tryCatch",
                     functionName = "load_product_reference_data"
                 )
             )
@@ -544,9 +560,10 @@ reading_product_data_step2 <-
                     log_to_json(
                         message = "Sheet {values['sheet']} is empty after filtering. Skipping",
                         values = list(sheet = sheet_month),
+                        script = "script2",
                         file = "read_product_data.R",
                         functionName = "reading_product_data_step2",
-                        warningCode = "script2_warning_product_data"
+                        warningCode = "invalid_tracker"
                     )
                 )
 

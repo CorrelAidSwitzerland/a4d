@@ -8,6 +8,7 @@ main <- function() {
         log_to_json(
             "Found {values['len']} xlsx files under {values['root']}.",
             values = list(len = length(tracker_files), root = paths$tracker_root),
+            script = "script1",
             file = "run_script_1_extract_raw_data.R",
             functionName = "main"
         )
@@ -34,6 +35,7 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
         log_to_json(
             "Current file: {values['file']}.",
             values = list(file = tracker_name),
+            script = "script1",
             file = "run_script_1_extract_raw_data.R",
             functionName = "process_tracker_file"
         )
@@ -54,8 +56,9 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                         log_to_json(
                             "Could not process patient data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script1",
                             file = "run_script_1_extract_raw_data.R",
-                            errorCode = "script1_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "process_patient_data"
                         )
                     )
@@ -65,8 +68,9 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                         log_to_json(
                             "Could not process patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script1",
                             file = "run_script_1_extract_raw_data.R",
-                            warningCode = "script1_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "process_patient_data"
                         )
                     )
@@ -92,8 +96,9 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                         log_to_json(
                             "Could not process product data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script1",
                             file = "run_script_1_extract_raw_data.R",
-                            errorCode = "script1_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "process_product_data"
                         )
                     )
@@ -103,8 +108,9 @@ process_tracker_file <- function(paths, tracker_file, tracker_name, synonyms) {
                         log_to_json(
                             "Could not process product data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script1",
                             file = "run_script_1_extract_raw_data.R",
-                            warningCode = "script1_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "process_product_data"
                         )
                     )
@@ -133,6 +139,7 @@ process_patient_data <-
             log_to_json(
                 message = "df_raw_patient dim: {values['dim']}.",
                 values = list(dim = dim(df_raw_patient)),
+                script = "script1",
                 file = "run_script_1_extract_raw_data.R",
                 functionName = "process_patient_data"
             )
@@ -165,6 +172,7 @@ process_product_data <-
                 log_to_json(
                     message = "df_raw_product dim: {values['dim']}.",
                     values = list(dim = dim(df_raw_product)),
+                    script = "script1",
                     file = "run_script_1_extract_raw_data.R",
                     functionName = "process_product_data"
                 )
@@ -181,9 +189,10 @@ process_product_data <-
             logWarn(
                 log_to_json(
                     message = "Empty product data!",
+                    script = "script1",
                     file = "run_script_1_extract_raw_data.R",
                     functionName = "process_product_data",
-                    warningCode = "script1_warning_empty_product_data"
+                    warningCode = "empty_product_data"
                 )
             )
         }

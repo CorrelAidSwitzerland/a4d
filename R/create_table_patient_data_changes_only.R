@@ -74,6 +74,7 @@ create_table_longitudinal_data <-
             log_to_json(
                 message = "longitudinal_data dim: {values['dim']}.",
                 values = list(dim = dim(longitudinal_data)),
+                script = "script3",
                 file = "create_table_patient_data_changes_only.log",
                 functionName = "create_table_longitudinal_data"
             )

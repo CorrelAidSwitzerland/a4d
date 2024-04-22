@@ -113,9 +113,10 @@ extract_product_data <- function(monthly_tracker_df) {
         logWarn(
             log_to_json(
                 message = "Cannot find the initial row for the product data.",
+                script = "script1",
                 file = "helper_product_data.R",
                 functionName = "extract_product_data",
-                warningCode = "script1_warning_read_product_data"
+                warningCode = "invalid_tracker"
             )
         )
     }
@@ -124,9 +125,10 @@ extract_product_data <- function(monthly_tracker_df) {
         logWarn(
             log_to_json(
                 message = "Cannot find the final row for the product data.",
+                script = "script1",
                 file = "helper_product_data.R",
                 functionName = "extract_product_data",
-                warningCode = "script1_warning_read_product_data"
+                warningCode = "invalid_tracker"
             )
         )
     }
@@ -168,9 +170,10 @@ harmonize_input_data_columns <- function(product_df, columns_synonyms, sheet) {
             log_to_json(
                 message = "Sheet {values['sheet']}: Unknown column names: {values['col_names']}.",
                 values = list(sheet = sheet, col_names = unknown_column_names),
+                script = "script1",
                 file = "helper_product_data.R",
                 functionName = "harmonize_input_data_columns",
-                warningCode = "script1_warning_read_product_data"
+                warningCode = "invalid_tracker"
             )
         )
     }
@@ -335,6 +338,7 @@ update_receivedfrom <- function(product_df) {
         logInfo(
             log_to_json(
                 message = "The rule for the case was applied successfully- Released (product_units_released) column also includes values for Start/End Balance",
+                script = "script1",
                 file = "helper_product_data.R",
                 functionName = "update_receivedfrom"
             )

@@ -13,6 +13,7 @@ main <- function() {
         log_to_json(
             "Found {values['len']} patient csv files under {values['root']}. ",
             values = list(len = length(patient_data_files), root = paths$tracker_root),
+            script = "script2",
             file = "run_script2_clean_data.R",
             functionName = "main"
         )
@@ -21,6 +22,7 @@ main <- function() {
         log_to_json(
             "Found {values['len']} product csv files under {values['root']}. ",
             values = list(len = length(product_data_files), root = paths$tracker_root),
+            script = "script2",
             file = "run_script2_clean_data.R",
             functionName = "main"
         )
@@ -41,8 +43,9 @@ main <- function() {
                             log_to_json(
                                 "Could not process raw patient data. Error = {values['e']}.",
                                 values = list(e = e$message),
+                                script = "script2",
                                 file = "run_script_2_clean_data.R",
-                                errorCode = "script2_error_tryCatch",
+                                errorCode = "critical_abort",
                                 functionName = "process_patient_file"
                             )
                         )
@@ -52,8 +55,9 @@ main <- function() {
                             log_to_json(
                                 "Could not process raw patient data. Warning = {values['w']}.",
                                 values = list(w = w$message),
+                                script = "script2",
                                 file = "run_script_2_clean_data.R",
-                                warningCode = "script2_warning_tryCatch",
+                                warningCode = "critical_abort",
                                 functionName = "process_patient_file"
                             )
                         )
@@ -84,8 +88,9 @@ main <- function() {
                             log_to_json(
                                 "Could not process raw product data. Error = {values['e']}.",
                                 values = list(e = e$message),
+                                script = "script2",
                                 file = "run_script_2_clean_data.R",
-                                errorCode = "script2_error_tryCatch",
+                                errorCode = "critical_abort",
                                 functionName = "process_product_file"
                             )
                         )
@@ -95,8 +100,9 @@ main <- function() {
                             log_to_json(
                                 "Could not process raw product data. Warning = {values['w']}.",
                                 values = list(w = w$message),
+                                script = "script2",
                                 file = "run_script_2_clean_data.R",
-                                warningCode = "script2_warning_tryCatch",
+                                warningCode = "critical_abort",
                                 functionName = "process_product_file"
                             )
                         )
@@ -132,9 +138,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             log_to_json(
                 message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
                 values = list(src = "hba1c_updated", target = "updated_hba1c_date"),
+                script = "script2",
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_add_column"
+                warningCode = "missing_column"
             )
         )
         df_patient_raw <-
@@ -146,9 +153,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             log_to_json(
                 message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
                 values = list(src = "fbg_updated_mg.", target = "updated_fbg_date"),
+                script = "script2",
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_add_column"
+                warningCode = "missing_column"
             )
         )
         df_patient_raw <-
@@ -160,9 +168,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             log_to_json(
                 message = "Column {values['target']} not found. Trying to parse from {values['src']}.",
                 values = list(src = "fbg_updated_mmol.", target = "updated_fbg_date"),
+                script = "script2",
                 file = "run_script_2_clean_data.R",
                 functionName = "process_patient_file",
-                warningCode = "script2_warning_add_column"
+                warningCode = "missing_column"
             )
         )
         df_patient_raw <-
@@ -261,8 +270,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         log_to_json(
             message = "Extra columns in patient data: {values['extra_cols']}.",
             values = list(extra_col = extra_cols),
+            script = "script2",
             file = "run_script_2_clean_data.R",
-            warningCode = "script2_warning_patient_data",
+            warningCode = "invalid_tracker",
             functionName = "process_patient_file"
         )
     )
@@ -273,8 +283,9 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         log_to_json(
             message = "Missing columns in patient data: {values['missing_cols']}.",
             values = list(missing_cols = missing_cols),
+            script = "script2",
             file = "run_script_2_clean_data.R",
-            warningCode = "script2_warning_patient_data",
+            warningCode = "invalid_tracker",
             functionName = "process_patient_file"
         )
     )
@@ -385,6 +396,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         log_to_json(
             message = "df_patient dim: {values['dim']}.",
             values = list(dim = dim(df_patient)),
+            script = "script2",
             file = "run_script_2_clean_data.R",
             functionName = "process_patient_file"
         )
@@ -411,6 +423,7 @@ process_product_file <- function(paths, product_file, product_file_name, synonym
         log_to_json(
             message = "df_product_raw dim: {values['dim']}.",
             values = list(dim = dim(df_product_raw)),
+            script = "script2",
             file = "run_script_2_clean_data.R",
             functionName = "process_product_file"
         )

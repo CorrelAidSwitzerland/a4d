@@ -7,6 +7,7 @@
 log_to_json(
   message,
   values = NA,
+  script = NA,
   file = NA,
   errorCode = NA,
   warningCode = NA,
@@ -17,6 +18,8 @@ log_to_json(
 \item{message}{log message with glue syntax {values\link{'X'}}.}
 
 \item{values}{A named list with the glue referenced values as single strings.}
+
+\item{script}{script name where the log message was created.}
 
 \item{file}{file name where the log message was created.}
 

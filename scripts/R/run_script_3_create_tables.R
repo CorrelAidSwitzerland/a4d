@@ -13,6 +13,7 @@ main <- function() {
         log_to_json(
             "Found {values['len']} patient csv files under {values['root']}. ",
             values = list(len = length(patient_data_files), root = paths$tracker_root),
+            script = "script3",
             file = "run_script3_create_tables.R",
             functionName = "main"
         )
@@ -21,6 +22,7 @@ main <- function() {
         log_to_json(
             "Found {values['len']} product csv files under {values['root']}. ",
             values = list(len = length(product_data_files), root = paths$tracker_root),
+            script = "script3",
             file = "run_script3_create_tables.R",
             functionName = "main"
         )
@@ -38,8 +40,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for static patient data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "create_table_patient_data_static"
                         )
                     )
@@ -49,8 +52,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for static patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "create_table_patient_data_static"
                         )
                     )
@@ -72,8 +76,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for monthly patient data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "create_table_patient_data_monthly"
                         )
                     )
@@ -83,8 +88,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for monthly patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "create_table_patient_data_monthly"
                         )
                     )
@@ -112,8 +118,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for longitudinal patient data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "create_table_longitudinal_data"
                         )
                     )
@@ -123,8 +130,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for longitudinal patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "create_table_longitudinal_data"
                         )
                     )
@@ -146,8 +154,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for product data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "create_table_product_data"
                         )
                     )
@@ -157,8 +166,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for product data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "create_table_product_data"
                         )
                     )
@@ -180,8 +190,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for clinic static data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "critical_abort",
                             functionName = "export_data_as_parquet"
                         )
                     )
@@ -191,8 +202,9 @@ main <- function() {
                         log_to_json(
                             "Could not create table for clinic static data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "critical_abort",
                             functionName = "export_data_as_parquet"
                         )
                     )
@@ -218,8 +230,9 @@ main <- function() {
                         log_to_json(
                             "Could not link files for product and patient data. Error = {values['e']}.",
                             values = list(e = e$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            errorCode = "script3_error_tryCatch",
+                            errorCode = "tryCatch",
                             functionName = "link_product_patient"
                         )
                     )
@@ -229,8 +242,9 @@ main <- function() {
                         log_to_json(
                             "Could not link files for product and patient data. Warning = {values['w']}.",
                             values = list(w = w$message),
+                            script = "script3",
                             file = "run_script_3_create_tables.R",
-                            warningCode = "script3_warning_tryCatch",
+                            warningCode = "tryCatch",
                             functionName = "link_product_patient"
                         )
                     )

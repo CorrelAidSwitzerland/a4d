@@ -74,8 +74,9 @@ create_new_rows <- function(df) {
                 log_to_json(
                     "Error occurred while converting a wide-format area to a long-format, dataframe was returned without changes. Error: {values['e']}",
                     values = list(e = e$message),
+                    script = "script1",
                     file = "wide_format_2_long_format.R",
-                    errorCode = "create_new_rows_tryCatch",
+                    errorCode = "tryCatch",
                     functionName = "create_new_rows"
                 )
             )
@@ -88,8 +89,9 @@ create_new_rows <- function(df) {
                 log_to_json(
                     "Warning occurred while converting a wide-format area to a long-format, dataframe was returned without changes. Warning: {values['w']}",
                     values = list(w = w$message),
+                    script = "script1",
                     file = "wide_format_2_long_format.R",
-                    warningCode = "create_new_rows_tryCatch",
+                    warningCode = "tryCatch",
                     functionName = "create_new_rows"
                 )
             )

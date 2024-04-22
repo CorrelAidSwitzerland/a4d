@@ -54,6 +54,7 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
         log_to_json(
             message = "static_patient_data dim: {values['dim']}.",
             values = list(dim = dim(static_patient_data)),
+            script = "script3",
             file = "create_table_patient_data_static.R",
             functionName = "create_table_patient_data_static"
         )

@@ -53,6 +53,7 @@ create_table_patient_data_monthly <- function(patient_data_files, input_root, ou
         log_to_json(
             message = "patient_data dim: {values['dim']}.",
             values = list(dim = dim(patient_data)),
+            script = "script3",
             file = "create_table_patient_data.R",
             functionName = "create_table_patient_data_monthly"
         )

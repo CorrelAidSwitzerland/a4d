@@ -21,6 +21,7 @@ extract_country_clinic_code <- function(patient_data) {
     logInfo(
         log_to_json(
             message = "Extracted country {values['country']} and clinic {values['clinic']} codes from patient IDs.",
+            script = "script1",
             values = list(country = country_code, clinic = clinic_code),
             file = "helper_read_patient_data.R",
             functionName = "extract_country_clinic_code"
@@ -85,6 +86,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         log_to_json(
             message = "Sheet {values['sheet']}: Patient data found in rows {values['row_min']} to {values['row_max']}.",
             values = list(sheet = sheet, row_min = row_min, row_max = row_max),
+            script = "script1",
             file = "helper_read_patient_data.R",
             functionName = "extract_patient_data"
         )
@@ -105,6 +107,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
         logInfo(
             log_to_json(
                 message = "Multiline header found. Merging header rows.",
+                script = "script1",
                 file = "helper_read_patient_data.R",
                 functionName = "extract_patient_data"
             )
@@ -165,9 +168,10 @@ harmonize_patient_data_columns <-
                     values = list(
                         col_names = colnames(patient_df)[mismatching_column_ids]
                     ),
+                    script = "script1",
                     file = "helper_read_patient_data.R",
                     functionName = "harmonize_patient_data_columns",
-                    warningCode = "script1_warning_read_patient_data"
+                    warningCode = "invalid_tracker"
                 )
             )
         }

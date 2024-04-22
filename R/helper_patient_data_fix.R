@@ -28,9 +28,10 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
                 log_to_json(
                     message = "Error while trying to convert value {values['x']} in column {values['col_name']} for patient: {values['id']}. Replacing with error val {values['err_val']}.",
                     values = list(x = x, col_name = col_name, id = id, err_val = error_val),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "convert_to",
-                    errorCode = "script2_error_tryCatch"
+                    errorCode = "function_call"
                 )
             )
             x <- error_val
@@ -40,9 +41,10 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
                 log_to_json(
                     message = "Warning while trying to convert value {values['x']} in column {values['col_name']} for patient: {values['id']}. Replacing with error val {values['err_val']}.",
                     values = list(x = x, col_name = col_name, id = id, err_val = error_val),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "convert_to",
-                    errorCode = "script2_warning_tryCatch"
+                    errorCode = "function_call"
                 )
             )
             x <- error_val
@@ -75,9 +77,10 @@ cut_numeric_value <- function(x,
             log_to_json(
                 message = "Found invalid value {values['x']} for column {values['col_name']} outside [{values['min']}, {values['max']}]. Value was replaced with {values['error_val']}.",
                 values = list(x = x, col_name = col_name, min = min, max = max, error_val = ERROR_VAL_NUMERIC),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "cut_numeric_value",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
         x <- ERROR_VAL_NUMERIC
@@ -181,9 +184,10 @@ parse_dates <- function(date) {
             log_to_json(
                 message = "Could not parse date value {values['date']}. Trying to parse with lubridate::parse_date_time and orders = {values['orders']}.",
                 values = list(date = date, orders = orders),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
-                functionName = "lubridate::as_date",
-                warningCode = "script2_warning_invalid_value"
+                functionName = "parse_dates",
+                warningCode = "invalid_value"
             )
         )
 
@@ -227,9 +231,10 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
             log_to_json(
                 message = "Patient {values['id']}: Value {values['x']} for column {values['col']} is not in the list of allowed values. ",
                 values = list(id = id, x = x, col = col),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "check_allowed_values",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
 
@@ -238,9 +243,10 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
                 log_to_json(
                     message = "Replacing {values['x']} with {values['error_val']}.",
                     values = list(x = x, error_val = error_val),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "check_allowed_values",
-                    warningCode = "script2_warning_invalid_value"
+                    warningCode = "invalid_value"
                 )
             )
 
@@ -327,9 +333,10 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
                 log_to_json(
                     message = "Patient {values['id']}: age is missing. Using calculated age {values['calc_age']} instead of original age.",
                     values = list(id = id, calc_age = calc_age),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "fix_age",
-                    warningCode = "script2_warning_missing_value"
+                    warningCode = "missing_value"
                 )
             )
         } else {
@@ -338,9 +345,10 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
                     log_to_json(
                         message = "Patient {values['id']}: age {values['age']} is different from calculated age {values['calc_age']}. Using calculated age instead of original age.",
                         values = list(id = id, age = age, calc_age = calc_age),
+                        script = "script2",
                         file = "helper_patient_data_fix.R",
                         functionName = "fix_age",
-                        warningCode = "script2_warning_invalid_value"
+                        warningCode = "invalid_value"
                     )
                 )
             }
@@ -351,9 +359,10 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
                 log_to_json(
                     message = "Patient {values['id']}: calculated age is negative. Please check this manually. Using error value instead.",
                     values = list(id = id),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "fix_age",
-                    warningCode = "script2_warning_invalid_value"
+                    warningCode = "invalid_value"
                 )
             )
 
@@ -393,9 +402,10 @@ fix_bmi <- function(weight, height, id) {
             log_to_json(
                 message = "Patient {values['id']}: the weight is out of bounds.",
                 values = list(id = id),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "fix_bmi",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -405,9 +415,10 @@ fix_bmi <- function(weight, height, id) {
             log_to_json(
                 message = "Patient {values['id']}: the height is out of bounds.",
                 values = list(id = id),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "fix_bmi",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -441,9 +452,10 @@ fix_sex <- function(sex, id) {
             log_to_json(
                 message = "Patient {values['id']}: sex {values['sex']} is not in the list of synonyms. Replacing it with {values['fixed_sex']}.",
                 values = list(id = id, sex = sex, fixed_sex = fixed_sex),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "fix_sex",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -562,9 +574,10 @@ fix_testing_frequency <- function(test_frq, id) {
             log_to_json(
                 message = "Patient {values['id']}: Found a range for testing_frequency. Replacing it with the mean.",
                 values = list(id = id),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "fix_testing_frequency",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
 
@@ -609,9 +622,10 @@ split_bp_in_sys_and_dias <- function(df) {
             log_to_json(
                 message = "Found invalid values for column blood_pressure_mmhg that do not follow the format X/Y. Values were replaced with {values['err_val']}.",
                 values = list(error_val = ERROR_VAL_NUMERIC),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "split_bp_in_sys_and_dias",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
     }
@@ -664,9 +678,10 @@ fix_id <- function(id) {
             log_to_json(
                 message = "Patient {values['id']}: id cannot be matched to a 8 letter alpha numeric code like XX_YY001.",
                 values = list(id = id),
+                script = "script2",
                 file = "helper_patient_data_fix.R",
                 functionName = "fix_id",
-                warningCode = "script2_warning_invalid_value"
+                warningCode = "invalid_value"
             )
         )
 
@@ -675,9 +690,10 @@ fix_id <- function(id) {
                 log_to_json(
                     message = "Patient {values['id']}: id was truncated because it is longer than 8 characters.",
                     values = list(id = id),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "fix_id",
-                    warningCode = "script2_warning_invalid_value"
+                    warningCode = "invalid_value"
                 )
             )
 
@@ -687,9 +703,10 @@ fix_id <- function(id) {
                 log_to_json(
                     message = "Patient {values['id']}: id is not valid. Replacing with error value {values['err_val']}.",
                     values = list(id = id, err_val = ERROR_VAL_CHARACTER),
+                    script = "script2",
                     file = "helper_patient_data_fix.R",
                     functionName = "fix_id",
-                    errorCode = "script2_error_invalid_value"
+                    errorCode = "invalid_value"
                 )
             )
 

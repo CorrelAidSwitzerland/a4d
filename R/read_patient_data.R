@@ -7,6 +7,7 @@ reading_patient_data <-
             log_to_json(
                 message = "Found {values['len']} sheets: {values['sheets']}.",
                 values = list(len = length(sheet_list), sheets = sheet_list),
+                script = "script1",
                 file = "read_patient_data.R",
                 functionName = "reading_patient_data"
             )
@@ -20,6 +21,7 @@ reading_patient_data <-
             log_to_json(
                 message = "Found {values['len']} month sheets: {values['months']}.",
                 values = list(len = length(month_list), months = month_list),
+                script = "script1",
                 file = "read_patient_data.R",
                 functionName = "reading_patient_data"
             )
@@ -31,6 +33,7 @@ reading_patient_data <-
             log_to_json(
                 message = "Tracker year = {values['year']}.",
                 values = list(year = year),
+                script = "script1",
                 file = "read_patient_data.R",
                 functionName = "reading_patient_data"
             )

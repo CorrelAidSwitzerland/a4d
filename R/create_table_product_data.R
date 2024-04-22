@@ -53,9 +53,10 @@ create_table_product_data <- function(input_root, output_root) {
                 log_to_json(
                     message = "Error in calculating the most frequent 'product_hospital': {values['e']}.",
                     values = list(e = e$message),
+                    script = "script3",
                     file = "create_table_product_data.R",
                     functionName = "calculate_most_frequent",
-                    errorCode = "script3_error_tryCatch"
+                    errorCode = "function_call"
                 )
             )
         }
@@ -70,9 +71,10 @@ create_table_product_data <- function(input_root, output_root) {
                 log_to_json(
                     message = "Error in calculating the most frequent 'product_country': {values['e']}.",
                     values = list(e = e$message),
+                    script = "script3",
                     file = "create_table_product_data.R",
                     functionName = "calculate_most_frequent",
-                    errorCode = "script3_error_tryCatch"
+                    errorCode = "function_call"
                 )
             )
         }
@@ -87,6 +89,7 @@ create_table_product_data <- function(input_root, output_root) {
         log_to_json(
             message = "merged_data dim: {values['dim']}.",
             values = list(dim = dim(merged_data)),
+            script = "script3",
             file = "create_table_product_data.R",
             functionName = "create_table_product_data"
         )
@@ -203,9 +206,10 @@ preparing_product_fields <- function(merged_data) {
                             log_to_json(
                                 message = "In {values['field']} incorrect date values were replaced with {values['error_val']} in {values['length']} rows: {values['incorrect_rows']}.",
                                 values = list(field = field, error_val = ERROR_VAL_DATE, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
+                                script = "script3",
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_invalid_value"
+                                warningCode = "invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_DATE
@@ -219,9 +223,10 @@ preparing_product_fields <- function(merged_data) {
                             log_to_json(
                                 message = "In {values['field']} incorrect numeric values were replaced with {values['error_val']} in {values['length']} rows: {values['incorrect_rows']}.",
                                 values = list(field = field, error_val = ERROR_VAL_NUMERIC, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
+                                script = "script3",
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_invalid_value"
+                                warningCode = "invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
@@ -235,9 +240,10 @@ preparing_product_fields <- function(merged_data) {
                             log_to_json(
                                 message = "In {values['field']} incorrect integer values were replaced with {values['error_val']} in {values['length']} rows: {values['incorrect_rows']}.",
                                 values = list(field = field, error_val = ERROR_VAL_NUMERIC, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
+                                script = "script3",
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_invalid_value"
+                                warningCode = "invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_NUMERIC
@@ -251,9 +257,10 @@ preparing_product_fields <- function(merged_data) {
                             log_to_json(
                                 message = "In {values['field']} incorrect character values were replaced with {values['error_val']} in {values['length']} rows: {values['incorrect_rows']}.",
                                 values = list(field = field, error_val = ERROR_VAL_CHARACTER, length = length(incorrect_rows), incorrect_rows = incorrect_rows),
+                                script = "script3",
                                 file = "create_table_product_data.R",
                                 functionName = "preparing_product_fields",
-                                warningCode = "script3_warning_invalid_value"
+                                warningCode = "invalid_value"
                             )
                         )
                         merged_data[incorrect_rows, field] <- ERROR_VAL_CHARACTER
@@ -265,9 +272,10 @@ preparing_product_fields <- function(merged_data) {
                     log_to_json(
                         message = "Error in converting {values['field']}: {values['e']}.",
                         values = list(field = field, e = e),
+                        script = "script3",
                         file = "create_table_product_data.R",
                         functionName = "preparing_product_fields",
-                        errorCode = "script3_error_tryCatch"
+                        errorCode = "tryCatch"
                     )
                 )
             },
@@ -276,9 +284,10 @@ preparing_product_fields <- function(merged_data) {
                     log_to_json(
                         message = "Warning in converting {values['field']}: {values['w']}.",
                         values = list(field = field, w = w),
+                        script = "script3",
                         file = "create_table_product_data.R",
                         functionName = "preparing_product_fields",
-                        errorCode = "script3_warning_tryCatch"
+                        warningCode = "tryCatch"
                     )
                 )
             }
@@ -365,9 +374,10 @@ report_empty_intersections <- function(df, row_category, col_category) {
                     category2 = col_category,
                     names = df_row_sums$row_name
                 ),
+                script = "script3",
                 file = "create_table_product_data.R",
                 functionName = "report_empty_intersections",
-                warningCode = "script3_warning_report_empty_intersections"
+                warningCode = "invalid_value"
             )
         )
     }
