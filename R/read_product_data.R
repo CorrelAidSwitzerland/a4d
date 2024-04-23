@@ -69,7 +69,7 @@ reading_product_data_step1 <-
             if (check_wide_format_columns(product_df)) {
                 logWarn(
                     log_to_json(
-                        message = "Sheet {values['sheet']} has Mandalay Children's Hospital 2019-2021 wide-format columns. The wide-format area should be changed to long-format!",
+                        message = "Sheet {values['sheet']} has Mandalay Children's Hospital data (2019-2021) wide-format columns. The wide-format area should be changed to long-format!",
                         values = list(sheet = curr_sheet),
                         script = "script1",
                         file = "read_product_data.R",
@@ -78,6 +78,19 @@ reading_product_data_step1 <-
                     )
                 )
                 product_df <- create_new_rows(product_df)
+            }
+
+            if (any(grepl("2017_Mandalay|2018_Mandalay|2019_Mandalay", basename(tracker_data_file)))) {
+                logWarn(
+                    log_to_json(
+                        message = "Sheet {values['sheet']} Tracker data file contains Mandalay Children's Hospital data (2017-2019), may contain wide-format cells. The wide-format cells should be changed to standart long-format!",
+                        values = list(sheet = curr_sheet),
+                        script = "script1",
+                        file = "read_product_data.R",
+                        functionName = "read_product_data_step1",
+                        warningCode = "invalid_tracker"
+                    )
+                )
             }
 
             # If after extraction, dataframe is empty, this iteration is also skipped.
