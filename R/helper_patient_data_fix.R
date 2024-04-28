@@ -51,7 +51,7 @@ convert_to <- function(x, cast_fnc, error_val, col_name = "", id = "") {
         }
     )
 
-    return(x)
+    x
 }
 
 
@@ -86,7 +86,7 @@ cut_numeric_value <- function(x,
         x <- ERROR_VAL_NUMERIC
     }
 
-    return(x)
+    x
 }
 
 
@@ -131,7 +131,7 @@ extract_date_from_measurement <-
                 dplyr::rename_with(~ stringr::str_replace(.x, "_mmol_date|_mg_date", "_date"))
         }
 
-        return(df)
+        df
     }
 
 
@@ -158,7 +158,7 @@ fix_digit_date <-
             date <- as.character(openxlsx::convertToDate(date))
         }
 
-        return(date)
+        date
     }
 
 
@@ -198,7 +198,7 @@ parse_dates <- function(date) {
         parsed_date <- as.Date(parsed_date)
     }
 
-    return(parsed_date)
+    parsed_date
 }
 
 
@@ -254,6 +254,7 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
         }
 
         return(x)
+
     }
 
     valid_value_mapping[[sanitize_str(x)]]
@@ -267,7 +268,7 @@ parse_character_cleaning_pipeline <- function(column_name, column_config) {
         pipeline <- rlang::expr(!!pipeline %>% !!parse_step(column_name, step))
     }
 
-    return(pipeline)
+    pipeline
 }
 
 parse_step <- function(column_name, step) {
@@ -296,7 +297,7 @@ parse_character_cleaning_config <- function(config) {
         allowed_value_expr[[column]] <- parse_character_cleaning_pipeline(column, config[[column]])
     }
 
-    return(allowed_value_expr)
+    allowed_value_expr
 }
 
 
@@ -370,7 +371,7 @@ fix_age <- function(age, dob, tracker_year, tracker_month, id) {
         }
     }
 
-    return(calc_age)
+    calc_age
 }
 
 
@@ -423,7 +424,7 @@ fix_bmi <- function(weight, height, id) {
         )
     }
 
-    return(bmi)
+    bmi
 }
 
 
@@ -460,7 +461,7 @@ fix_sex <- function(sex, id) {
         )
     }
 
-    return(fixed_sex)
+    fixed_sex
 }
 
 
@@ -474,14 +475,18 @@ fix_sex <- function(sex, id) {
 #' @return Corrected value with text replacement.
 #' @export
 fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, id) {
+
+    if (is.na(t1d_diagnosis_age)) {
+        return(t1d_diagnosis_age)
+    }
+
     age_corrected <- dplyr::case_when(
-        is.na(t1d_diagnosis_age) ~ NA_character_,
         grepl("birth|born|month", tolower(t1d_diagnosis_age)) ~ "0",
         grepl("y", tolower(t1d_diagnosis_age)) ~ extract_year_from_age(t1d_diagnosis_age),
         .default = t1d_diagnosis_age
     )
 
-    return(age_corrected)
+    age_corrected
 }
 
 
@@ -526,7 +531,7 @@ transform_fbg_in_mmol <- function(fbg, country_id, hospital_id) {
         TRUE ~ NA_real_
     )
 
-    return(as.numeric(fbg_mmol))
+    as.numeric(fbg_mmol)
 }
 
 
@@ -551,7 +556,7 @@ fix_fbg <- function(fbg) {
         gsub(pattern = "(DKA)", replacement = "", fixed = T) %>%
         trimws()
 
-    return(fbg)
+    fbg
 }
 
 
@@ -584,7 +589,7 @@ fix_testing_frequency <- function(test_frq, id) {
         test_frq <- try(as.character(replace_range_with_mean(test_frq), silent = TRUE))
     }
 
-    return(test_frq)
+    test_frq
 }
 
 
@@ -638,7 +643,7 @@ split_bp_in_sys_and_dias <- function(df) {
         )
 
 
-    return(df)
+    df
 }
 
 
@@ -655,7 +660,7 @@ transform_cm_to_m <- function(height) {
         height
     )
 
-    return(height)
+    height
 }
 
 
@@ -714,7 +719,7 @@ fix_id <- function(id) {
         }
     }
 
-    return(id)
+    id
 }
 
 
@@ -744,5 +749,5 @@ extract_regimen <- function(raw_input) {
     output <- sub("^.*self-mixed.*$", "Self-mixed BD", output, ignore.case = TRUE)
     output <- sub("^.*conventional.*$", "Modified conventional TID", output, ignore.case = TRUE)
 
-    return(output)
+    output
 }

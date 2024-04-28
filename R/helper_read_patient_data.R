@@ -75,7 +75,7 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     header_cols_2 <-
         stringr::str_replace_all(as.vector(t(tracker_data[row_min - 2, ])), "[\r\n]", "")
 
-    # trackers from 2020 and newer have an empty first row
+    # trackers from 2022 and newer have an empty first row
     # and openxlsx always skips empty rows at the start of the file
     if (year == 2022 && sheet != "Patient List") {
         row_min <- row_min + 1

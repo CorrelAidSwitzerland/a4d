@@ -235,6 +235,7 @@ support_from_a4d:
   - Support required from A4D
 t1d_diagnosis_age:
   - Age at diagnosis of T1DM
+  - Age at diagnosis of T1DM (year)
   - Age at Diagnosis
   - age of diagnosis
   - age t1d diagnosis
