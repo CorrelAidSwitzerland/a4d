@@ -125,11 +125,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
 
     df_patient_raw <- arrow::read_parquet(patient_file_path)
 
-    # filter all rows with no patient id or patient name
-    df_patient_raw <- df_patient_raw %>%
-        dplyr::filter(!(is.na(id) & is.na(name))) %>%
-        dplyr::filter(!(id == "0" & name == "0"))
-
     # --- TRANSFORMATIONS ---
     # data before 2019 had only one column for updated hba1c and fbg
     # with date as part of the value
@@ -201,13 +196,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
     # iiinDccDcnnDnncnlnlDncDccDDDccccDccccciDciiiDn
     schema <- tibble::tibble(
         # clinic_visit = logical(),
-        # complication_screening = character(),
         # complication_screening_date = lubridate::as_date(1),
-        # complication_screening_results = character(),
-        # dm_complication_comment = character(), # TODO
-        # dm_complication_eye = character(), # TODO
-        # dm_complication_kidney = character(), # TODO
-        # dm_complication_other = character(), # TODO
         # est_strips_pmonth = integer(),
         # family_support_scale = character(), # TODO
         # inactive_reason = character(),
@@ -222,7 +211,10 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         bmi = numeric(),
         bmi_date = lubridate::as_date(1),
         clinic_code = character(),
+        complication_screening = character(),
+        complication_screening_results = character(),
         country_code = character(),
+        dm_complications = character(),
         dob = lubridate::as_date(1),
         edu_occ = character(),
         fbg_baseline_mg = numeric(),
@@ -247,6 +239,7 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         name = character(),
         observations = character(),
         observations_category = character(),
+        patient_consent = character(),
         province = character(),
         recruitment_date = lubridate::as_date(1),
         sex = character(),

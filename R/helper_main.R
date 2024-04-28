@@ -109,7 +109,7 @@ read_column_synonyms <- function(synonym_file, path_prefixes = c("reference_data
         tibble::rownames_to_column() %>%
         # remove digits that were created when converting to data frame
         dplyr::mutate(
-            rowname = stringr::str_replace(rowname, pattern = "[:digit:]$", "")
+            rowname = stringr::str_replace(rowname, pattern = "[:digit:]+$", "")
         ) %>%
         dplyr::rename(
             "variable_name" = "rowname",

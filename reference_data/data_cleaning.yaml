@@ -1,75 +1,97 @@
-support_from_a4d:
+complication_screening:
   steps:
-    - type: allowed_values
-      allowed_values:
-        - Standard
-        - Partial
-        - Semi-Partial
-        - SAC
-        - Monitoring
-      replace_invalid:
-        TRUE
+    - allowed_values:
+        - 'JAN'
+        - 'FEB'
+        - 'MAR'
+        - 'APR'
+        - 'MAY'
+        - 'JUN'
+        - 'JUL'
+        - 'AUG'
+        - 'SEP'
+        - 'OCT'
+        - 'NOV'
+        - 'DEC'
+      replace_invalid: true
+      type: allowed_values
+complication_screening_results:
+  steps:
+    - allowed_values:
+        - 'Normal'
+        - 'Abnormal'
+      replace_invalid: true
+      type: allowed_values
+hospitalisation_cause:
+  steps:
+    - allowed_values:
+        - DKA
+        - HYPO
+        - OTHER
+      replace_invalid: true
+      type: allowed_values
+insulin_regimen:
+  steps:
+    - function_name: extract_regimen
+      type: basic_function
+    - allowed_values:
+        - Basal-bolus (MDI)
+        - Premixed 30/70 DB
+        - Self-mixed BD
+        - Modified conventional TID
+      replace_invalid: false
+      type: allowed_values
+insulin_regimen_subcategory:
+  steps:
+    - function_name: extract_first_raw_regimen
+      type: basic_function
+    - allowed_values:
+        - Basal-bolus MDI (AN)
+        - Basal-bolus MDI (HI)
+      replace_invalid: true
+      type: allowed_values
+patient_consent:
+  steps:
+    - allowed_values:
+        - 'N'
+        - 'Y'
+      replace_invalid: true
+      type: allowed_values
+
+province:
+  steps:
+    - allowed_values:
+        - PLACEHOLDER
+      replace_invalid: true
+      type: allowed_values
 status:
   steps:
-  # str_to_lower does not actually have an effect together with
-  # the allowed values chech, which is case insensitive. The step
-  # is kept anyways to illustrate the yaml usage.
-    - type: basic_function
-      function_name: stringr::str_to_lower
-    - type: allowed_values
-      allowed_values:
+    - function_name: stringr::str_to_lower
+      type: basic_function
+    - allowed_values:
         - Active
-        - "Active - Remote"
+        - Active - Remote
         - Query
         - Inactive
         - Lost Follow Up
         - Deceased
         - Discontinued
-      replace_invalid:
-        TRUE
-insulin_regimen:
+      replace_invalid: true
+      type: allowed_values
+support_from_a4d:
   steps:
-    - type: basic_function
-      function_name: extract_regimen
-    - type: allowed_values
-      allowed_values:
-        - "Basal-bolus (MDI)"
-        - "Premixed 30/70 DB"
-        - "Self-mixed BD"
-        - "Modified conventional TID"
-      replace_invalid:
-        FALSE
-insulin_regimen_subcategory:
-  steps:
-    - type: basic_function
-      function_name: extract_first_raw_regimen
-    - type: allowed_values
-      allowed_values:
-        - "Basal-bolus MDI (AN)"
-        - "Basal-bolus MDI (HI)"
-      replace_invalid:
-        TRUE
+    - allowed_values:
+        - Standard
+        - Partial
+        - Semi-Partial
+        - SAC
+        - Monitoring
+      replace_invalid: true
+      type: allowed_values
 t1d_diagnosis_with_dka:
   steps:
-    - type: allowed_values
-      allowed_values:
-        - N
-        - Y
-      replace_invalid:
-        FALSE
-hospitalisation_cause:
-  steps:
-    - type: allowed_values
-      allowed_values:
-        - DKA
-        - HYPO
-        - OTHER
-      replace_invalid:
-        FALSE
-province:
-  steps:
-    - type: allowed_values
-      allowed_values:
-        - PLACEHOLDER
-      replace_invalid:
-        TRUE
+    - allowed_values:
+        - 'N'
+        - 'Y'
+      replace_invalid: true
+      type: allowed_values

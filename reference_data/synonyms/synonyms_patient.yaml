@@ -30,6 +30,18 @@ complication_screening:
   - Complication Screening (Current Month Testing) Select for Drop Down
   - complication screening select
   - complication screening select for dropdown
+  - Complication Screening Completed (MONTH) B.P.
+  - Complication Screening Completed B.P.
+  - Complication Screening Completed (MONTH) Kidney
+  - Complication Screening Completed Kidney
+  - Complication Screening Completed (MONTH) Eye
+  - Complication Screening Completed Eye
+  - Complication Screening Completed (MONTH) Foot
+  - Complication Screening Completed Foot
+  - Complication Screening Completed (MONTH) Lipids
+  - Complication Screening Completed Lipids
+  - Complication Screening Completed (MONTH) TSH
+  - Complication Screening Completed (MONTH) tTG-IgA
 complication_screening_date:
   - current month complication screening kidney eye foot date
   - complication screening current month testing date mmmyy
@@ -45,15 +57,11 @@ complication_screening_results:
   - complication screening results
   - current month complication screening results
   - Complication Screening (Current Month Testing) Results
+  - Complication Screening Completed Results
+  - Complication Screening Completed (MONTH) Results
 country_code: []
-dm_complication_comment:
-  - Comments on other complications
-dm_complication_eye:
-  - Eye (Y/N)
-dm_complication_kidney:
-  - Kidney (Y/N)
-dm_complication_other:
-  - Others (Y/N)
+dm_complications:
+  - DM Complications Drop Down
 dob:
   - D.O.B.
   - d.o.b. (dd-mm-yyyy)
@@ -123,10 +131,12 @@ height:
   - Height (Meters)
 hospitalisation_cause:
   - current month hospitalisation dka hypo other dropdown
+  - Current Month Hospitalisation (DKA, Hyper, Hypo, Other) Drop Down
   - Current Month Hospitalisation due to diabetes emergency or glucose control Reason
   - hospitalisation due to diabetes emergency or glucose control reason
 hospitalisation_date:
   - current month hospitalisation dka hypo other date
+  - Current Month Hospitalisation (DKA, Hyper, Hypo, Other) Date
   - Last hospitalisation due to diabetes emergency or glucose control
   - Hospitalisation due to diabetes emergency or glucose control (Date if Applicable or NA)
   - Hospitalisation due to diabetes emergency or glucose control (Include Date)
@@ -207,6 +217,8 @@ observations:
 observations_category:
   - current patient observations category
   - Observation Category (Select)
+patient_consent:
+  - Patient Consent Collected
 province:
   - Province
 qol_survey:
@@ -235,6 +247,7 @@ support_from_a4d:
   - Support required from A4D
 t1d_diagnosis_age:
   - Age at diagnosis of T1DM
+  - Age at diagnosis of T1DM (year)
   - Age at Diagnosis
   - age of diagnosis
   - age t1d diagnosis
