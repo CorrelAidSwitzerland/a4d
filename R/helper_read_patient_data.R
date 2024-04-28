@@ -76,6 +76,8 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     header_cols_2 <-
         stringr::str_replace_all(tracker_data[row_min - 2, ], "[\r\n]", "")
 
+    testit::assert(!(is.na(header_cols[2]) && is.na(header_cols_2[2])), fact="Second header column must not be empty.")
+
     # trackers from 2022 and newer have an empty first row
     # and openxlsx always skips empty rows at the start of the file
     if (year >= 2022 && sheet != "Patient List") {

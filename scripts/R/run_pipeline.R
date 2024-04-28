@@ -2,7 +2,7 @@ BUCKET_DOWLOAD <- "a4dphase2_upload"
 BUCKET_UPLOAD <- "a4dphase2_output"
 
 # local
-Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d/2023")
+Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d/problematic_trackers")
 PROJECT_ID <- "a4d-315220"
 DATASET <- "tracker"
 
@@ -69,6 +69,7 @@ ingest_data <- function(project_id, cluster_fields, dataset, table, source) {
 
 data_dir <- select_A4D_directory()
 output_dir <- file.path(data_dir, "output")
+# WARNING: this deletes all tracker files, only run on VM where we download them again!
 unlink(file.path(data_dir, "*"), recursive = T, force = T)
 #unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
