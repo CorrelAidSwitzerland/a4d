@@ -189,11 +189,7 @@
         "utils",
         "vctrs"
       ],
-<<<<<<< HEAD
       "Hash": "20312936045590f74e29a36919f05dde"
-=======
-      "Hash": "042f2ee2286a91abe5a3d66c9be92380"
->>>>>>> 58dc6b7 (run renv::update())
     },
     "askpass": {
       "Package": "askpass",
