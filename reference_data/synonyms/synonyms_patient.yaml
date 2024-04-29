@@ -7,6 +7,8 @@ blood_pressure_dias_mmhg: []
 blood_pressure_mmhg:
   - Blood Pressure (mm HG)
 blood_pressure_sys_mmhg: []
+blood_pressure_updated:
+  - Blood Pressure Date
 bmi:
   - BMI
   - BMI*
@@ -73,8 +75,11 @@ edu_occ:
   - Education (School Grade)
   - Education...Ocupation
   - Level of Education Or Occupation
+  - Level of Education Or Occupation Updated 2023
   - level of education occupation
   - education vocation
+edu_occ_updated:
+  - Level of Education Or Occupation Date
 est_strips_pmoth:
   - Estimated testing strips per month
 family_support_scale:
@@ -267,7 +272,5 @@ testing_frequency:
   - Recommended Testing Frequency (per day)
 tracker_month: []
 tracker_year: []
-updated_2022_date:
-  - updated 2022 date
 weight:
   - Body Weight (Kg)

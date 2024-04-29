@@ -78,6 +78,24 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
 
     testit::assert(!(is.na(header_cols[2]) && is.na(header_cols_2[2])), fact="Second header column must not be empty.")
 
+    # tracker since 2022 used "Updated 2022" in the monthly sheets to note the date for Blood Pressure Update Date
+    # the same column name appears in the Patient List so we have to replace it here and make it unique
+    if (
+        year >= 2022 &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Level\\s?of\\s?Education", ignore_case=TRUE))) &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)))
+        ) {
+        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Level of Education Or Occupation")
+    }
+    if (
+        year >= 2022 &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Blood\\s?Pressure", ignore_case=TRUE))) &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)))
+        ) {
+        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Blood Pressure")
+    }
+
+
     # trackers from 2022 and newer have an empty first row
     # and openxlsx always skips empty rows at the start of the file
     if (year >= 2022 && sheet != "Patient List") {

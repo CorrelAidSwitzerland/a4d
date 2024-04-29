@@ -107,13 +107,12 @@ reading_patient_data <-
                         "fbg_baseline_mg",
                         "fbg_baseline_mmol",
                         "hba1c_baseline",
-                        "name",
-                        "updated_2022_date"
+                        "name"
                     ))),
                 by = "id",
                 relationship = "many-to-one"
             )
         }
 
-        return(df_raw)
+        df_raw
     }
