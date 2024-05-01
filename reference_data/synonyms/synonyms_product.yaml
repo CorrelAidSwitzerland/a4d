@@ -26,6 +26,8 @@ product_units_received:
   - Units Received  (bottle/box)
   - Units Received
   - Units Received \r\n(bottle/box)
+  - Units Received \r\n(box)
+  - Units Received (box)
   - Received
 product_units_released:
   - Units Released (box)
