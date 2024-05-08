@@ -1,6 +1,8 @@
 product:
   - Product
   - Description of Support
+  - Product\r\n(select from drop down list)
+  - productselectfromdropdownlist
 product_balance: Balance
 product_balance_status: []
 product_country: []
@@ -18,6 +20,7 @@ product_released_to:
   - releasedtodropdownlist
   - releasedtoselectfromdropdownlist
   - Released To (Drop Down)
+  - Released to\r\n(select from drop down list)
 product_returned_by: Returned By
 product_sheet_name: []
 product_table_month: []
