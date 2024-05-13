@@ -110,8 +110,8 @@ replace_extra_total_values_with_NA <- function(df, column_name) {
     if (col_index > 2) {
         # Loop over rows of the dataframe
         for (i in 1:nrow(df)) {
-            # If one of the two previous columns contains 'Total', replace the cell with NA
-            if ("Total" %in% df[i, (col_index - 2):(col_index - 1)]) {
+            # If one of the two previous columns contains 'Total' (case-insensitive), replace the cell with NA
+            if ("total" %in% tolower(df[i, (col_index - 2):(col_index - 1)])) {
                 df[i, column_name] <- NA
             }
         }
