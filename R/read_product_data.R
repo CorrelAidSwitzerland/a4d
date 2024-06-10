@@ -199,6 +199,12 @@ reading_product_data_step1 <-
             # Check if the entry dates for the balance match the month/year on the sheet
             check_entry_dates(product_df, curr_sheet)
 
+            # Remove leading spaces from the 'product_released_to' column
+            product_df$product_released_to <- trimws(product_df$product_released_to, which = "left")
+
+            # Replace Extra "Total" Values with NA
+            product_df <- replace_extra_total_values_with_NA(product_df, "product_units_released")
+
             # combine all months
             if (!exists("df_final")) {
                 df_final <- product_df

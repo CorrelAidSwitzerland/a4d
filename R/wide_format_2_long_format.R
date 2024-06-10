@@ -188,7 +188,6 @@ wide_cells_2_rows <- function(df) {
             }
 
             new_df <- remove_original_cells(new_df, col_units_released, col_released_to)
-            new_df <- replace_extra_total_values_with_NA(new_df, col_units_released)
 
             logDebug(
                 log_to_json(
