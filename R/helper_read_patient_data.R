@@ -82,15 +82,15 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     # the same column name appears in the Patient List so we have to replace it here and make it unique
     if (
         year >= 2022 &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Level\\s?of\\s?Education", ignore_case=TRUE))) &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)))
+        any(stringr::str_detect(header_cols_2, stringr::regex("Level\\s?of\\s?Education", ignore_case=TRUE)), na.rm=TRUE) &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)), na.rm=TRUE)
         ) {
         header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Level of Education Or Occupation")
     }
     if (
         year >= 2022 &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Blood\\s?Pressure", ignore_case=TRUE))) &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)))
+        any(stringr::str_detect(header_cols_2, stringr::regex("Blood\\s?Pressure", ignore_case=TRUE)), na.rm=TRUE) &&
+        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)), na.rm=TRUE)
         ) {
         header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Blood Pressure")
     }

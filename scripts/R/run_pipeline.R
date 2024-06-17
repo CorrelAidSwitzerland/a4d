@@ -2,7 +2,7 @@ BUCKET_DOWLOAD <- "a4dphase2_upload"
 BUCKET_UPLOAD <- "a4dphase2_output"
 
 # local
-Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d/problematic_trackers")
+Sys.setenv(A4D_DATA_ROOT = "/Volumes/USB SanDisk 3.2Gen1 Media/a4d/a4dphase2_upload")
 PROJECT_ID <- "a4d-315220"
 DATASET <- "tracker"
 
