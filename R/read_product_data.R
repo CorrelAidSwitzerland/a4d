@@ -80,7 +80,8 @@ reading_product_data_step1 <-
                 product_df <- create_new_rows(product_df)
             }
 
-            if (any(grepl("2017_Mandalay|2018_Mandalay|2019_Mandalay", basename(tracker_data_file)))) {
+            if (any(grepl("2017_Mandalay|2018_Mandalay|2019_Mandalay", basename(tracker_data_file))) &
+                (check_patterns_in_column(product_df, (find_string_cols(product_df, "Released To"))))) {
                 logWarn(
                     log_to_json(
                         message = "Sheet {values['sheet']} Tracker data file contains Mandalay Children's Hospital data (2017-2019), may contain wide-format cells. The wide-format cells should be changed to standart long-format!",
@@ -91,6 +92,7 @@ reading_product_data_step1 <-
                         warningCode = "invalid_tracker"
                     )
                 )
+                product_df <- wide_cells_2_rows(product_df)
             }
 
             # If after extraction, dataframe is empty, this iteration is also skipped.
@@ -196,6 +198,12 @@ reading_product_data_step1 <-
 
             # Check if the entry dates for the balance match the month/year on the sheet
             check_entry_dates(product_df, curr_sheet)
+
+            # Remove leading spaces from the 'product_released_to' column
+            product_df$product_released_to <- trimws(product_df$product_released_to, which = "left")
+
+            # Replace Extra "Total" Values with NA
+            product_df <- replace_extra_total_values_with_NA(product_df, "product_units_released")
 
             # combine all months
             if (!exists("df_final")) {
