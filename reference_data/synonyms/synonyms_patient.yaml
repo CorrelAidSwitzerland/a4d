@@ -18,7 +18,7 @@ bmi_date:
   - date of bmi date
   - date of bmi ddmmmyy
   - Date of BMI (dd-mmm-yy)
-clinic_code: []
+clinic_id: []
 clinic_visit:
   - clinic visit current month
   - clinic visit
@@ -61,7 +61,6 @@ complication_screening_results:
   - Complication Screening (Current Month Testing) Results
   - Complication Screening Completed Results
   - Complication Screening Completed (MONTH) Results
-country_code: []
 dm_complications:
   - DM Complications Drop Down
 dob:

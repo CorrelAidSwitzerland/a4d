@@ -135,6 +135,10 @@ process_patient_data <-
 
         df_raw_patient <- df_raw_patient %>% dplyr::mutate(file_name = tracker_name)
 
+        # instead of clinic_code and country_code, we extract clinic_id from parent folder
+        # and join with static clinic data later in the database
+        df_raw_patient$clinic_id <- basename(dirname(tracker_data_file))
+
         logInfo(
             log_to_json(
                 message = "df_raw_patient dim: {values['dim']}.",
@@ -167,6 +171,8 @@ process_product_data <-
 
         if (!is.null(df_raw_product)) {
             df_raw_product <- df_raw_product %>% dplyr::mutate(file_name = tracker_name)
+
+            df_raw_product$clinic_id <- basename(dirname(tracker_data_file))
 
             logInfo(
                 log_to_json(

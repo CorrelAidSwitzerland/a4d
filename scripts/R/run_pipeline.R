@@ -71,7 +71,7 @@ data_dir <- select_A4D_directory()
 output_dir <- file.path(data_dir, "output")
 # WARNING: this deletes all tracker files, only run on VM where we download them again!
 unlink(file.path(data_dir, "*"), recursive = T, force = T)
-#unlink(output_dir, recursive = T, force = T)
+unlink(output_dir, recursive = T, force = T)
 table_dir <- file.path(output_dir, "tables")
 
 download_data(bucket = BUCKET_DOWLOAD, data_dir = data_dir)
@@ -81,28 +81,28 @@ source("scripts/R/run_script_3_create_tables.R") # creates final CSV files in su
 upload_data(bucket = BUCKET_UPLOAD, data_dir = output_dir)
 ingest_data(
     project_id = PROJECT_ID,
-    cluster_fields = "clinic_code,id,tracker_year,tracker_month",
+    cluster_fields = "clinic_id,id,tracker_date",
     dataset = DATASET,
     table = "patient_data_monthly",
     source = file.path(table_dir, "patient_data_monthly.parquet")
 )
 ingest_data(
     project_id = PROJECT_ID,
-    cluster_fields = "id,tracker_year,tracker_month",
+    cluster_fields = "clinic_id,id,tracker_date",
     dataset = DATASET,
     table = "patient_data_static",
     source = file.path(table_dir, "patient_data_static.parquet")
 )
 ingest_data(
     project_id = PROJECT_ID,
-    cluster_fields = "clinic_code,id,tracker_year,tracker_month",
+    cluster_fields = "clinic_id,id,tracker_date",
     dataset = DATASET,
     table = "patient_data_hba1c",
     source = file.path(table_dir, "longitudinal_data_hba1c.parquet")
 )
 ingest_data(
     project_id = PROJECT_ID,
-    cluster_fields = "product_hospital,product_released_to,product_table_year,product_table_month",
+    cluster_fields = "clinic_id,product_released_to,product_table_year,product_table_month",
     dataset = DATASET,
     table = "product_data",
     source = file.path(table_dir, "product_data.parquet")

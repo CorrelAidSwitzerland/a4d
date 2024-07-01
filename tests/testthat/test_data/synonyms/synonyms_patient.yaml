@@ -30,8 +30,7 @@ bmi_date:
 - Date of BMI (mmm-yy)
 - Date of BMI (mm-yy)
 - date of bmi date
-clinic_code: []
-country_code: []
+clinic_id: []
 dob:
 - D.O.B.
 - d.o.b. (dd-mm-yyyy)

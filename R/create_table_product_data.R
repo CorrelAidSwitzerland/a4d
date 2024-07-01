@@ -39,51 +39,8 @@ create_table_product_data <- function(input_root, output_root) {
 
     merged_data$product_released_to <- sapply(merged_data$product_released_to, fix_id)
 
-    merged_data <- id_2_county_hospisal(
-        merged_data, "product_released_to",
-        "product_country", "product_hospital"
-    )
-
-    tryCatch(
-        {
-            merged_data <- calculate_most_frequent(merged_data, "file_name", "product_hospital", "table_hospital")
-        },
-        error = function(e) {
-            logError(
-                log_to_json(
-                    message = "Error in calculating the most frequent 'product_hospital': {values['e']}.",
-                    values = list(e = e$message),
-                    script = "script3",
-                    file = "create_table_product_data.R",
-                    functionName = "calculate_most_frequent",
-                    errorCode = "function_call"
-                )
-            )
-        }
-    )
-
-    tryCatch(
-        {
-            merged_data <- calculate_most_frequent(merged_data, "file_name", "product_country", "table_country")
-        },
-        error = function(e) {
-            logError(
-                log_to_json(
-                    message = "Error in calculating the most frequent 'product_country': {values['e']}.",
-                    values = list(e = e$message),
-                    script = "script3",
-                    file = "create_table_product_data.R",
-                    functionName = "calculate_most_frequent",
-                    errorCode = "function_call"
-                )
-            )
-        }
-    )
-
     # Reorder, add, and ensures the correct data type for each column according to the list of fields
     merged_data <- preparing_product_fields(merged_data)
-
-    report_empty_intersections(merged_data, "file_name", "table_country")
 
     logInfo(
         log_to_json(
@@ -103,40 +60,6 @@ create_table_product_data <- function(input_root, output_root) {
         suffix = ""
     )
 }
-
-
-#' @title Update country and hospital based on patient ID
-#'
-#' @description
-#' This function updates the `country` and `hospital` columns in a dataframe based on the `ID` column.
-#' It looks for rows where `ID` matches a specific pattern (two letters, an underscore, two more letters, and then digits).
-#' For these rows, it puts the first two letters into `country` and the second two letters into `hospital`.
-#'
-#' @param df A dataframe that contains the columns `ID`, `country`, and `hospital`.
-#' @param id The name of the column in df that contains the patients ID information.
-#' @param country The name of the column in df where the country information should be stored.
-#' @param hospital The name of the column in df where the hospital information should be stored.
-#' @return The original dataframe with updated `country` and `hospital` columns.
-#' @export
-#' @examples
-#' df <- data.frame(
-#'     id = c("US_CA123", "UK_LN456", "FR_PA789"),
-#'     country = NA,
-#'     hospital = NA,
-#'     stringsAsFactors = FALSE
-#' )
-#' df <- id_2_county_hospisal(df, "ID", "country", "hospital")
-id_2_county_hospisal <- function(df, id, country, hospital) {
-    # Find rows with id matching the pattern (2 letters + _ + 2 letters + digits)
-    matching_rows <- grepl("^[a-zA-Z]{2}_[a-zA-Z]{2}[0-9]+$", df[[id]])
-
-    # Extract and update the product_country and product_hospital columns
-    df[[country]][matching_rows] <- substr(df[[id]][matching_rows], 1, 2)
-    df[[hospital]][matching_rows] <- substr(df[[id]][matching_rows], 4, 5)
-
-    return(df)
-}
-
 
 #' @title Preparing Product Fields
 #'
@@ -175,13 +98,9 @@ preparing_product_fields <- function(merged_data) {
         "product_sheet_name" = "character",
         "file_name" = "character",
         "product_balance_status" = "character",
-        "product_country" = "character",
-        "product_hospital" = "character",
         "product_category" = "character",
         "orig_product_released_to" = "character",
         "product_unit_capacity" = "integer",
-        "table_country" = "character",
-        "table_hospital" = "character",
         "product_remarks" = "character"
     )
 

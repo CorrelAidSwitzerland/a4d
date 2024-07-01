@@ -1,3 +1,4 @@
+clinic_id: []
 product:
   - Product
   - Description of Support
@@ -5,11 +6,9 @@ product:
   - productselectfromdropdownlist
 product_balance: Balance
 product_balance_status: []
-product_country: []
 product_entry_date:
   - Date
   - Entry Date
-product_hospital: []
 product_received_from:
   - Received From
   - Received From

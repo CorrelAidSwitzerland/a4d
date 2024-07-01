@@ -1,37 +1,3 @@
-# extracting country and clinic code from patient ID
-# expects that patient ID has a certain format
-extract_country_clinic_code <- function(patient_data) {
-    patient_ids <- patient_data["id"] %>%
-        dplyr::filter(id != "0") %>%
-        tidyr::drop_na() %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(
-            country = stringr::str_split(id, "_", n = 2, simplify = T)[1],
-            clinic = substr(stringr::str_split(
-                id, "_",
-                n = 2, simplify = T
-            )[2], 0, 2)
-        )
-
-    country_code <-
-        names(sort(table(patient_ids$country), decreasing = T))[1]
-    clinic_code <-
-        names(sort(table(patient_ids$clinic), decreasing = T))[1]
-
-    logInfo(
-        log_to_json(
-            message = "Extracted country {values['country']} and clinic {values['clinic']} codes from patient IDs.",
-            script = "script1",
-            values = list(country = country_code, clinic = clinic_code),
-            file = "helper_read_patient_data.R",
-            functionName = "extract_country_clinic_code"
-        )
-    )
-
-    return(list("country_code" = country_code, "clinic_code" = clinic_code))
-}
-
-
 #' Extract the patient data from a month sheet of a tracker file.
 #'
 #' @description
@@ -76,23 +42,23 @@ extract_patient_data <- function(tracker_data_file, sheet, year) {
     header_cols_2 <-
         stringr::str_replace_all(tracker_data[row_min - 2, ], "[\r\n]", "")
 
-    testit::assert(!(is.na(header_cols[2]) && is.na(header_cols_2[2])), fact="Second header column must not be empty.")
+    testit::assert(!(is.na(header_cols[2]) && is.na(header_cols_2[2])), fact = "Second header column must not be empty.")
 
     # tracker since 2022 used "Updated 2022" in the monthly sheets to note the date for Blood Pressure Update Date
     # the same column name appears in the Patient List so we have to replace it here and make it unique
     if (
         year >= 2022 &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Level\\s?of\\s?Education", ignore_case=TRUE)), na.rm=TRUE) &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)), na.rm=TRUE)
-        ) {
-        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Level of Education Or Occupation")
+            any(stringr::str_detect(header_cols_2, stringr::regex("Level\\s?of\\s?Education", ignore_case = TRUE)), na.rm = TRUE) &&
+            any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case = TRUE)), na.rm = TRUE)
+    ) {
+        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case = TRUE), "Level of Education Or Occupation")
     }
     if (
         year >= 2022 &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Blood\\s?Pressure", ignore_case=TRUE)), na.rm=TRUE) &&
-        any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE)), na.rm=TRUE)
-        ) {
-        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case=TRUE), "Blood Pressure")
+            any(stringr::str_detect(header_cols_2, stringr::regex("Blood\\s?Pressure", ignore_case = TRUE)), na.rm = TRUE) &&
+            any(stringr::str_detect(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case = TRUE)), na.rm = TRUE)
+    ) {
+        header_cols_2 <- stringr::str_replace(header_cols_2, stringr::regex("Updated\\s?2022", ignore_case = TRUE), "Blood Pressure")
     }
 
 

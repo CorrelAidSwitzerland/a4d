@@ -254,7 +254,6 @@ check_allowed_values <- function(x, valid_values, id, replace_invalid = TRUE, er
         }
 
         return(x)
-
     }
 
     valid_value_mapping[[sanitize_str(x)]]
@@ -475,7 +474,6 @@ fix_sex <- function(sex, id) {
 #' @return Corrected value with text replacement.
 #' @export
 fix_t1d_diagnosis_age <- function(t1d_diagnosis_age, id) {
-
     if (is.na(t1d_diagnosis_age)) {
         return(t1d_diagnosis_age)
     }

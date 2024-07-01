@@ -13,6 +13,7 @@ create_table_patient_data_static <- function(patient_data_files, input_root, out
     static_patient_columns <-
         c(
             "age",
+            "clinic_id",
             "dob",
             "edu_occ",
             "fbg_baseline_mg",

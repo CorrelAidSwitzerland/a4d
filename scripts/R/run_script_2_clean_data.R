@@ -211,10 +211,11 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
         blood_pressure_updated = lubridate::as_date(1),
         bmi = numeric(),
         bmi_date = lubridate::as_date(1),
-        clinic_code = character(),
+        # clinic_code = character(),
+        clinic_id = character(),
         complication_screening = character(),
         complication_screening_results = character(),
-        country_code = character(),
+        # country_code = character(),
         dm_complications = character(),
         dob = lubridate::as_date(1),
         edu_occ = character(),
@@ -349,11 +350,6 @@ process_patient_file <- function(paths, patient_file, patient_file_name, output_
             id = fix_id(id)
         ) %>%
         dplyr::ungroup()
-
-    # add clinic and country code after having fixed all issues with patient id
-    cc_codes <- extract_country_clinic_code(df_patient)
-    df_patient["clinic_code"] <- cc_codes$clinic_code
-    df_patient["country_code"] <- cc_codes$country_code
 
     # Formula to calculate mmol/l from mg/dl: mmol/l = mg/dl / 18
     if (all(is.na(df_patient$fbg_baseline_mmol))) {
